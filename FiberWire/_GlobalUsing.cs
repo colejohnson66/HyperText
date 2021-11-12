@@ -1,8 +1,11 @@
 /* =============================================================================
- * File:   GlobalUsings.cs
+ * File:   _GlobalUsing.cs
  * Author: Cole Tobin
  * =============================================================================
- * <TODO: Purpose>
+ * Purpose:
+ *
+ * C# 10 adds "global using" directives that will be implicitly included in any
+ *   file in the project. This file contains these.
  * =============================================================================
  * Copyright (c) 2021 Cole Tobin
  *

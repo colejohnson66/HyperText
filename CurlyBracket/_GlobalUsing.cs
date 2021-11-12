@@ -1,8 +1,11 @@
 /* =============================================================================
- * File:   GlobalUsings.cs
+ * File:   _GlobalUsing.cs
  * Author: Cole Tobin
  * =============================================================================
- * <TODO: Purpose>
+ * Purpose:
+ *
+ * C# 10 adds "global using" directives that will be implicitly included in any
+ *   file in the project. This file contains these.
  * =============================================================================
  * Copyright (c) 2021 Cole Tobin
  *
@@ -15,8 +18,8 @@
  *
  * CurlyBracket is distributed in the hope that it will be useful, but WITHOUT
  *   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- *   more details.
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ *   for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  *   along with CurlyBracket. If not, see <http://www.gnu.org/licenses/>.

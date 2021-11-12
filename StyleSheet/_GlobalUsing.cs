@@ -1,25 +1,28 @@
 /* =============================================================================
- * File:   GlobalUsings.cs
+ * File:   _GlobalUsing.cs
  * Author: Cole Tobin
  * =============================================================================
- * <TODO: Purpose>
+ * Purpose:
+ *
+ * C# 10 adds "global using" directives that will be implicitly included in any
+ *   file in the project. This file contains these.
  * =============================================================================
  * Copyright (c) 2021 Cole Tobin
  *
- * This file is part of AngleBracket.
+ * This file is part of StyleSheet.
  *
- * AngleBracket is free software: you can redistribute it and/or modify it under
+ * StyleSheet is free software: you can redistribute it and/or modify it under
  *   the terms of the GNU Lesser General Public License as published by the Free
  *   Software Foundation, either version 3 of the License, or (at your option)
  *   any later version.
  *
- * AngleBracket is distributed in the hope that it will be useful, but WITHOUT
- *   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
- *   for more details.
+ * StyleSheet is distributed in the hope that it will be useful, but WITHOUT ANY
+ *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *   FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ *   more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- *   along with AngleBracket. If not, see <http://www.gnu.org/licenses/>.
+ *   along with StyleSheet. If not, see <http://www.gnu.org/licenses/>.
  * =============================================================================
  */
 
