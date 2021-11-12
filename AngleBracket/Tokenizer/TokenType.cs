@@ -1,11 +1,10 @@
 /* =============================================================================
- * File:   _GlobalUsing.cs
+ * File:   TokenType.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * C# 10 adds "global using" directives that will be implicitly included in any
- *   file in the project. This file contains these.
+ * <TODO>
  * =============================================================================
  * Copyright (c) 2021 Cole Tobin
  *
@@ -26,6 +25,13 @@
  * =============================================================================
  */
 
-global using System;
-global using System.Collections.Generic;
-global using System.Diagnostics.Contracts;
+namespace AngleBracket.Tokenizer;
+
+public enum TokenType
+{
+    Character,
+    Comment,
+    Doctype,
+    EndOfFile,
+    Tag,
+}

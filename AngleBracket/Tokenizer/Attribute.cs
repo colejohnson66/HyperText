@@ -1,11 +1,10 @@
 /* =============================================================================
- * File:   _GlobalUsing.cs
+ * File:   Attribute.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * C# 10 adds "global using" directives that will be implicitly included in any
- *   file in the project. This file contains these.
+ * <TODO>
  * =============================================================================
  * Copyright (c) 2021 Cole Tobin
  *
@@ -26,6 +25,28 @@
  * =============================================================================
  */
 
-global using System;
-global using System.Collections.Generic;
-global using System.Diagnostics.Contracts;
+using System.Text;
+
+namespace AngleBracket.Tokenizer;
+
+public class Attribute
+{
+    private readonly StringBuilder _name = new();
+    private readonly StringBuilder _value = new();
+
+    public Attribute()
+    { }
+
+    public string Name => _name.ToString();
+    public string Value => _value.ToString();
+
+    public void AppendName(char ch) => _name.Append(ch);
+    public void AppendValue(char ch) => _value.Append(ch);
+
+    public override string ToString()
+    {
+        if (Value == "")
+            return $"Attribute {{ '{Name}' }}";
+        return $"Attribute {{ '{Name}' = '{Value}' }}";
+    }
+}
