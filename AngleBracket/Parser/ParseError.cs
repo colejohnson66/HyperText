@@ -25,7 +25,7 @@
  * =============================================================================
  */
 
-namespace AngleBracket.Tokenizer;
+namespace AngleBracket.Parser;
 
 public enum ParseError
 {
