@@ -44,19 +44,30 @@ public class Doctype
     public string? PublicIdentifier => _public?.ToString();
     public string? SystemIdentifier => _system?.ToString();
 
-    public void AppendName(char ch) => _name.Append(ch);
+    public void AppendName(char c) => _name.Append(c);
+    public void AppendName(int c) => _name.Append(char.ConvertFromUtf32(c));
     public void SetQuirksFlag() => QuirksMode = true;
     public void SetPublicIdentifierToEmptyString() => _public = new();
-    public void AppendPublicIdentifier(char ch)
+    public void AppendPublicIdentifier(char c)
     {
         Contract.Requires<ArgumentNullException>(_public != null);
-        _public!.Append(ch);
+        _public!.Append(c);
+    }
+    public void AppendPublicIdentifier(int c)
+    {
+        Contract.Requires<ArgumentNullException>(_public != null);
+        _public!.Append(char.ConvertFromUtf32(c));
     }
     public void SetSystemIdentifierToEmptyString() => _system = new();
-    public void AppendSystemIdentifier(char ch)
+    public void AppendSystemIdentifier(char c)
     {
         Contract.Requires<ArgumentNullException>(_system != null);
-        _system!.Append(ch);
+        _system!.Append(c);
+    }
+    public void AppendSystemIdentifier(int c)
+    {
+        Contract.Requires<ArgumentNullException>(_system != null);
+        _system!.Append(char.ConvertFromUtf32(c));
     }
 
     public override string ToString()

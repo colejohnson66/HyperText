@@ -40,8 +40,10 @@ public class Attribute
     public string Name => _name.ToString();
     public string Value => _value.ToString();
 
-    public void AppendName(char ch) => _name.Append(ch);
-    public void AppendValue(char ch) => _value.Append(ch);
+    public void AppendName(char c) => _name.Append(c);
+    public void AppendName(int c) => _name.Append(char.ConvertFromUtf32(c));
+    public void AppendValue(char c) => _value.Append(c);
+    public void AppendValue(int c) => _value.Append(char.ConvertFromUtf32(c));
 
     public override string ToString()
     {

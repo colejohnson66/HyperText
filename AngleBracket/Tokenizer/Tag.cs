@@ -49,7 +49,8 @@ public class Tag
     public bool IsEndTag { get; }
     public List<Attribute> Attributes => _attributes;
 
-    public void AppendName(char ch) => _name.Append(ch);
+    public void AppendName(char c) => _name.Append(c);
+    public void AppendName(int c) => _name.Append(char.ConvertFromUtf32(c));
     public void SetSelfClosingFlag() => IsSelfClosing = true;
     public Attribute NewAttribute()
     {

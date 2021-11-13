@@ -37,7 +37,7 @@ public class Token
         Type = type;
         _value = value;
     }
-    public static Token NewCharacterToken(int ch) => new(TokenType.Character, ch);
+    public static Token NewCharacterToken(int c) => new(TokenType.Character, c);
     public static Token NewCommentToken(string str) => new(TokenType.Comment, str);
     public static Token NewDoctypeToken(Doctype dt) => new(TokenType.Doctype, dt);
     public static Token NewEndOfFileToken() => new(TokenType.EndOfFile);
