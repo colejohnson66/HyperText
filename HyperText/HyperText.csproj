@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AngleBracket\AngleBracket.csproj" />
+    <ProjectReference Include="..\CodePoint\CodePoint.csproj" />
     <ProjectReference Include="..\CurlyBracket\CurlyBracket.csproj" />
     <ProjectReference Include="..\FiberWire\FiberWire.csproj" />
     <ProjectReference Include="..\StyleSheet\StyleSheet.csproj" />

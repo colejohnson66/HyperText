@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngleBracket", "AngleBracke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngleBracket.Test", "AngleBracket.Test\AngleBracket.Test.csproj", "{601050E0-E625-45F0-A49D-83430994271B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodePoint", "CodePoint\CodePoint.csproj", "{74D07957-F202-48CC-8F61-83ACDE8CC28B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodePoint.Test", "CodePoint.Test\CodePoint.Test.csproj", "{5AEA4B3B-2BBA-4764-A4E1-AF3FA42E0689}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurlyBracket", "CurlyBracket\CurlyBracket.csproj", "{C8ED9D47-321E-4934-99EA-AB977B60A6C3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurlyBracket.Test", "CurlyBracket.Test\CurlyBracket.Test.csproj", "{17E90352-3B68-4EE3-80ED-AC064EC6B524}"
@@ -38,6 +42,14 @@ Global
 		{601050E0-E625-45F0-A49D-83430994271B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{601050E0-E625-45F0-A49D-83430994271B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{601050E0-E625-45F0-A49D-83430994271B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74D07957-F202-48CC-8F61-83ACDE8CC28B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74D07957-F202-48CC-8F61-83ACDE8CC28B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74D07957-F202-48CC-8F61-83ACDE8CC28B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74D07957-F202-48CC-8F61-83ACDE8CC28B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AEA4B3B-2BBA-4764-A4E1-AF3FA42E0689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AEA4B3B-2BBA-4764-A4E1-AF3FA42E0689}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AEA4B3B-2BBA-4764-A4E1-AF3FA42E0689}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AEA4B3B-2BBA-4764-A4E1-AF3FA42E0689}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C8ED9D47-321E-4934-99EA-AB977B60A6C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C8ED9D47-321E-4934-99EA-AB977B60A6C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8ED9D47-321E-4934-99EA-AB977B60A6C3}.Release|Any CPU.ActiveCfg = Release|Any CPU

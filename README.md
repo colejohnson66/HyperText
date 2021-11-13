@@ -5,9 +5,10 @@ I will almost certainly never finish.
 
 ## Subprojects
 
-HyperText is split into five components:
+HyperText is split into six components:
 
 - AngleBracket - The HTML engine
+- CodePoint - All things Unicode
 - CurlyBracket - The JavaScript engine
 - HyperText - The actual browser application
 - FiberWire - Networking related stuff
@@ -15,6 +16,6 @@ HyperText is split into five components:
 
 ## License
 
-HyperText, and all components, are licensed under the
+HyperText, and all its components, are licensed under the
 [GNU General Public License 3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
 or later.
