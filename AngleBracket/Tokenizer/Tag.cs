@@ -25,6 +25,7 @@
  * =============================================================================
  */
 
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -57,6 +58,29 @@ public class Tag
         Attribute attr = new();
         _attributes.Add(attr);
         return attr;
+    }
+
+    /// <summary>
+    /// Checks this tag's list of attributes for duplicate attributes.
+    /// A duplicate attribute is one with a name that is the same as an earlier
+    ///   attribute's name.
+    /// If any are found, the first one is kept, and all others are dropped.
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if any attributes were removed; otherwise <c>false</c>
+    /// </returns>
+    public bool CheckAndCorrectDuplicateAttributes()
+    {
+        List<string> seenAttrNames = new(_attributes.Count);
+        bool anyRemoved = false;
+        foreach (Attribute thisAttr in _attributes)
+        {
+            if (seenAttrNames.Contains(thisAttr.Name))
+                Debug.Assert(anyRemoved = _attributes.Remove(thisAttr));
+            else
+                seenAttrNames.Add(thisAttr.Name);
+        }
+        return anyRemoved;
     }
 
     public override string ToString()

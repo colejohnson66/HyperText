@@ -1360,107 +1360,729 @@ public partial class HtmlTokenizer
 
     private void BeforeAttributeName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#before-attribute-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '/' || c == '>' || c == EOF)
+        {
+            // Reconsume in the after attribute name state.
+            Reconsume(TokenizerState.AfterAttributeName, c);
+        }
+        else if (c == '=')
+        {
+            // This is an unexpected-equals-sign-before-attribute-name parse
+            //   error.
+            AddParseError(ParseError.UnexpectedEqualsSignBeforeAttributeName);
+            // Start a new attribute in the current tag token.
+            _currentAttribute = _currentTag!.NewAttribute();
+            // Set that attribute's name to the current input character, and its
+            //   value to the empty string.
+            _currentAttribute.AppendName('=');
+            // Switch to the attribute name state.
+            _state = TokenizerState.AttributeName;
+        }
+        else
+        {
+            // Start a new attribute in the current tag token.
+            // Set that attribute name and value to the empty string.
+            _currentAttribute = _currentTag!.NewAttribute();
+            // Reconsume in the attribute name state.
+            Reconsume(TokenizerState.AttributeName, c);
+        }
     }
 
     private void AttributeName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-name-state>
+
+        /* When the user agent leaves the attribute name state (and before
+         *   emitting the tag token, if appropriate), the complete attribute's
+         *   name must be compared to the other attributes on the same token;
+         * If there is already an attribute on the token with the exact same
+         *   name, then this is a duplicate-attribute parse error and the new
+         *   attribute must be removed from the token.
+         *
+         * If an attribute is so removed from a token, it, and the value that
+         *   gets associated with it, if any, are never subsequently used by the
+         *   parser, and are therefore effectively discarded.
+         * Removing the attribute in this way does not change its status as the
+         *   "current attribute" for the purposes of the tokenizer, however.
+         */
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c) || c == '/' || c == '>' || c == EOF)
+        {
+            if (_currentTag!.CheckAndCorrectDuplicateAttributes())
+                AddParseError(ParseError.DuplicateAttribute); // see block comment above
+            // Reconsume in the after attribute name state.
+            Reconsume(TokenizerState.AfterAttributeName, c);
+        }
+        else if (c == '=')
+        {
+            if (_currentTag!.CheckAndCorrectDuplicateAttributes())
+                AddParseError(ParseError.DuplicateAttribute); // see block comment above
+            // Switch to the before attribute value state.
+            _state = TokenizerState.BeforeAttributeValue;
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Append the lowercase version of the current input character (add
+            //   0x0020 to the character's code point) to the current
+            //   attribute's name.
+            _currentAttribute!.AppendName(ToAsciiLowercase(c));
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   attribute's name.
+            _currentAttribute!.AppendName(REPLACEMENT_CHARACTER);
+        }
+        else
+        {
+            if (c == '"' || c == '\'' || c == '<')
+            {
+                // This is an unexpected-character-in-attribute-name parse
+                //   error.
+                AddParseError(ParseError.UnexpectedCharacterInAttributeName);
+                // Treat it as per the "anything else" entry below.
+            }
+            // Append the current input character to the current attribute's
+            //   name.
+            _currentAttribute!.AppendName(c);
+        }
     }
 
     private void AfterAttributeName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-attribute-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '/')
+        {
+            // Switch to the self-closing start tag state.
+            _state = TokenizerState.SelfClosingStartTag;
+        }
+        else if (c == '=')
+        {
+            // Switch to the before attribute value state.
+            _state = TokenizerState.BeforeAttributeValue;
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current tag token.
+            EmitTagToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-tag parse error.
+            AddParseError(ParseError.EofInTag);
+            // Emit an end-of-file token
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Start a new attribute in the current tag token.
+            // Set that attribute name and value to the empty string.
+            _currentAttribute = _currentTag!.NewAttribute();
+            // Reconsume in the attribute name state.
+            Reconsume(TokenizerState.AttributeName, c);
+        }
     }
 
     private void BeforeAttributeValue(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#before-attribute-value-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '"')
+        {
+            // Switch to the attribute value (double-quoted) state.
+            _state = TokenizerState.AttributeValueDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // Switch to the attribute value (single-quoted) state.
+            _state = TokenizerState.AttributeValueSingleQuoted;
+        }
+        else if (c == '>')
+        {
+            // This is a missing-attribute-value parse error.
+            AddParseError(ParseError.MissingAttributeValue);
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current tag token.
+            EmitTagToken();
+        }
     }
 
     private void AttributeValueDoubleQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(double-quoted)-state>
+
+        // Consume the next input character:
+        if (c == '"')
+        {
+            // Switch to the after attribute value (quoted) state.
+            _state = TokenizerState.AfterAttributeValueQuoted;
+        }
+        else if (c == '&')
+        {
+            // Set the return state to the attribute value (double-quoted)
+            //   state.
+            _returnState = TokenizerState.AttributeValueDoubleQuoted;
+            // Switch to the character reference state.
+            _state = TokenizerState.CharacterReference;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   attribute's value.
+            _currentAttribute!.AppendValue(REPLACEMENT_CHARACTER);
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-tag parse error.
+            AddParseError(ParseError.EofInTag);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current attribute's
+            //   value.
+            _currentAttribute!.AppendValue(c);
+        }
     }
 
     private void AttributeValueSingleQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(single-quoted)-state>
+
+        // Consume the next input character:
+        if (c == '\'')
+        {
+            // Switch to the after attribute value (quoted) state.
+            _state = TokenizerState.AfterAttributeValueQuoted;
+        }
+        else if (c == '&')
+        {
+            // Set the return state to the attribute value (single-quoted)
+            //   state.
+            _returnState = TokenizerState.AttributeValueSingleQuoted;
+            // Switch to the character reference state.
+            _state = TokenizerState.CharacterReference;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   attribute's value.
+            _currentAttribute!.AppendValue(REPLACEMENT_CHARACTER);
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-tag parse error.
+            AddParseError(ParseError.EofInTag);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current attribute's
+            //   value.
+            _currentAttribute!.AppendValue(c);
+        }
     }
 
     private void AttributeValueUnquoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(unquoted)-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the before attribute name state.
+            _state = TokenizerState.BeforeAttributeName;
+        }
+        else if (c == '&')
+        {
+            // Set the return state to the attribute value (unquoted) state.
+            _returnState = TokenizerState.AttributeValueUnquoted;
+            // Switch to the character reference state.
+            _state = TokenizerState.CharacterReference;
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current tag token.
+            EmitTagToken();
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   attribute's value.
+            _currentAttribute!.AppendValue(REPLACEMENT_CHARACTER);
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-tag parse error.
+            AddParseError(ParseError.EofInTag);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            if (c == '"' || c == '\'' || c == '<' || c == '=' || c == '`')
+            {
+                // This is an unexpected-character-in-unquoted-attribute-value
+                //   parse error.
+                AddParseError(ParseError.UnexpectedCharacterInUnquotedAttributeValue);
+                // Treat it as per the "anything else" entry below.
+            }
+            // Append the current input character to the current attribute's
+            //   value.
+            _currentAttribute!.AppendValue(c);
+        }
     }
 
     private void AfterAttributeValueQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-attribute-value-(quoted)-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the before attribute name state.
+            _state = TokenizerState.BeforeAttributeName;
+        }
+        else if (c == '/')
+        {
+            // Switch to the self-closing start tag state.
+            _state = TokenizerState.SelfClosingStartTag;
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current tag token.
+            EmitTagToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-tag parse error.
+            AddParseError(ParseError.EofInTag);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-whitespace-between-attributes parse error.
+            AddParseError(ParseError.MissingWhitespaceBetweenAttributes);
+            // Reconsume in the before attribute name state.
+            Reconsume(TokenizerState.BeforeAttributeName, c);
+        }
     }
 
     private void SelfClosingStartTag(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#self-closing-start-tag-state>
+
+        // Consume the next input character:
+        if (c == '>')
+        {
+            // Set the self-closing flag of the current tag token.
+            _currentTag!.SetSelfClosingFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current tag token.
+            EmitTagToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-tag parse error.
+            AddParseError(ParseError.EofInTag);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is an unexpected-solidus-in-tag parse error.
+            AddParseError(ParseError.UnexpectedSolidusInTag);
+            // Reconsume in the before attribute name state.
+            Reconsume(TokenizerState.BeforeAttributeName, c);
+        }
     }
 
     private void BogusComment(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#bogus-comment-state>
+
+        // Consume the next input character:
+        if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current comment token.
+            EmitCommentToken();
+        }
+        else if (c == EOF)
+        {
+            // Emit the comment.
+            EmitCommentToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the comment
+            //   token's data.
+            _currentComment!.Append(REPLACEMENT_CHARACTER);
+        }
+        else
+        {
+            // Append the current input character to the comment token's data.
+            _currentComment!.Append(c);
+        }
     }
 
     private void MarkupDeclarationOpen(int c)
     {
+        // <https://html.spec.whatwg.org/multipage/parsing.html#markup-declaration-open-state>
+
+        // If the next few characters are:
         throw new NotImplementedException();
+        // Two U+002D HYPHEN-MINUS characters (-)
+        //     Consume those two characters, create a comment token whose data is the empty string, and switch to the comment start state.
+        // ASCII case-insensitive match for the word "DOCTYPE"
+        //     Consume those characters and switch to the DOCTYPE state.
+        // The string "[CDATA[" (the five uppercase letters "CDATA" with a U+005B LEFT SQUARE BRACKET character before and after)
+        //     Consume those characters. If there is an adjusted current node and it is not an element in the HTML namespace, then switch to the CDATA section state. Otherwise, this is a cdata-in-html-content parse error. Create a comment token whose data is the "[CDATA[" string. Switch to the bogus comment state.
+        // Anything else
+        //     This is an incorrectly-opened-comment parse error. Create a comment token whose data is the empty string. Switch to the bogus comment state (don't consume anything in the current state).
     }
 
     private void CommentStart(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-start-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the comment start dash state.
+            _state = TokenizerState.CommentStartDash;
+        }
+        else if (c == '>')
+        {
+            // This is an abrupt-closing-of-empty-comment parse error.
+            AddParseError(ParseError.AbruptClosingOfEmptyComment);
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current comment token.
+            EmitCommentToken();
+        }
+        else
+        {
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void CommentStartDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-start-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the comment end state.
+            _state = TokenizerState.CommentEnd;
+        }
+        else if (c == '>')
+        {
+            // This is an abrupt-closing-of-empty-comment parse error.
+            AddParseError(ParseError.AbruptClosingOfEmptyComment);
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current comment token.
+            EmitCommentToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-comment parse error.
+            AddParseError(ParseError.EofInComment);
+            // Emit the current comment token.
+            EmitCommentToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append a U+002D HYPHEN-MINUS character (-) to the comment token's
+            //   data.
+            _currentComment!.Append('-');
+            _currentComment.Append('-');
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void Comment(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-state>
+
+        // Consume the next input character:
+        if (c == '<')
+        {
+            // Append the current input character to the comment token's data.
+            _currentComment!.Append('<');
+            // Switch to the comment less-than sign state.
+            _state = TokenizerState.CommentLessThanSign;
+        }
+        else if (c == '-')
+        {
+            // Switch to the comment end dash state.
+            _state = TokenizerState.CommentEndDash;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the comment
+            //   token's data.
+            _currentComment!.Append(REPLACEMENT_CHARACTER);
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-comment parse error.
+            AddParseError(ParseError.EofInComment);
+            // Emit the current comment token.
+            EmitCommentToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the comment token's data.
+            _currentComment!.Append(c);
+        }
     }
 
     private void CommentLessThanSign(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-state>
+
+        // Consume the next input character:
+        if (c == '!')
+        {
+            // Append the current input character to the comment token's data.
+            _currentComment!.Append('!');
+            // Switch to the comment less-than sign bang state.
+            _state = TokenizerState.CommentLessThanSignBang;
+        }
+        else if (c == '<')
+        {
+            // Append the current input character to the comment token's data.
+            _currentComment!.Append('<');
+        }
+        else
+        {
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void CommentLessThanSignBang(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-bang-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the comment less-than sign bang dash state.
+            _state = TokenizerState.CommentLessThanSignBangDash;
+        }
+        else
+        {
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void CommentLessThanSignBangDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-bang-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the comment less-than sign bang dash dash state.
+            _state = TokenizerState.CommentLessThanSignBangDashDash;
+        }
+        else
+        {
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void CommentLessThanSignBangDashDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-bang-dash-dash-state>
+
+        // Consume the next input character:
+        if (c == '>' || c == EOF)
+        {
+            // Reconsume in the comment end state.
+            Reconsume(TokenizerState.CommentEnd, c);
+        }
+        else
+        {
+            // This is a nested-comment parse error.
+            AddParseError(ParseError.NestedComment);
+            // Reconsume in the comment end state.
+            Reconsume(TokenizerState.CommentEnd, c);
+        }
     }
 
     private void CommentEndDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-end-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the comment end state.
+            _state = TokenizerState.CommentEnd;
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-comment parse error.
+            AddParseError(ParseError.EofInComment);
+            // Emit the current comment token.
+            EmitCommentToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append a U+002D HYPHEN-MINUS character (-) to the comment token's
+            //   data.
+            _currentComment!.Append('-');
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void CommentEnd(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-end-state>
+
+        // Consume the next input character:
+        if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current comment token.
+            EmitCommentToken();
+        }
+        else if (c == '!')
+        {
+            // Switch to the comment end bang state.
+            _state = TokenizerState.CommentEndBang;
+        }
+        else if (c == '-')
+        {
+            // Append a U+002D HYPHEN-MINUS character (-) to the comment token's
+            //   data.
+            _currentComment!.Append('-');
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-comment parse error.
+            AddParseError(ParseError.EofInComment);
+            // Emit the current comment token.
+            EmitCommentToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append two U+002D HYPHEN-MINUS characters (-) to the comment
+            //   token's data.
+            _currentComment!.Append('-');
+            _currentComment.Append('-');
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void CommentEndBang(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#comment-end-bang-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Append two U+002D HYPHEN-MINUS characters (-) and a U+0021
+            //   EXCLAMATION MARK character (!) to the comment token's data.
+            _currentComment!.Append('-');
+            _currentComment.Append('-');
+            _currentComment.Append('!');
+            // Switch to the comment end dash state.
+            _state = TokenizerState.CommentEndDash;
+        }
+        else if (c == '>')
+        {
+            // This is an incorrectly-closed-comment parse error.
+            AddParseError(ParseError.IncorrectlyClosedComment);
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current comment token.
+            EmitCommentToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-comment parse error.
+            AddParseError(ParseError.EofInComment);
+            // Emit the current comment token.
+            EmitCommentToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append two U+002D HYPHEN-MINUS characters (-) and a U+0021
+            //   EXCLAMATION MARK character (!) to the comment token's data.
+            _currentComment!.Append('-');
+            _currentComment.Append('-');
+            _currentComment.Append('!');
+            // Reconsume in the comment state.
+            Reconsume(TokenizerState.Comment, c);
+        }
     }
 
     private void Doctype(int c)
