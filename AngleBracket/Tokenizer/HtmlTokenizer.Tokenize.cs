@@ -187,6 +187,20 @@ public partial class HtmlTokenizer
         _currentTag = null;
     }
 
+    private bool CompareTemporaryBuffer(string compareTo)
+    {
+        if (_tempBuffer.Count != compareTo.Length)
+            return false;
+
+        for (int i = 0; i < compareTo.Length; i++)
+        {
+            if (_tempBuffer[i] != compareTo[i])
+                return false;
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// Gets an enumerator that yields multiple <see cref="Token" /> objects
     /// </summary>
@@ -719,87 +733,629 @@ public partial class HtmlTokenizer
 
     private void ScriptDataLessThanSign(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-less-than-sign-state>
+
+        // Consume the next input character:
+        if (c == '/')
+        {
+            // Set the temporary buffer to the empty string.
+            _tempBuffer.Clear();
+            // Switch to the script data end tag open state.
+            _state = TokenizerState.ScriptDataEndTagOpen;
+        }
+        else if (c == '!')
+        {
+            // Switch to the script data escape start state.
+            _state = TokenizerState.ScriptDataEscapeStart;
+            // Emit a U+003C LESS-THAN SIGN character token and a
+            //   U+0021 EXCLAMATION MARK character token.
+            EmitCharacterToken('<');
+            EmitCharacterToken('!');
+        }
+        else
+        {
+            // Emit a U+003C LESS-THAN SIGN character token.
+            EmitCharacterToken('<');
+            // Reconsume in the script data state.
+            Reconsume(TokenizerState.ScriptData, c);
+        }
     }
 
     private void ScriptDataEndTagOpen(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-end-tag-open-state>
+
+        // Consume the next input character:
+        if (IsAsciiAlpha(c))
+        {
+            // Create a new end tag token, set its tag name to the empty string.
+            _currentTag = Tag.NewEndTag();
+            // Reconsume in the script data end tag name state.
+            Reconsume(TokenizerState.ScriptDataEndTagName, c);
+        }
+        else
+        {
+            // Emit a U+003C LESS-THAN SIGN character token and a U+002F SOLIDUS
+            //   character token.
+            EmitCharacterToken('<');
+            EmitCharacterToken('/');
+            // Reconsume in the script data state.
+            Reconsume(TokenizerState.ScriptData, c);
+        }
     }
 
     private void ScriptDataEndTagName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-end-tag-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c) && IsCurrentEndTagAnAppropriateOne())
+        {
+            // If the current end tag token is an appropriate end tag token,
+            //   then switch to the before attribute name state.
+            // Otherwise, treat it as per the "anything else" entry below.
+            _state = TokenizerState.BeforeAttributeName;
+        }
+        else if (c == '/' && IsCurrentEndTagAnAppropriateOne())
+        {
+            // If the current end tag token is an appropriate end tag token,
+            //   then switch to the self-closing start tag state.
+            // Otherwise, treat it as per the "anything else" entry below.
+            _state = TokenizerState.SelfClosingStartTag;
+        }
+        else if (c == '>' && IsCurrentEndTagAnAppropriateOne())
+        {
+            // If the current end tag token is an appropriate end tag token,
+            //   then switch to the data state and emit the current tag token.
+            // Otherwise, treat it as per the "anything else" entry below.
+            _state = TokenizerState.Data;
+            EmitTagToken();
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Append the lowercase version of the current input character (add
+            //   0x0020 to the character's code point) to the current tag
+            //   token's tag name.
+            _currentTag!.AppendName(ToAsciiLowercase(c));
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(c);
+        }
+        else if (IsAsciiLowerAlpha(c))
+        {
+            // Append the current input character to the current tag token's tag
+            //   name.
+            _currentTag!.AppendName(c);
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(c);
+        }
+        else
+        {
+            // Emit a U+003C LESS-THAN SIGN character token, a U+002F SOLIDUS
+            //   character token, and a character token for each of the
+            //   characters in the temporary buffer (in the order they were
+            //   added to the buffer).
+            EmitCharacterToken('<');
+            EmitCharacterToken('/');
+            EmitCharacterTokensFromTemporaryBuffer();
+            // Reconsume in the script data state.
+            Reconsume(TokenizerState.ScriptData, c);
+        }
     }
 
     private void ScriptDataEscapeStart(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escape-start-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the script data escape start dash state.
+            _state = TokenizerState.ScriptDataEscapeStartDash;
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else
+        {
+            // Reconsume in the script data state.
+            Reconsume(TokenizerState.ScriptData, c);
+        }
     }
 
     private void ScriptDataEscapeStartDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escape-start-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the script data escaped dash dash state.
+            _state = TokenizerState.ScriptDataEscapedDashDash;
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else
+        {
+            // Reconsume in the script data state.
+            Reconsume(TokenizerState.ScriptData, c);
+        }
     }
 
     private void ScriptDataEscaped(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the script data escaped dash state.
+            _state = TokenizerState.ScriptDataEscapedDash;
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else if (c == '<')
+        {
+            // Switch to the script data escaped less-than sign state.
+            _state = TokenizerState.ScriptDataEscapedLessThanSign;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Emit a U+FFFD REPLACEMENT CHARACTER character token.
+            EmitReplacementCharacterToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-script-html-comment-like-text parse error.
+            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
     }
 
     private void ScriptDataEscapedDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the script data escaped dash dash state.
+            _state = TokenizerState.ScriptDataEscapedDashDash;
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else if (c == '<')
+        {
+            // Switch to the script data escaped less-than sign state.
+            _state = TokenizerState.ScriptDataEscapedLessThanSign;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Switch to the script data escaped state.
+            _state = TokenizerState.ScriptDataEscaped;
+            // Emit a U+FFFD REPLACEMENT CHARACTER character token.
+            EmitReplacementCharacterToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-script-html-comment-like-text parse error.
+            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Switch to the script data escaped state.
+            _state = TokenizerState.ScriptDataEscaped;
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
     }
 
     private void ScriptDataEscapedDashDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-dash-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else if (c == '<')
+        {
+            // Switch to the script data escaped less-than sign state.
+            _state = TokenizerState.ScriptDataEscapedLessThanSign;
+        }
+        else if (c == '>')
+        {
+            // Switch to the script data state.
+            _state = TokenizerState.ScriptData;
+            // Emit a U+003E GREATER-THAN SIGN character token.
+            EmitCharacterToken('>');
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Switch to the script data escaped state.
+            _state = TokenizerState.ScriptDataEscaped;
+            // Emit a U+FFFD REPLACEMENT CHARACTER character token.
+            EmitReplacementCharacterToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-script-html-comment-like-text parse error.
+            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Switch to the script data escaped state.
+            _state = TokenizerState.ScriptDataEscaped;
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
     }
 
     private void ScriptDataEscapedLessThanSign(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-less-than-sign-state>
+
+        // Consume the next input character:
+        if (c == '/')
+        {
+            // Set the temporary buffer to the empty string.
+            _tempBuffer.Clear();
+            // Switch to the script data escaped end tag open state.
+            _state = TokenizerState.ScriptDataEscapedEndTagOpen;
+        }
+        else if (IsAsciiAlpha(c))
+        {
+            // Set the temporary buffer to the empty string.
+            _tempBuffer.Clear();
+            // Emit a U+003C LESS-THAN SIGN character token.
+            EmitCharacterToken('<');
+            // Reconsume in the script data double escape start state.
+            Reconsume(TokenizerState.ScriptDataDoubleEscapeStart, c);
+        }
+        else
+        {
+            // Emit a U+003C LESS-THAN SIGN character token.
+            EmitCharacterToken('<');
+            // Reconsume in the script data escaped state.
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
+        }
     }
 
     private void ScriptDataEscapedEndTagOpen(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-end-tag-open-state>
+
+        // Consume the next input character:
+        if (IsAsciiAlpha(c))
+        {
+            // Create a new end tag token, set its tag name to the empty string.
+            _currentTag = Tag.NewEndTag();
+            // Reconsume in the script data escaped end tag name state.
+            Reconsume(TokenizerState.ScriptDataEscapedEndTagName, c);
+        }
+        else
+        {
+            // Emit a U+003C LESS-THAN SIGN character token and a U+002F SOLIDUS
+            //   character token.
+            EmitCharacterToken('<');
+            EmitCharacterToken('/');
+            // Reconsume in the script data escaped state.
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
+        }
     }
 
     private void ScriptDataEscapedEndTagName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-end-tag-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c) && IsCurrentEndTagAnAppropriateOne())
+        {
+            // If the current end tag token is an appropriate end tag token,
+            //   then switch to the before attribute name state.
+            // Otherwise, treat it as per the "anything else" entry below.
+            _state = TokenizerState.BeforeAttributeName;
+        }
+        else if (c == '/' && IsCurrentEndTagAnAppropriateOne())
+        {
+            // If the current end tag token is an appropriate end tag token,
+            //   then switch to the self-closing start tag state.
+            // Otherwise, treat it as per the "anything else" entry below.
+            _state = TokenizerState.SelfClosingStartTag;
+        }
+        else if (c == '>' && IsCurrentEndTagAnAppropriateOne())
+        {
+            // If the current end tag token is an appropriate end tag token,
+            //   then switch to the data state and emit the current tag token.
+            // Otherwise, treat it as per the "anything else" entry below.
+            _state = TokenizerState.Data;
+            EmitTagToken();
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Append the lowercase version of the current input character (add
+            //   0x0020 to the character's code point) to the current tag
+            //   token's tag name.
+            _currentTag!.AppendName(ToAsciiLowercase(c));
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(c);
+        }
+        else if (IsAsciiLowerAlpha(c))
+        {
+            // Append the current input character to the current tag token's tag
+            //   name.
+            _currentTag!.AppendName(c);
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(c);
+        }
+        else
+        {
+            // Emit a U+003C LESS-THAN SIGN character token, a U+002F SOLIDUS
+            //   character token, and a character token for each of the
+            //   characters in the temporary buffer (in the order they were
+            //   added to the buffer).
+            EmitCharacterToken('<');
+            EmitCharacterToken('/');
+            EmitCharacterTokensFromTemporaryBuffer();
+            // Reconsume in the script data escaped state.
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
+        }
     }
 
     private void ScriptDataDoubleEscapeStart(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escape-start-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c) || c == '/' || c == '>')
+        {
+            if (CompareTemporaryBuffer("script"))
+            {
+                // If the temporary buffer is the string "script", then switch
+                //   to the script data double escaped state.
+                _state = TokenizerState.ScriptDataDoubleEscaped;
+            }
+            else
+            {
+                // Otherwise, switch to the script data escaped state.
+                _state = TokenizerState.ScriptDataEscaped;
+                // Emit the current input character as a character token.
+                EmitCharacterToken(c);
+            }
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Append the lowercase version of the current input character (add
+            //   0x0020 to the character's code point) to the temporary buffer.
+            _tempBuffer.Add(ToAsciiLowercase(c));
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
+        else if (IsAsciiLowerAlpha(c))
+        {
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(c);
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
+        else
+        {
+            // Reconsume in the script data escaped state.
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
+        }
     }
 
     private void ScriptDataDoubleEscaped(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the script data double escaped dash state.
+            _state = TokenizerState.ScriptDataDoubleEscapedDash;
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else if (c == '<')
+        {
+            // Switch to the script data double escaped less-than sign state.
+            _state = TokenizerState.ScriptDataDoubleEscapedLessThanSign;
+            // Emit a U+003C LESS-THAN SIGN character token.
+            EmitCharacterToken('<');
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Emit a U+FFFD REPLACEMENT CHARACTER character token.
+            EmitReplacementCharacterToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-script-html-comment-like-text parse error.
+            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
     }
 
     private void ScriptDataDoubleEscapedDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Switch to the script data double escaped dash dash state.
+            _state = TokenizerState.ScriptDataDoubleEscapedDashDash;
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else if (c == '<')
+        {
+            // Switch to the script data double escaped less-than sign state.
+            _state = TokenizerState.ScriptDataDoubleEscapedLessThanSign;
+            // Emit a U+003C LESS-THAN SIGN character token.
+            EmitCharacterToken('<');
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Switch to the script data double escaped state.
+            _state = TokenizerState.ScriptDataDoubleEscaped;
+            // Emit a U+FFFD REPLACEMENT CHARACTER character token.
+            EmitReplacementCharacterToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-script-html-comment-like-text parse error.
+            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Switch to the script data double escaped state.
+            _state = TokenizerState.ScriptDataDoubleEscaped;
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
     }
 
     private void ScriptDataDoubleEscapedDashDash(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-dash-dash-state>
+
+        // Consume the next input character:
+        if (c == '-')
+        {
+            // Emit a U+002D HYPHEN-MINUS character token.
+            EmitCharacterToken('-');
+        }
+        else if (c == '<')
+        {
+            // Switch to the script data double escaped less-than sign state.
+            _state = TokenizerState.ScriptDataDoubleEscapedLessThanSign;
+            // Emit a U+003C LESS-THAN SIGN character token.
+            EmitCharacterToken('<');
+        }
+        else if (c == '>')
+        {
+            // Switch to the script data state.
+            _state = TokenizerState.ScriptData;
+            // Emit a U+003E GREATER-THAN SIGN character token.
+            EmitCharacterToken('>');
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Switch to the script data double escaped state.
+            _state = TokenizerState.ScriptDataDoubleEscaped;
+            // Emit a U+FFFD REPLACEMENT CHARACTER character token.
+            EmitReplacementCharacterToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-script-html-comment-like-text parse error.
+            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Switch to the script data double escaped state.
+            _state = TokenizerState.ScriptDataDoubleEscaped;
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
     }
 
     private void ScriptDataDoubleEscapedLessThanSign(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-less-than-sign-state>
+
+        // Consume the next input character:
+        if (c == '/')
+        {
+            // Set the temporary buffer to the empty string.
+            _tempBuffer.Clear();
+            // Switch to the script data double escape end state.
+            _state = TokenizerState.ScriptDataDoubleEscapeEnd;
+            // Emit a U+002F SOLIDUS character token.
+            EmitCharacterToken('/');
+        }
+        else
+        {
+            // Reconsume in the script data double escaped state.
+            Reconsume(TokenizerState.ScriptDataDoubleEscaped, c);
+        }
     }
 
     private void ScriptDataDoubleEscapeEnd(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escape-end-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c) || c == '/' || c == '>')
+        {
+            if (CompareTemporaryBuffer("script"))
+            {
+                // If the temporary buffer is the string "script", then switch
+                //   to the script data escaped state.
+                _state = TokenizerState.ScriptDataEscaped;
+            }
+            else
+            {
+                // Otherwise, switch to the script data double escaped state.
+                _state = TokenizerState.ScriptDataDoubleEscaped;
+                // Emit the current input character as a character token.
+                EmitCharacterToken(c);
+            }
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Append the lowercase version of the current input character (add
+            //   0x0020 to the character's code point) to the temporary buffer.
+            _tempBuffer.Add(ToAsciiLowercase(c));
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
+        else if (IsAsciiLowerAlpha(c))
+        {
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(c);
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
+        else
+        {
+            // Reconsume in the script data double escaped state.
+            Reconsume(TokenizerState.ScriptDataDoubleEscaped, c);
+        }
     }
 
     private void BeforeAttributeName(int c)
