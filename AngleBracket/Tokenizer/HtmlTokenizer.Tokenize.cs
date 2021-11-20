@@ -2905,17 +2905,75 @@ public partial class HtmlTokenizer
 
     private void CDataSection(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-state>
+
+        // Consume the next input character:
+        if (c == ']')
+        {
+            // Switch to the CDATA section bracket state.
+            _state = TokenizerState.CDataSectionBracket;
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-cdata parse error.
+            AddParseError(ParseError.EofInCData);
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Emit the current input character as a character token.
+            EmitCharacterToken(c);
+        }
+
+        /* U+0000 NULL characters are handled in the tree construction stage,
+         *   as part of the in foreign content insertion mode, which is the only
+         *   place where CDATA sections can appear.
+         */
     }
 
     private void CDataSectionBracket(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-bracket-state>
+
+        // Consume the next input character:
+        if (c == ']')
+        {
+            // Switch to the CDATA section end state.
+            _state = TokenizerState.CDataSectionEnd;
+        }
+        else
+        {
+            // Emit a U+005D RIGHT SQUARE BRACKET character token.
+            EmitCharacterToken(']');
+            // Reconsume in the CDATA section state.
+            Reconsume(TokenizerState.CDataSection, c);
+        }
     }
 
     private void CDataSectionEnd(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-end-state>
+
+        // Consume the next input character:
+        if (c == ']')
+        {
+            // Emit a U+005D RIGHT SQUARE BRACKET character token.
+            EmitCharacterToken(']');
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+        }
+        else
+        {
+            // Emit two U+005D RIGHT SQUARE BRACKET character tokens.
+            EmitCharacterToken(']');
+            EmitCharacterToken(']');
+            // Reconsume in the CDATA section state.
+            Reconsume(TokenizerState.CDataSection, c);
+        }
     }
 
     private void CharacterReference(int c)
