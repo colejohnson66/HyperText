@@ -120,5 +120,5 @@ public enum TokenizerState
     DecimalCharacterReference,
     NumericCharacterReferenceEnd,
 
-    __Count = NumericCharacterReferenceEnd,
+    __Count,
 }
