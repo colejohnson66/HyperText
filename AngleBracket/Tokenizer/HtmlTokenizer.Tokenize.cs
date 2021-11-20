@@ -2240,67 +2240,667 @@ public partial class HtmlTokenizer
 
     private void AfterDoctypeName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // If the six characters starting from the current input character are an ASCII case-insensitive match for the word "PUBLIC", then consume those characters and switch to the after DOCTYPE public keyword state.
+            // Otherwise, if the six characters starting from the current input character are an ASCII case-insensitive match for the word "SYSTEM", then consume those characters and switch to the after DOCTYPE system keyword state.
+            // Otherwise, this is an invalid-character-sequence-after-doctype-name parse error. Set the current DOCTYPE token's force-quirks flag to on. Reconsume in the bogus DOCTYPE state.
+            throw new NotImplementedException();
+        }
     }
 
     private void AfterDoctypePublicKeyword(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-public-keyword-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the before DOCTYPE public identifier state.
+            _state = TokenizerState.BeforeDoctypePublicIdentifier;
+        }
+        else if (c == '"')
+        {
+            // This is a missing-whitespace-after-doctype-public-keyword parse
+            //   error.
+            AddParseError(ParseError.MissingWhitespaceAfterDoctypePublicKeyword);
+            // Set the current DOCTYPE token's public identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE public
+            //   identifier (double-quoted) state.
+            _currentDoctype!.SetPublicIdentifierToEmptyString();
+            _state = TokenizerState.DoctypePublicIdentifierDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // This is a missing-whitespace-after-doctype-public-keyword parse
+            //   error.
+            AddParseError(ParseError.MissingWhitespaceAfterDoctypePublicKeyword);
+            // Set the current DOCTYPE token's public identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE public
+            //   identifier (single-quoted) state.
+            _currentDoctype!.SetPublicIdentifierToEmptyString();
+            _state = TokenizerState.DoctypePublicIdentifierSingleQuoted;
+        }
+        else if (c == '>')
+        {
+            // This is a missing-doctype-public-identifier parse error.
+            AddParseError(ParseError.MissingDoctypePublicIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-quote-before-doctype-public-identifier parse
+            //   error.
+            AddParseError(ParseError.MissingQuoteBeforeDoctypePublicIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Reconsume in the bogus DOCTYPE state.
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void BeforeDoctypePublicIdentifier(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#before-doctype-public-identifier-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '"')
+        {
+            // Set the current DOCTYPE token's public identifier to the empty
+            // string (not missing), then switch to the DOCTYPE public
+            // identifier (double-quoted) state.
+            _currentDoctype!.SetPublicIdentifierToEmptyString();
+            _state = TokenizerState.DoctypePublicIdentifierDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // Set the current DOCTYPE token's public identifier to the empty
+            // string (not missing), then switch to the DOCTYPE public
+            // identifier (single-quoted) state.
+            _currentDoctype!.SetPublicIdentifierToEmptyString();
+            _state = TokenizerState.DoctypePublicIdentifierSingleQuoted;
+        }
+        else if (c == '>')
+        {
+            // This is a missing-doctype-public-identifier parse error.
+            AddParseError(ParseError.MissingDoctypePublicIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-quote-before-doctype-public-identifier parse
+            //   error.
+            AddParseError(ParseError.MissingQuoteBeforeDoctypePublicIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Reconsume in the bogus DOCTYPE state.
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void DoctypePublicIdentifierDoubleQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-public-identifier-(double-quoted)-state>
+
+        // Consume the next input character:
+        if (c == '"')
+        {
+            // Switch to the after DOCTYPE public identifier state.
+            _state = TokenizerState.AfterDoctypePublicIdentifier;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   DOCTYPE token's public identifier.
+            _currentDoctype!.AppendPublicIdentifier(REPLACEMENT_CHARACTER);
+        }
+        else if (c == '>')
+        {
+            // This is an abrupt-doctype-public-identifier parse error.
+            AddParseError(ParseError.AbruptDoctypePublicIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current DOCTYPE token's
+            //  public identifier.
+            _currentDoctype!.AppendPublicIdentifier(c);
+        }
     }
 
     private void DoctypePublicIdentifierSingleQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-public-identifier-(single-quoted)-state>
+
+        // Consume the next input character:
+        if (c == '\'')
+        {
+            // Switch to the after DOCTYPE public identifier state.
+            _state = TokenizerState.AfterDoctypePublicIdentifier;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   DOCTYPE token's public identifier.
+            _currentDoctype!.AppendPublicIdentifier(REPLACEMENT_CHARACTER);
+        }
+        else if (c == '>')
+        {
+            // This is an abrupt-doctype-public-identifier parse error.
+            AddParseError(ParseError.AbruptDoctypePublicIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current DOCTYPE token's
+            //  public identifier.
+            _currentDoctype!.AppendPublicIdentifier(c);
+        }
     }
 
     private void AfterDoctypePublicIdentifier(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-public-identifier-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the between DOCTYPE public and system identifiers
+            //   state.
+            _state = TokenizerState.BetweenDoctypePublicAndSystemIdentifiers;
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == '"')
+        {
+            // This is a missing-whitespace-between-doctype-public-and-system-identifiers
+            //   parse error.
+            AddParseError(ParseError.MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
+            // Set the current DOCTYPE token's system identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE system
+            //   identifier (double-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // This is a missing-whitespace-between-doctype-public-and-system-identifiers
+            //   parse error.
+            AddParseError(ParseError.MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
+            // Set the current DOCTYPE token's system identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE system
+            //   identifier (single-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-quote-before-doctype-system-identifier parse
+            //   error.
+            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            // Reconsume in the bogus DOCTYPE state.
+            _currentDoctype!.SetQuirksFlag();
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void BetweenDoctypePublicAndSystemIdentifiers(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#between-doctype-public-and-system-identifiers-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == '"')
+        {
+            // Set the current DOCTYPE token's system identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE system
+            //   identifier (double-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // Set the current DOCTYPE token's system identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE system
+            //   identifier (single-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-quote-before-doctype-system-identifier parse
+            //   error.
+            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            // Reconsume in the bogus DOCTYPE state.
+            _currentDoctype!.SetQuirksFlag();
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void AfterDoctypeSystemKeyword(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-system-keyword-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the before DOCTYPE system identifier state.
+            _state = TokenizerState.BeforeDoctypeSystemIdentifier;
+        }
+        else if (c == '"')
+        {
+            // This is a missing-whitespace-after-doctype-system-keyword parse
+            //   error.
+            AddParseError(ParseError.MissingWhitespaceAfterDoctypeSystemKeyword);
+            // Set the current DOCTYPE token's system identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE system
+            //   identifier (double-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // This is a missing-whitespace-after-doctype-system-keyword parse
+            //   error.
+            AddParseError(ParseError.MissingWhitespaceAfterDoctypeSystemKeyword);
+            // Set the current DOCTYPE token's system identifier to the empty
+            //   string (not missing), then switch to the DOCTYPE system
+            //   identifier (single-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
+        }
+        else if (c == '>')
+        {
+            // This is a missing-doctype-system-identifier parse error.
+            AddParseError(ParseError.MissingDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-quote-before-doctype-system-identifier parse
+            //   error.
+            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Reconsume in the bogus DOCTYPE state.
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void BeforeDoctypeSystemIdentifier(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#before-doctype-system-identifier-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '"')
+        {
+            // Set the current DOCTYPE token's system identifier to the empty
+            // string (not missing), then switch to the DOCTYPE system
+            // identifier (double-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
+        }
+        else if (c == '\'')
+        {
+            // Set the current DOCTYPE token's system identifier to the empty
+            // string (not missing), then switch to the DOCTYPE system
+            // identifier (single-quoted) state.
+            _currentDoctype!.SetSystemIdentifierToEmptyString();
+            _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
+        }
+        else if (c == '>')
+        {
+            // This is a missing-doctype-system-identifier parse error.
+            AddParseError(ParseError.MissingDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-quote-before-doctype-system-identifier parse
+            //   error.
+            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Reconsume in the bogus DOCTYPE state.
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void DoctypeSystemIdentifierDoubleQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-system-identifier-(double-quoted)-state>
+
+        // Consume the next input character:
+        if (c == '"')
+        {
+            // Switch to the after DOCTYPE system identifier state.
+            _state = TokenizerState.AfterDoctypeSystemIdentifier;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   DOCTYPE token's system identifier.
+            _currentDoctype!.AppendSystemIdentifier(REPLACEMENT_CHARACTER);
+        }
+        else if (c == '>')
+        {
+            // This is an abrupt-doctype-system-identifier parse error.
+            AddParseError(ParseError.AbruptDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current DOCTYPE token's
+            //  system identifier.
+            _currentDoctype!.AppendSystemIdentifier(c);
+        }
     }
 
     private void DoctypeSystemIdentifierSingleQuoted(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-system-identifier-(single-quoted)-state>
+
+        // Consume the next input character:
+        if (c == '\'')
+        {
+            // Switch to the after DOCTYPE system identifier state.
+            _state = TokenizerState.AfterDoctypeSystemIdentifier;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   DOCTYPE token's system identifier.
+            _currentDoctype!.AppendSystemIdentifier(REPLACEMENT_CHARACTER);
+        }
+        else if (c == '>')
+        {
+            // This is an abrupt-doctype-system-identifier parse error.
+            AddParseError(ParseError.AbruptDoctypeSystemIdentifier);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current DOCTYPE token's
+            //  system identifier.
+            _currentDoctype!.AppendSystemIdentifier(c);
+        }
     }
 
     private void AfterDoctypeSystemIdentifier(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-system-identifier-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Set the current DOCTYPE token's force-quirks flag to on.
+            _currentDoctype!.SetQuirksFlag();
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is an unexpected-character-after-doctype-system-identifier
+            //   parse error.
+            AddParseError(ParseError.UnexpectedCharacterAfterDoctypeSystemIdentifier);
+            // Reconsume in the bogus DOCTYPE state. (This does not set the
+            //   current DOCTYPE token's force-quirks flag to on.)
+            Reconsume(TokenizerState.BogusDoctype, c);
+        }
     }
 
     private void BogusDoctype(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#bogus-doctype-state>
+
+        // Consume the next input character:
+        if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Ignore the character.
+        }
+        else if (c == EOF)
+        {
+            // Emit the DOCTYPE token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Ignore the character.
+        }
     }
 
     private void CDataSection(int c)
