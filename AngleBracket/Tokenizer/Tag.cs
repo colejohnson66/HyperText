@@ -28,12 +28,13 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using AngleBracket.Text;
 
 namespace AngleBracket.Tokenizer;
 
 public class Tag
 {
-    private readonly StringBuilder _name = new();
+    private readonly List<Rune> _name = new();
     // private bool _selfClosing;
     // private bool _isEndTag;
     private readonly List<Attribute> _attributes = new();
@@ -45,13 +46,14 @@ public class Tag
     public static Tag NewStartTag() => new(false);
     public static Tag NewEndTag() => new(true);
 
-    public string Name => _name.ToString();
+    public string Name => RuneHelpers.ConvertToString(_name);
     public bool IsSelfClosing { get; private set; }
     public bool IsEndTag { get; }
     public List<Attribute> Attributes => _attributes;
 
-    public void AppendName(char c) => _name.Append(c);
-    public void AppendName(int c) => _name.Append(char.ConvertFromUtf32(c));
+    public void AppendName(char c) => _name.Add(new(c));
+    public void AppendName(int c) => _name.Add(new(c));
+    public void AppendName(Rune r) => _name.Add(r);
     public void SetSelfClosingFlag() => IsSelfClosing = true;
     public Attribute NewAttribute()
     {

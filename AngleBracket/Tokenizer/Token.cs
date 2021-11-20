@@ -25,6 +25,8 @@
  * =============================================================================
  */
 
+using System.Text;
+
 namespace AngleBracket.Tokenizer;
 
 public class Token
@@ -37,14 +39,15 @@ public class Token
         Type = type;
         _value = value;
     }
-    public static Token NewCharacterToken(int c) => new(TokenType.Character, c);
+    public static Token NewCharacterToken(int c) => NewCharacterToken(new Rune(c));
+    public static Token NewCharacterToken(Rune r) => new(TokenType.Character, r);
     public static Token NewCommentToken(string str) => new(TokenType.Comment, str);
     public static Token NewDoctypeToken(Doctype dt) => new(TokenType.Doctype, dt);
     public static Token NewEndOfFileToken() => new(TokenType.EndOfFile);
     public static Token NewTagToken(Tag tag) => new(TokenType.Tag, tag);
 
     public TokenType Type { get; private set; }
-    public int CharacterValue
+    public Rune CharacterValue
     {
         get
         {

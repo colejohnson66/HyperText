@@ -1,5 +1,5 @@
 /* =============================================================================
- * File:   Attribute.cs
+ * File:   RuneHelpers.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
@@ -26,32 +26,16 @@
  */
 
 using System.Text;
-using AngleBracket.Text;
 
-namespace AngleBracket.Tokenizer;
+namespace AngleBracket.Text;
 
-public class Attribute
+public static class RuneHelpers
 {
-    private readonly List<Rune> _name = new();
-    private readonly List<Rune> _value = new();
-
-    public Attribute()
-    { }
-
-    public string Name => RuneHelpers.ConvertToString(_name);
-    public string Value => RuneHelpers.ConvertToString(_value);
-
-    public void AppendName(char c) => _name.Add(new(c));
-    public void AppendName(int c) => _name.Add(new(c));
-    public void AppendName(Rune r) => _name.Add(r);
-    public void AppendValue(char c) => _value.Add(new(c));
-    public void AppendValue(int c) => _value.Add(new(c));
-    public void AppendValue(Rune r) => _value.Add(r);
-
-    public override string ToString()
+    public static string ConvertToString(List<Rune> runes)
     {
-        if (Value == "")
-            return $"Attribute {{ '{Name}' }}";
-        return $"Attribute {{ '{Name}' = '{Value}' }}";
+        StringBuilder sb = new(runes.Count);
+        foreach (Rune rune in runes)
+            sb.Append(rune.ToString());
+        return sb.ToString();
     }
 }

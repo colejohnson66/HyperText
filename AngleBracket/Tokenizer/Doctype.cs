@@ -26,48 +26,44 @@
  */
 
 using System.Text;
+using AngleBracket.Text;
 
 namespace AngleBracket.Tokenizer;
 
 public class Doctype
 {
-    private StringBuilder _name = new();
+    private List<Rune> _name = new();
     // private bool _quirks;
-    private StringBuilder? _public = null;
-    private StringBuilder? _system = null;
+    private List<Rune>? _public = null;
+    private List<Rune>? _system = null;
 
     public Doctype()
     { }
 
-    public string Name => _name.ToString();
+    public string Name => RuneHelpers.ConvertToString(_name);
     public bool QuirksMode { get; private set; }
-    public string? PublicIdentifier => _public?.ToString();
-    public string? SystemIdentifier => _system?.ToString();
+    public string? PublicIdentifier => _public is null ? null : RuneHelpers.ConvertToString(_public);
+    public string? SystemIdentifier => _system is null ? null : RuneHelpers.ConvertToString(_system);
 
-    public void AppendName(char c) => _name.Append(c);
-    public void AppendName(int c) => _name.Append(char.ConvertFromUtf32(c));
+    public void AppendName(char c) => _name.Add(new(c));
+    public void AppendName(int c) => _name.Add(new(c));
+    public void AppendName(Rune r) => _name.Add(r);
     public void SetQuirksFlag() => QuirksMode = true;
     public void SetPublicIdentifierToEmptyString() => _public = new();
-    public void AppendPublicIdentifier(char c)
+    public void AppendPublicIdentifier(char c) => AppendPublicIdentifier(new Rune(c));
+    public void AppendPublicIdentifier(int c) => AppendPublicIdentifier(new Rune(c));
+    public void AppendPublicIdentifier(Rune r)
     {
         Contract.Requires<ArgumentNullException>(_public != null);
-        _public!.Append(c);
-    }
-    public void AppendPublicIdentifier(int c)
-    {
-        Contract.Requires<ArgumentNullException>(_public != null);
-        _public!.Append(char.ConvertFromUtf32(c));
+        _public!.Add(r);
     }
     public void SetSystemIdentifierToEmptyString() => _system = new();
-    public void AppendSystemIdentifier(char c)
+    public void AppendSystemIdentifier(char c) => AppendSystemIdentifier(new Rune(c));
+    public void AppendSystemIdentifier(int c) => AppendSystemIdentifier(new Rune(c));
+    public void AppendSystemIdentifier(Rune r)
     {
         Contract.Requires<ArgumentNullException>(_system != null);
-        _system!.Append(c);
-    }
-    public void AppendSystemIdentifier(int c)
-    {
-        Contract.Requires<ArgumentNullException>(_system != null);
-        _system!.Append(char.ConvertFromUtf32(c));
+        _system!.Add(r);
     }
 
     public override string ToString()
@@ -82,10 +78,10 @@ public class Doctype
             return ret.ToString();
         }
 
-        if (PublicIdentifier != null)
+        if (PublicIdentifier is not null)
             ret.Append($", Public {{ '{PublicIdentifier}' }}");
 
-        if (SystemIdentifier != null)
+        if (SystemIdentifier is not null)
             ret.Append($", System {{ '{SystemIdentifier}' }}");
 
         ret.Append(" }");
