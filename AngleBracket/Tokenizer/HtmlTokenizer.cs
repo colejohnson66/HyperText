@@ -27,6 +27,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Text;
 using AngleBracket.Parser;
 
 namespace AngleBracket.Tokenizer;
@@ -44,21 +45,22 @@ public partial class HtmlTokenizer : IDisposable
     private int Peek()
     {
         if (_peekBuffer.Any())
-            return _peekBuffer.Peek();
+            return _peekBuffer.Peek().Value;
 
         // normalize out the carriage returns
         // <https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream>
         int c;
         while ((c = _input.Read()) == '\r')
         { }
-        _peekBuffer.Push(c);
+        if (c != -1)
+            _peekBuffer.Push(new Rune(c));
         return c;
     }
 
     private int Read()
     {
         if (_peekBuffer.Any())
-            return _peekBuffer.Pop();
+            return _peekBuffer.Pop().Value;
 
         // normalize out the carriage returns
         // <https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream>
@@ -71,7 +73,7 @@ public partial class HtmlTokenizer : IDisposable
     private void PutBack(int c)
     {
         Contract.Requires(c >= 0); // no EOF
-        _peekBuffer.Push(c);
+        _peekBuffer.Push(new Rune(c));
     }
 
     private void AddParseError(ParseError error)

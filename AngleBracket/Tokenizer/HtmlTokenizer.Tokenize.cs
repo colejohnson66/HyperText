@@ -29,21 +29,24 @@ using System.Linq;
 using System.Text;
 using static AngleBracket.Infra.CodePoint;
 using AngleBracket.Parser;
+using System.Globalization;
+using System.Diagnostics;
+using AngleBracket.Text;
 
 namespace AngleBracket.Tokenizer;
 
 public partial class HtmlTokenizer
 {
     private const int EOF = -1;
-    private const char REPLACEMENT_CHARACTER = '\uFFFD';
+    private static readonly Rune REPLACEMENT_CHARACTER = new(0xFFFD);
 
     private static List<Action<int>> _stateMap = new();
     private readonly Queue<Token> _tokensToEmit = new();
-    private readonly Stack<int> _peekBuffer;
+    private readonly Stack<Rune> _peekBuffer;
 
     private TokenizerState _state = TokenizerState.Data;
     private TokenizerState? _returnState = null;
-    private readonly List<int> _tempBuffer = new();
+    private readonly List<Rune> _tempBuffer = new();
 
     private Attribute? _currentAttribute = null;
     private StringBuilder? _currentComment = null;
@@ -145,8 +148,10 @@ public partial class HtmlTokenizer
 #pragma warning disable CA1822
     // could be static, but to avoid having to prefix all calls with
     //   `HtmlTokenizer`, disable that warning
-    private bool IsSpecialWhitespace(int c) => c == '\t' || c == '\n' || c == '\f' || c == ' ';
-    private int ToAsciiLowercase(int c) => c + ('a' - 'A');
+    private bool IsSpecialWhitespace(int c) => c != -1 && IsSpecialWhitespace(new Rune(c));
+    private bool IsSpecialWhitespace(Rune r) => r.Value == '\t' || r.Value == '\n' || r.Value == '\f' || r.Value == ' ';
+    private Rune ToAsciiLowercase(int c) => ToAsciiLowercase(new Rune(c));
+    private Rune ToAsciiLowercase(Rune r) => new(r.Value + ('a' - 'A'));
 #pragma warning restore CA1822
 
     private bool IsCurrentEndTagAnAppropriateOne()
@@ -154,16 +159,13 @@ public partial class HtmlTokenizer
         throw new NotImplementedException();
     }
 
-    private void EmitCharacterToken(int c)
-    {
-        Contract.Requires(c >= 0 && c <= 0x10FFFF);
-        _tokensToEmit.Enqueue(Token.NewCharacterToken(c));
-    }
+    private void EmitCharacterToken(int c) => EmitCharacterToken(new Rune(c));
+    private void EmitCharacterToken(Rune r) => _tokensToEmit.Enqueue(Token.NewCharacterToken(r));
     private void EmitReplacementCharacterToken() => EmitCharacterToken(REPLACEMENT_CHARACTER);
     private void EmitCharacterTokensFromTemporaryBuffer()
     {
-        foreach (int c in _tempBuffer)
-            EmitCharacterToken(c);
+        foreach (Rune r in _tempBuffer)
+            EmitCharacterToken(r);
         _tempBuffer.Clear();
     }
     private void EmitCommentToken()
@@ -192,13 +194,7 @@ public partial class HtmlTokenizer
         if (_tempBuffer.Count != compareTo.Length)
             return false;
 
-        for (int i = 0; i < compareTo.Length; i++)
-        {
-            if (_tempBuffer[i] != compareTo[i])
-                return false;
-        }
-
-        return true;
+        return RuneHelpers.ConvertToString(_tempBuffer) == compareTo;
     }
 
     /// <summary>
@@ -217,7 +213,9 @@ public partial class HtmlTokenizer
                 if (token.Type == TokenType.EndOfFile)
                     yield break;
 
-                _stateMap[(int)_state](Read());
+                int c = Read();
+                Debug.Assert(CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Surrogate);
+                _stateMap[(int)_state](c);
             }
         }
     }
@@ -605,7 +603,7 @@ public partial class HtmlTokenizer
             //   token's tag name.
             _currentTag!.AppendName(ToAsciiLowercase(c));
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else if (IsAsciiLowerAlpha(c))
         {
@@ -613,7 +611,7 @@ public partial class HtmlTokenizer
             //   name.
             _currentTag!.AppendName(c);
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else
         {
@@ -707,7 +705,7 @@ public partial class HtmlTokenizer
             //   token's tag name.
             _currentTag!.AppendName(ToAsciiLowercase(c));
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else if (IsAsciiLowerAlpha(c))
         {
@@ -715,7 +713,7 @@ public partial class HtmlTokenizer
             //   name.
             _currentTag!.AppendName(c);
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else
         {
@@ -818,7 +816,7 @@ public partial class HtmlTokenizer
             //   token's tag name.
             _currentTag!.AppendName(ToAsciiLowercase(c));
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else if (IsAsciiLowerAlpha(c))
         {
@@ -826,7 +824,7 @@ public partial class HtmlTokenizer
             //   name.
             _currentTag!.AppendName(c);
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else
         {
@@ -1094,7 +1092,7 @@ public partial class HtmlTokenizer
             //   token's tag name.
             _currentTag!.AppendName(ToAsciiLowercase(c));
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else if (IsAsciiLowerAlpha(c))
         {
@@ -1102,7 +1100,7 @@ public partial class HtmlTokenizer
             //   name.
             _currentTag!.AppendName(c);
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
         }
         else
         {
@@ -1150,7 +1148,7 @@ public partial class HtmlTokenizer
         else if (IsAsciiLowerAlpha(c))
         {
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
             // Emit the current input character as a character token.
             EmitCharacterToken(c);
         }
@@ -1347,7 +1345,7 @@ public partial class HtmlTokenizer
         else if (IsAsciiLowerAlpha(c))
         {
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(c);
+            _tempBuffer.Add(new Rune(c));
             // Emit the current input character as a character token.
             EmitCharacterToken(c);
         }
@@ -2087,17 +2085,157 @@ public partial class HtmlTokenizer
 
     private void Doctype(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the before DOCTYPE name state.
+            _state = TokenizerState.BeforeDoctypeName;
+        }
+        else if (c == '>')
+        {
+            // Reconsume in the before DOCTYPE name state.
+            Reconsume(TokenizerState.BeforeDoctypeName, c);
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set its force-quirks flag to on.
+            _currentDoctype.SetQuirksFlag();
+            // Emit the current token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // This is a missing-whitespace-before-doctype-name parse error.
+            AddParseError(ParseError.MissingWhitespaceBeforeDoctypeName);
+            // Reconsume in the before DOCTYPE name state.
+            Reconsume(TokenizerState.BeforeDoctypeName, c);
+        }
     }
 
     private void BeforeDoctypeName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#before-doctype-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Ignore the character.
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set the token's name to the lowercase version of the current
+            //   input character (add 0x0020 to the character's code point).
+            _currentDoctype.AppendName(ToAsciiLowercase(c));
+            // Switch to the DOCTYPE name state.
+            _state = TokenizerState.DoctypeName;
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set the token's name to a U+FFFD REPLACEMENT CHARACTER character.
+            _currentDoctype.AppendName(REPLACEMENT_CHARACTER);
+            // Switch to the DOCTYPE name state.
+            _state = TokenizerState.DoctypeName;
+        }
+        else if (c == '>')
+        {
+            // This is a missing-doctype-name parse error.
+            AddParseError(ParseError.MissingDoctypeName);
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set its force-quirks flag to on.
+            _currentDoctype.SetQuirksFlag();
+            // Emit the current token.
+            EmitDoctypeToken();
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set its force-quirks flag to on.
+            _currentDoctype.SetQuirksFlag();
+            // Emit the current token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set the token's name to the current input character.
+            _currentDoctype.AppendName(c);
+            // Switch to the DOCTYPE name state.
+            _state = TokenizerState.DoctypeName;
+        }
     }
 
     private void DoctypeName(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-name-state>
+
+        // Consume the next input character:
+        if (IsSpecialWhitespace(c))
+        {
+            // Switch to the after DOCTYPE name state.
+            _state = TokenizerState.AfterDoctypeName;
+        }
+        else if (c == '>')
+        {
+            // Switch to the data state.
+            _state = TokenizerState.Data;
+            // Emit the current DOCTYPE token.
+            EmitDoctypeToken();
+        }
+        else if (IsAsciiUpperAlpha(c))
+        {
+            // Append the lowercase version of the current input character (add
+            //   0x0020 to the character's code point) to the current DOCTYPE
+            //   token's name.
+            _currentDoctype!.AppendName(ToAsciiLowercase(c));
+        }
+        else if (c == '\0')
+        {
+            // This is an unexpected-null-character parse error.
+            AddParseError(ParseError.UnexpectedNullCharacter);
+            // Append a U+FFFD REPLACEMENT CHARACTER character to the current
+            //   DOCTYPE token's name.
+            _currentDoctype!.AppendName(REPLACEMENT_CHARACTER);
+        }
+        else if (c == EOF)
+        {
+            // This is an eof-in-doctype parse error.
+            AddParseError(ParseError.EofInDoctype);
+            // Create a new DOCTYPE token.
+            _currentDoctype = new();
+            // Set its force-quirks flag to on.
+            _currentDoctype.SetQuirksFlag();
+            // Emit the current token.
+            EmitDoctypeToken();
+            // Emit an end-of-file token.
+            EmitEndOfFileToken();
+        }
+        else
+        {
+            // Append the current input character to the current DOCTYPE token's
+            //   name.
+            _currentDoctype!.AppendName(c);
+        }
     }
 
     private void AfterDoctypeName(int c)
