@@ -40,7 +40,7 @@ public partial class HtmlTokenizer
     private const int EOF = -1;
     private static readonly Rune REPLACEMENT_CHARACTER = new(0xFFFD);
 
-    private static List<Action<int>> _stateMap = new();
+    private Action<int>[]? _stateMap;
     private readonly Queue<Token> _tokensToEmit = new();
     private readonly Stack<Rune> _peekBuffer;
 
@@ -62,87 +62,87 @@ public partial class HtmlTokenizer
     /// </summary>
     private void InitStateMap()
     {
-        _stateMap = new(128); // 80 states ATM; round up
-        _stateMap.Insert((int)TokenizerState.Data, Data);
-        _stateMap.Insert((int)TokenizerState.RCData, RCData);
-        _stateMap.Insert((int)TokenizerState.RawText, RawText);
-        _stateMap.Insert((int)TokenizerState.ScriptData, ScriptData);
-        _stateMap.Insert((int)TokenizerState.Plaintext, Plaintext);
-        _stateMap.Insert((int)TokenizerState.TagOpen, TagOpen);
-        _stateMap.Insert((int)TokenizerState.EndTagOpen, EndTagOpen);
-        _stateMap.Insert((int)TokenizerState.TagName, TagName);
-        _stateMap.Insert((int)TokenizerState.RCDataLessThanSign, RCDataLessThanSign);
-        _stateMap.Insert((int)TokenizerState.RCDataEndTagOpen, RCDataEndTagOpen);
-        _stateMap.Insert((int)TokenizerState.RCDataEndTagName, RCDataEndTagName);
-        _stateMap.Insert((int)TokenizerState.RawTextLessThanSign, RawTextLessThanSign);
-        _stateMap.Insert((int)TokenizerState.RawTextEndTagOpen, RawTextEndTagOpen);
-        _stateMap.Insert((int)TokenizerState.RawTextEndTagName, RawTextEndTagName);
-        _stateMap.Insert((int)TokenizerState.ScriptDataLessThanSign, ScriptDataLessThanSign);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEndTagOpen, ScriptDataEndTagOpen);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEndTagName, ScriptDataEndTagName);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapeStart, ScriptDataEscapeStart);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapeStartDash, ScriptDataEscapeStartDash);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscaped, ScriptDataEscaped);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapedDash, ScriptDataEscapedDash);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapedDashDash, ScriptDataEscapedDashDash);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapedLessThanSign, ScriptDataEscapedLessThanSign);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapedEndTagOpen, ScriptDataEscapedEndTagOpen);
-        _stateMap.Insert((int)TokenizerState.ScriptDataEscapedEndTagName, ScriptDataEscapedEndTagName);
-        _stateMap.Insert((int)TokenizerState.ScriptDataDoubleEscapeStart, ScriptDataDoubleEscapeStart);
-        _stateMap.Insert((int)TokenizerState.ScriptDataDoubleEscaped, ScriptDataDoubleEscaped);
-        _stateMap.Insert((int)TokenizerState.ScriptDataDoubleEscapedDash, ScriptDataDoubleEscapedDash);
-        _stateMap.Insert((int)TokenizerState.ScriptDataDoubleEscapedDashDash, ScriptDataDoubleEscapedDashDash);
-        _stateMap.Insert((int)TokenizerState.ScriptDataDoubleEscapedLessThanSign, ScriptDataDoubleEscapedLessThanSign);
-        _stateMap.Insert((int)TokenizerState.ScriptDataDoubleEscapeEnd, ScriptDataDoubleEscapeEnd);
-        _stateMap.Insert((int)TokenizerState.BeforeAttributeName, BeforeAttributeName);
-        _stateMap.Insert((int)TokenizerState.AttributeName, AttributeName);
-        _stateMap.Insert((int)TokenizerState.AfterAttributeName, AfterAttributeName);
-        _stateMap.Insert((int)TokenizerState.BeforeAttributeValue, BeforeAttributeValue);
-        _stateMap.Insert((int)TokenizerState.AttributeValueDoubleQuoted, AttributeValueDoubleQuoted);
-        _stateMap.Insert((int)TokenizerState.AttributeValueSingleQuoted, AttributeValueSingleQuoted);
-        _stateMap.Insert((int)TokenizerState.AttributeValueUnquoted, AttributeValueUnquoted);
-        _stateMap.Insert((int)TokenizerState.AfterAttributeValueQuoted, AfterAttributeValueQuoted);
-        _stateMap.Insert((int)TokenizerState.SelfClosingStartTag, SelfClosingStartTag);
-        _stateMap.Insert((int)TokenizerState.BogusComment, BogusComment);
-        _stateMap.Insert((int)TokenizerState.MarkupDeclarationOpen, MarkupDeclarationOpen);
-        _stateMap.Insert((int)TokenizerState.CommentStart, CommentStart);
-        _stateMap.Insert((int)TokenizerState.CommentStartDash, CommentStartDash);
-        _stateMap.Insert((int)TokenizerState.Comment, Comment);
-        _stateMap.Insert((int)TokenizerState.CommentLessThanSign, CommentLessThanSign);
-        _stateMap.Insert((int)TokenizerState.CommentLessThanSignBang, CommentLessThanSignBang);
-        _stateMap.Insert((int)TokenizerState.CommentLessThanSignBangDash, CommentLessThanSignBangDash);
-        _stateMap.Insert((int)TokenizerState.CommentLessThanSignBangDashDash, CommentLessThanSignBangDashDash);
-        _stateMap.Insert((int)TokenizerState.CommentEndDash, CommentEndDash);
-        _stateMap.Insert((int)TokenizerState.CommentEnd, CommentEnd);
-        _stateMap.Insert((int)TokenizerState.CommentEndBang, CommentEndBang);
-        _stateMap.Insert((int)TokenizerState.Doctype, Doctype);
-        _stateMap.Insert((int)TokenizerState.BeforeDoctypeName, BeforeDoctypeName);
-        _stateMap.Insert((int)TokenizerState.DoctypeName, DoctypeName);
-        _stateMap.Insert((int)TokenizerState.AfterDoctypeName, AfterDoctypeName);
-        _stateMap.Insert((int)TokenizerState.AfterDoctypePublicKeyword, AfterDoctypePublicKeyword);
-        _stateMap.Insert((int)TokenizerState.BeforeDoctypePublicIdentifier, BeforeDoctypePublicIdentifier);
-        _stateMap.Insert((int)TokenizerState.DoctypePublicIdentifierDoubleQuoted, DoctypePublicIdentifierDoubleQuoted);
-        _stateMap.Insert((int)TokenizerState.DoctypePublicIdentifierSingleQuoted, DoctypePublicIdentifierSingleQuoted);
-        _stateMap.Insert((int)TokenizerState.AfterDoctypePublicIdentifier, AfterDoctypePublicIdentifier);
-        _stateMap.Insert((int)TokenizerState.BetweenDoctypePublicAndSystemIdentifiers, BetweenDoctypePublicAndSystemIdentifiers);
-        _stateMap.Insert((int)TokenizerState.AfterDoctypeSystemKeyword, AfterDoctypeSystemKeyword);
-        _stateMap.Insert((int)TokenizerState.BeforeDoctypeSystemIdentifier, BeforeDoctypeSystemIdentifier);
-        _stateMap.Insert((int)TokenizerState.DoctypeSystemIdentifierDoubleQuoted, DoctypeSystemIdentifierDoubleQuoted);
-        _stateMap.Insert((int)TokenizerState.DoctypeSystemIdentifierSingleQuoted, DoctypeSystemIdentifierSingleQuoted);
-        _stateMap.Insert((int)TokenizerState.AfterDoctypeSystemIdentifier, AfterDoctypeSystemIdentifier);
-        _stateMap.Insert((int)TokenizerState.BogusDoctype, BogusDoctype);
-        _stateMap.Insert((int)TokenizerState.CDataSection, CDataSection);
-        _stateMap.Insert((int)TokenizerState.CDataSectionBracket, CDataSectionBracket);
-        _stateMap.Insert((int)TokenizerState.CDataSectionEnd, CDataSectionEnd);
-        _stateMap.Insert((int)TokenizerState.CharacterReference, CharacterReference);
-        _stateMap.Insert((int)TokenizerState.NamedCharacterReference, NamedCharacterReference);
-        _stateMap.Insert((int)TokenizerState.AmbiguousAmpersand, AmbiguousAmpersand);
-        _stateMap.Insert((int)TokenizerState.NumericCharacterReference, NumericCharacterReference);
-        _stateMap.Insert((int)TokenizerState.HexadecimalCharacterReferenceStart, HexadecimalCharacterReferenceStart);
-        _stateMap.Insert((int)TokenizerState.DecimalCharacterReferenceStart, DecimalCharacterReferenceStart);
-        _stateMap.Insert((int)TokenizerState.HexadecimalCharacterReference, HexadecimalCharacterReference);
-        _stateMap.Insert((int)TokenizerState.DecimalCharacterReference, DecimalCharacterReference);
-        _stateMap.Insert((int)TokenizerState.NumericCharacterReferenceEnd, NumericCharacterReferenceEnd);
+        _stateMap = new Action<int>[(int)TokenizerState.__Count];
+        _stateMap[(int)TokenizerState.Data] = Data;
+        _stateMap[(int)TokenizerState.RCData] = RCData;
+        _stateMap[(int)TokenizerState.RawText] = RawText;
+        _stateMap[(int)TokenizerState.ScriptData] = ScriptData;
+        _stateMap[(int)TokenizerState.Plaintext] = Plaintext;
+        _stateMap[(int)TokenizerState.TagOpen] = TagOpen;
+        _stateMap[(int)TokenizerState.EndTagOpen] = EndTagOpen;
+        _stateMap[(int)TokenizerState.TagName] = TagName;
+        _stateMap[(int)TokenizerState.RCDataLessThanSign] = RCDataLessThanSign;
+        _stateMap[(int)TokenizerState.RCDataEndTagOpen] = RCDataEndTagOpen;
+        _stateMap[(int)TokenizerState.RCDataEndTagName] = RCDataEndTagName;
+        _stateMap[(int)TokenizerState.RawTextLessThanSign] = RawTextLessThanSign;
+        _stateMap[(int)TokenizerState.RawTextEndTagOpen] = RawTextEndTagOpen;
+        _stateMap[(int)TokenizerState.RawTextEndTagName] = RawTextEndTagName;
+        _stateMap[(int)TokenizerState.ScriptDataLessThanSign] = ScriptDataLessThanSign;
+        _stateMap[(int)TokenizerState.ScriptDataEndTagOpen] = ScriptDataEndTagOpen;
+        _stateMap[(int)TokenizerState.ScriptDataEndTagName] = ScriptDataEndTagName;
+        _stateMap[(int)TokenizerState.ScriptDataEscapeStart] = ScriptDataEscapeStart;
+        _stateMap[(int)TokenizerState.ScriptDataEscapeStartDash] = ScriptDataEscapeStartDash;
+        _stateMap[(int)TokenizerState.ScriptDataEscaped] = ScriptDataEscaped;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedDash] = ScriptDataEscapedDash;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedDashDash] = ScriptDataEscapedDashDash;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedLessThanSign] = ScriptDataEscapedLessThanSign;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedEndTagOpen] = ScriptDataEscapedEndTagOpen;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedEndTagName] = ScriptDataEscapedEndTagName;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapeStart] = ScriptDataDoubleEscapeStart;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscaped] = ScriptDataDoubleEscaped;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapedDash] = ScriptDataDoubleEscapedDash;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapedDashDash] = ScriptDataDoubleEscapedDashDash;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapedLessThanSign] = ScriptDataDoubleEscapedLessThanSign;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapeEnd] = ScriptDataDoubleEscapeEnd;
+        _stateMap[(int)TokenizerState.BeforeAttributeName] = BeforeAttributeName;
+        _stateMap[(int)TokenizerState.AttributeName] = AttributeName;
+        _stateMap[(int)TokenizerState.AfterAttributeName] = AfterAttributeName;
+        _stateMap[(int)TokenizerState.BeforeAttributeValue] = BeforeAttributeValue;
+        _stateMap[(int)TokenizerState.AttributeValueDoubleQuoted] = AttributeValueDoubleQuoted;
+        _stateMap[(int)TokenizerState.AttributeValueSingleQuoted] = AttributeValueSingleQuoted;
+        _stateMap[(int)TokenizerState.AttributeValueUnquoted] = AttributeValueUnquoted;
+        _stateMap[(int)TokenizerState.AfterAttributeValueQuoted] = AfterAttributeValueQuoted;
+        _stateMap[(int)TokenizerState.SelfClosingStartTag] = SelfClosingStartTag;
+        _stateMap[(int)TokenizerState.BogusComment] = BogusComment;
+        _stateMap[(int)TokenizerState.MarkupDeclarationOpen] = MarkupDeclarationOpen;
+        _stateMap[(int)TokenizerState.CommentStart] = CommentStart;
+        _stateMap[(int)TokenizerState.CommentStartDash] = CommentStartDash;
+        _stateMap[(int)TokenizerState.Comment] = Comment;
+        _stateMap[(int)TokenizerState.CommentLessThanSign] = CommentLessThanSign;
+        _stateMap[(int)TokenizerState.CommentLessThanSignBang] = CommentLessThanSignBang;
+        _stateMap[(int)TokenizerState.CommentLessThanSignBangDash] = CommentLessThanSignBangDash;
+        _stateMap[(int)TokenizerState.CommentLessThanSignBangDashDash] = CommentLessThanSignBangDashDash;
+        _stateMap[(int)TokenizerState.CommentEndDash] = CommentEndDash;
+        _stateMap[(int)TokenizerState.CommentEnd] = CommentEnd;
+        _stateMap[(int)TokenizerState.CommentEndBang] = CommentEndBang;
+        _stateMap[(int)TokenizerState.Doctype] = Doctype;
+        _stateMap[(int)TokenizerState.BeforeDoctypeName] = BeforeDoctypeName;
+        _stateMap[(int)TokenizerState.DoctypeName] = DoctypeName;
+        _stateMap[(int)TokenizerState.AfterDoctypeName] = AfterDoctypeName;
+        _stateMap[(int)TokenizerState.AfterDoctypePublicKeyword] = AfterDoctypePublicKeyword;
+        _stateMap[(int)TokenizerState.BeforeDoctypePublicIdentifier] = BeforeDoctypePublicIdentifier;
+        _stateMap[(int)TokenizerState.DoctypePublicIdentifierDoubleQuoted] = DoctypePublicIdentifierDoubleQuoted;
+        _stateMap[(int)TokenizerState.DoctypePublicIdentifierSingleQuoted] = DoctypePublicIdentifierSingleQuoted;
+        _stateMap[(int)TokenizerState.AfterDoctypePublicIdentifier] = AfterDoctypePublicIdentifier;
+        _stateMap[(int)TokenizerState.BetweenDoctypePublicAndSystemIdentifiers] = BetweenDoctypePublicAndSystemIdentifiers;
+        _stateMap[(int)TokenizerState.AfterDoctypeSystemKeyword] = AfterDoctypeSystemKeyword;
+        _stateMap[(int)TokenizerState.BeforeDoctypeSystemIdentifier] = BeforeDoctypeSystemIdentifier;
+        _stateMap[(int)TokenizerState.DoctypeSystemIdentifierDoubleQuoted] = DoctypeSystemIdentifierDoubleQuoted;
+        _stateMap[(int)TokenizerState.DoctypeSystemIdentifierSingleQuoted] = DoctypeSystemIdentifierSingleQuoted;
+        _stateMap[(int)TokenizerState.AfterDoctypeSystemIdentifier] = AfterDoctypeSystemIdentifier;
+        _stateMap[(int)TokenizerState.BogusDoctype] = BogusDoctype;
+        _stateMap[(int)TokenizerState.CDataSection] = CDataSection;
+        _stateMap[(int)TokenizerState.CDataSectionBracket] = CDataSectionBracket;
+        _stateMap[(int)TokenizerState.CDataSectionEnd] = CDataSectionEnd;
+        _stateMap[(int)TokenizerState.CharacterReference] = CharacterReference;
+        _stateMap[(int)TokenizerState.NamedCharacterReference] = NamedCharacterReference;
+        _stateMap[(int)TokenizerState.AmbiguousAmpersand] = AmbiguousAmpersand;
+        _stateMap[(int)TokenizerState.NumericCharacterReference] = NumericCharacterReference;
+        _stateMap[(int)TokenizerState.HexadecimalCharacterReferenceStart] = HexadecimalCharacterReferenceStart;
+        _stateMap[(int)TokenizerState.DecimalCharacterReferenceStart] = DecimalCharacterReferenceStart;
+        _stateMap[(int)TokenizerState.HexadecimalCharacterReference] = HexadecimalCharacterReference;
+        _stateMap[(int)TokenizerState.DecimalCharacterReference] = DecimalCharacterReference;
+        _stateMap[(int)TokenizerState.NumericCharacterReferenceEnd] = NumericCharacterReferenceEnd;
     }
 
 #pragma warning disable CA1822
@@ -215,7 +215,7 @@ public partial class HtmlTokenizer
 
                 int c = Read();
                 Debug.Assert(CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Surrogate);
-                _stateMap[(int)_state](c);
+                _stateMap![(int)_state](c); // SAFETY: only nullable to silence the compiler; never null outside constructor
             }
         }
     }
@@ -223,7 +223,7 @@ public partial class HtmlTokenizer
     private void Reconsume(TokenizerState newState, int c)
     {
         _state = newState;
-        _stateMap[(int)newState](c);
+        _stateMap![(int)newState](c); // SAFETY: only nullable to silence the compiler; never null outside constructor
     }
 
     private void Data(int c)

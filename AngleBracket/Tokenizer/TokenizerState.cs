@@ -119,4 +119,6 @@ public enum TokenizerState
     HexadecimalCharacterReference,
     DecimalCharacterReference,
     NumericCharacterReferenceEnd,
+
+    __Count = NumericCharacterReferenceEnd,
 }

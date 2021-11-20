@@ -40,6 +40,7 @@ public partial class HtmlTokenizer : IDisposable
     {
         _input = input;
         _peekBuffer = new();
+        InitStateMap();
     }
 
     private int Peek()
