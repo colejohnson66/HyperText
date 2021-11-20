@@ -36,7 +36,7 @@ namespace AngleBracket.Tokenizer;
 
 public static class NamedCharReference
 {
-    public static ReadOnlyDictionary<string, string> List = new(new Dictionary<string, string>
+    public static readonly ReadOnlyDictionary<string, string> List = new(new Dictionary<string, string>
     {
         { "AElig", "\u00C6" },
         { "AElig;", "\u00C6" },
