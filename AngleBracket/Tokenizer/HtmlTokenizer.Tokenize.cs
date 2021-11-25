@@ -47,6 +47,7 @@ public partial class HtmlTokenizer
     private TokenizerState _state = TokenizerState.Data;
     private TokenizerState? _returnState = null;
     private readonly List<Rune> _tempBuffer = new();
+    private int _charRefCode = 0;
 
     private Attribute? _currentAttribute = null;
     private StringBuilder? _currentComment = null;
@@ -157,6 +158,24 @@ public partial class HtmlTokenizer
     private bool IsCurrentEndTagAnAppropriateOne()
     {
         throw new NotImplementedException();
+    }
+
+    private bool WasConsumedAsPartOfAnAttribute() =>
+        _returnState == TokenizerState.AttributeValueDoubleQuoted ||
+        _returnState == TokenizerState.AttributeValueSingleQuoted ||
+        _returnState == TokenizerState.AttributeValueUnquoted;
+
+    private void FlushCodePointsConsumedAsCharacterReference()
+    {
+        if (WasConsumedAsPartOfAnAttribute())
+        {
+            foreach (Rune r in _tempBuffer)
+                _currentAttribute!.AppendValue(r);
+            return;
+        }
+
+        foreach (Rune r in _tempBuffer)
+            EmitCharacterToken(r);
     }
 
     private void EmitCharacterToken(int c) => EmitCharacterToken(new Rune(c));
@@ -2978,46 +2997,277 @@ public partial class HtmlTokenizer
 
     private void CharacterReference(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#character-reference-state>
+
+        // Set the temporary buffer to the empty string.
+        _tempBuffer.Clear();
+        // Append a U+0026 AMPERSAND (&) character to the temporary buffer.
+        _tempBuffer.Add(new('&'));
+        // Consume the next input character:
+        if (IsAsciiAlphanumeric(c))
+        {
+            // Reconsume in the named character reference state.
+            Reconsume(TokenizerState.NamedCharacterReference, c);
+        }
+        else if (c == '#')
+        {
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(new('#'));
+            // Switch to the numeric character reference state.
+            _state = TokenizerState.NumericCharacterReference;
+        }
+        else
+        {
+            // Flush code points consumed as a character reference.
+            FlushCodePointsConsumedAsCharacterReference();
+            // Reconsume in the return state.
+            Reconsume(_returnState!.Value, c);
+        }
     }
 
     private void NamedCharacterReference(int c)
     {
+        // <https://html.spec.whatwg.org/multipage/parsing.html#named-character-reference-state>
+
+        // Consume the maximum number of characters possible, where the consumed
+        //   characters are one of the identifiers in the first column of the
+        //   named character references table.
+        // Append each character to the temporary buffer when it's consumed.
         throw new NotImplementedException();
     }
 
     private void AmbiguousAmpersand(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#ambiguous-ampersand-state>
+
+        // Consume the next input character:
+        if (IsAsciiAlphanumeric(c))
+        {
+            // If the character reference was consumed as part of an attribute,
+            //   then append the current input character to the current
+            //   attribute's value. Otherwise, emit the current input character
+            //   as a character token.
+            if (WasConsumedAsPartOfAnAttribute())
+                _currentAttribute!.AppendValue(c);
+            else
+                EmitCharacterToken(c);
+        }
+        else if (c == ';')
+        {
+            // This is an unknown-named-character-reference parse error.
+            AddParseError(ParseError.UnknownNamedCharacterReference);
+            // Reconsume in the return state.
+            Reconsume(_returnState!.Value, c);
+        }
+        else
+        {
+            // Reconsume in the return state.
+            Reconsume(_returnState!.Value, c);
+        }
     }
 
     private void NumericCharacterReference(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-state>
+
+        // Set the character reference code to zero (0).
+        _charRefCode = 0;
+        // Consume the next input character:
+        if (c == 'x' || c == 'X')
+        {
+            // Append the current input character to the temporary buffer.
+            _tempBuffer.Add(new(c));
+            // Switch to the hexadecimal character reference start state.
+            _state = TokenizerState.HexadecimalCharacterReferenceStart;
+        }
+        else
+        {
+            // Reconsume in the decimal character reference start state.
+            Reconsume(TokenizerState.DecimalCharacterReferenceStart, c);
+        }
     }
 
     private void HexadecimalCharacterReferenceStart(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-start-state>
+
+        // Consume the next input character:
+        if (IsAsciiHexDigit(c))
+        {
+            // Reconsume in the hexadecimal character reference state.
+            Reconsume(TokenizerState.HexadecimalCharacterReference, c);
+        }
+        else
+        {
+            // This is an absence-of-digits-in-numeric-character-reference parse
+            //   error.
+            AddParseError(ParseError.AbsenseOfDigitsInNumericCharacterReference);
+            // Flush code points consumed as a character reference.
+            FlushCodePointsConsumedAsCharacterReference();
+            // Reconsume in the return state.
+            Reconsume(_returnState!.Value, c);
+        }
     }
 
     private void DecimalCharacterReferenceStart(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#decimal-character-reference-start-state>
+
+        // Consume the next input character:
+        if (IsAsciiDigit(c))
+        {
+            // Reconsume in the decimal character reference state.
+            Reconsume(TokenizerState.DecimalCharacterReference, c);
+        }
+        else
+        {
+            // This is an absence-of-digits-in-numeric-character-reference parse
+            //   error.
+            AddParseError(ParseError.AbsenseOfDigitsInNumericCharacterReference);
+            // Flush code points consumed as a character reference.
+            FlushCodePointsConsumedAsCharacterReference();
+            // Reconsume in the return state.
+            Reconsume(_returnState!.Value, c);
+        }
     }
 
     private void HexadecimalCharacterReference(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-state>
+
+        // Consume the next input character:
+        if (IsAsciiDigit(c))
+        {
+            // Multiply the character reference code by 16.
+            _charRefCode *= 16;
+            // Add a numeric version of the current input character (subtract
+            //   0x0030 from the character's code point) to the character
+            //   reference code.
+            _charRefCode += c - '0';
+        }
+        else if (IsAsciiUpperHexDigit(c))
+        {
+            // Multiply the character reference code by 16.
+            _charRefCode *= 16;
+            // Add a numeric version of the current input character as a
+            //   hexadecimal digit (subtract 0x0037 from the character's code
+            //   point) to the character reference code.
+            _charRefCode += c - 'A' + 10;
+        }
+        else if (IsAsciiLowerHexDigit(c))
+        {
+            // Multiply the character reference code by 16.
+            _charRefCode *= 16;
+            // Add a numeric version of the current input character as a
+            //   hexadecimal digit (subtract 0x0057 from the character's code
+            //   point) to the character reference code.
+            _charRefCode += c - 'a' + 10;
+        }
+        else if (c == ';')
+        {
+            // Switch to the numeric character reference end state.
+            _state = TokenizerState.NumericCharacterReferenceEnd;
+        }
+        else
+        {
+            // This is a missing-semicolon-after-character-reference parse
+            //   error.
+            AddParseError(ParseError.MissingSemicolonAfterCharacterReference);
+            // Reconsume in the numeric character reference end state.
+            Reconsume(TokenizerState.NumericCharacterReferenceEnd, c);
+        }
     }
 
     private void DecimalCharacterReference(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#decimal-character-reference-state>
+
+        // Consume the next input character:
+        if (IsAsciiDigit(c))
+        {
+            // Multiply the character reference code by 10.
+            _charRefCode *= 10;
+            // Add a numeric version of the current input character (subtract
+            //   0x0030 from the character's code point) to the character
+            //   reference code.
+            _charRefCode += c - '0';
+        }
+        else if (c == ';')
+        {
+            // Switch to the numeric character reference end state.
+            _state = TokenizerState.NumericCharacterReferenceEnd;
+        }
+        else
+        {
+            // This is a missing-semicolon-after-character-reference parse
+            //   error.
+            AddParseError(ParseError.MissingSemicolonAfterCharacterReference);
+            // Reconsume in the numeric character reference end state.
+            Reconsume(TokenizerState.NumericCharacterReferenceEnd, c);
+        }
     }
 
     private void NumericCharacterReferenceEnd(int c)
     {
-        throw new NotImplementedException();
+        // <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
+
+        PutBack(c); // we don't need it
+
+        // Check the character reference code:
+        if (_charRefCode == 0)
+        {
+            // If the number is 0x00, then this is a null-character-reference
+            //   parse error.
+            AddParseError(ParseError.NullCharacterReference);
+            // Set the character reference code to 0xFFFD.
+            _charRefCode = REPLACEMENT_CHARACTER.Value;
+        }
+        else if (_charRefCode > 0x10FFFF)
+        {
+            // If the number is greater than 0x10FFFF, then this is a
+            //   character-reference-outside-unicode-range parse error.
+            AddParseError(ParseError.CharacterReferenceOutsideUnicodeRange);
+            // Set the character reference code to 0xFFFD.
+            _charRefCode = REPLACEMENT_CHARACTER.Value;
+        }
+        else if (IsSurrogate(_charRefCode))
+        {
+            // If the number is a surrogate, then this is a
+            //   surrogate-character-reference parse error.
+            AddParseError(ParseError.SurrogateCharacterReference);
+            // Set the character reference code to 0xFFFD.
+            _charRefCode = REPLACEMENT_CHARACTER.Value;
+        }
+        else if (IsNoncharacter(_charRefCode))
+        {
+            // If the number is a noncharacter, then this is a
+            //   noncharacter-character-reference parse error.
+            AddParseError(ParseError.NoncharacterCharacterReference);
+        }
+        else if (_charRefCode == 0xD || (IsControl(_charRefCode) && !IsAsciiWhitespace(_charRefCode)))
+        {
+            // If the number is 0x0D, or a control that's not ASCII whitespace,
+            //   then this is a control-character-reference parse error.
+            AddParseError(ParseError.ControlCharacterReference);
+        }
+        else if (NumericCharReference.List.TryGetValue(_charRefCode, out int converted))
+        {
+            // If the number is one of the numbers in the first column of the
+            //   following table, then find the row with that number in the
+            //   first column, and set the character reference code to the
+            //   number in the second column of that row.
+            _charRefCode = converted;
+        }
+
+        // Set the temporary buffer to the empty string.
+        _tempBuffer.Clear();
+        // Append a code point equal to the character reference code to the
+        //   temporary buffer.
+        _tempBuffer.Add(new Rune(_charRefCode));
+        // Flush code points consumed as a character reference.
+        FlushCodePointsConsumedAsCharacterReference();
+        // Switch to the return state.
+        _state = _returnState!.Value;
+        _returnState = null;
     }
 }
