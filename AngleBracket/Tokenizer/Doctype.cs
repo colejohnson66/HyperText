@@ -32,7 +32,7 @@ namespace AngleBracket.Tokenizer;
 
 public class Doctype
 {
-    private List<Rune> _name = new();
+    private readonly List<Rune> _name = new();
     // private bool _quirks;
     private List<Rune>? _public = null;
     private List<Rune>? _system = null;
