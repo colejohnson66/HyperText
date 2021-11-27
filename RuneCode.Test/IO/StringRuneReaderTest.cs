@@ -49,7 +49,7 @@ public class StringRuneReaderTest
         string test = testBuilder.ToString();
         StringRuneReader reader = new(test);
         foreach (char c in test)
-            Assert.AreEqual(c, reader.Read().Value.Value);
+            Assert.AreEqual(c, reader.Read()?.Value);
     }
 
     [TestMethod]
@@ -77,6 +77,6 @@ public class StringRuneReaderTest
         string test = testBuilder.ToString();
         StringRuneReader reader = new(test);
         for (int i = 0; i < TEST_STRING_LENGTH; i++)
-            Assert.AreEqual(runes[i], reader.Read().Value);
+            Assert.AreEqual(runes[i].Value, reader.Read()?.Value);
     }
 }
