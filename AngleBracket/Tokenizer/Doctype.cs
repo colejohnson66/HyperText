@@ -45,21 +45,15 @@ public class Doctype
     public string? PublicIdentifier => _public is null ? null : RuneHelpers.ConvertToString(_public);
     public string? SystemIdentifier => _system is null ? null : RuneHelpers.ConvertToString(_system);
 
-    public void AppendName(char c) => _name.Add(new(c));
-    public void AppendName(int c) => _name.Add(new(c));
     public void AppendName(Rune r) => _name.Add(r);
     public void SetQuirksFlag() => QuirksMode = true;
     public void SetPublicIdentifierToEmptyString() => _public = new();
-    public void AppendPublicIdentifier(char c) => AppendPublicIdentifier(new Rune(c));
-    public void AppendPublicIdentifier(int c) => AppendPublicIdentifier(new Rune(c));
     public void AppendPublicIdentifier(Rune r)
     {
         Contract.Requires<ArgumentNullException>(_public != null);
         _public!.Add(r);
     }
     public void SetSystemIdentifierToEmptyString() => _system = new();
-    public void AppendSystemIdentifier(char c) => AppendSystemIdentifier(new Rune(c));
-    public void AppendSystemIdentifier(int c) => AppendSystemIdentifier(new Rune(c));
     public void AppendSystemIdentifier(Rune r)
     {
         Contract.Requires<ArgumentNullException>(_system != null);

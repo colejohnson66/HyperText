@@ -39,7 +39,6 @@ public class Token
         Type = type;
         _value = value;
     }
-    public static Token NewCharacterToken(int c) => NewCharacterToken(new Rune(c));
     public static Token NewCharacterToken(Rune r) => new(TokenType.Character, r);
     public static Token NewCommentToken(string str) => new(TokenType.Comment, str);
     public static Token NewDoctypeToken(Doctype dt) => new(TokenType.Doctype, dt);

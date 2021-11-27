@@ -1388,7 +1388,7 @@ public partial class HtmlTokenizer
             _currentAttribute = _currentTag!.NewAttribute();
             // Set that attribute's name to the current input character, and its
             //   value to the empty string.
-            _currentAttribute.AppendName('=');
+            _currentAttribute.AppendName(new('='));
             // Switch to the attribute name state.
             _state = TokenizerState.AttributeName;
         }
