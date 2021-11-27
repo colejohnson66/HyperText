@@ -27,6 +27,7 @@
 
 using System.IO;
 using AngleBracket.Tokenizer;
+using RuneCode.IO;
 
 namespace AngleBracket.Parser;
 
@@ -48,10 +49,10 @@ public partial class HtmlParser : IDisposable
 
     private bool _framesetOk = true;
 
-    public HtmlParser(TextReader input, bool scripting)
+    public HtmlParser(RuneReader input, bool scripting)
         : this(input, scripting, false)
     { }
-    public HtmlParser(TextReader input, bool scripting, bool fragment)
+    public HtmlParser(RuneReader input, bool scripting, bool fragment)
     {
         _tokenizer = new(input);
         _scripting = scripting;

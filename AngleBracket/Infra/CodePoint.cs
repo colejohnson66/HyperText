@@ -29,31 +29,32 @@
  * =============================================================================
  */
 
+using System.Text;
+
 namespace AngleBracket.Infra;
 
 public static class CodePoint
 {
-    private static bool IsInRange(this int cp, int lower, int upper) => cp >= lower && cp <= upper;
-
-    /// <summary>
-    /// Determines if a codepoint is a surrogate as defined by WHATWG
-    /// </summary>
-    /// <param name="cp">The codepoint to check</param>
-    /// <returns><c>true</c> if <paramref cref="cp" /> is a surrogate; otherwise <c>false</c></returns>
-    public static bool IsSurrogate(int cp)
+    public static bool IsSurrogate(Rune? r)
     {
         // A surrogate is a code point that is in the range U+D800 to U+DFFF,
         //   inclusive.
-        return cp.IsInRange(0xD800, 0xDFFF);
+        return false; // all Runes are, by definition, not surrogates
+    }
+    public static bool IsSurrogate(int c)
+    {
+        // A surrogate is a code point that is in the range U+D800 to U+DFFF,
+        //   inclusive.
+        return c is >= 0xD800 and <= 0xDFFF;
     }
 
-    public static bool IsScalarValue(int cp)
+    public static bool IsScalarValue(Rune? r)
     {
         // A scalar value is a code point that is not a surrogate.
-        return cp.IsInRange(0, 0xD7FF) || cp.IsInRange(0xE000, 0x10FFFF);
+        return r != null; // all Runes are, by definition, scalars
     }
 
-    public static bool IsNoncharacter(int cp)
+    public static bool IsNoncharacter(Rune? r)
     {
         // A noncharacter is a code point that is in the range U+FDD0 to U+FDEF,
         //   inclusive, or U+FFFE, U+FFFF, U+1FFFE, U+1FFFF, U+2FFFE, U+2FFFF,
@@ -63,107 +64,111 @@ public static class CodePoint
         //   U+DFFFF, U+EFFFE, U+EFFFF, U+FFFFE, U+FFFFF, U+10FFFE, or U+10FFFF.
 
         // quick bail for these
-        if (cp.IsInRange(0xFDD0, 0xFDEF))
+        if (r == null)
+            return false;
+        if (r.Value.Value is >= 0xFDD0 and <= 0xFDEF)
             return true;
 
         // all others are of the form ((x << 16) | 0xFFFE) and ((x << 16) | 0xFFFF)
         //   (where x is 0 through 16 inclusive)
-        int high16 = cp >> 16;
-        int low16 = cp & 0xFFFF;
-        return high16.IsInRange(0, 16) && (low16 == 0xFFFE || low16 == 0xFFFF);
+        int low16 = r.Value.Value & 0xFFFF; // all Runes are, by definition, in a valid plane
+        return low16 == 0xFFFE || low16 == 0xFFFF;
     }
+    public static bool IsNoncharacter(int c) => Rune.TryCreate(c, out Rune r) && IsNoncharacter(r);
 
-    public static bool IsAsciiCodePoint(int cp)
+    public static bool IsAsciiCodePoint(Rune? r)
     {
         // An ASCII code point is a code point in the range U+0000 NULL to
         //   U+007F DELETE, inclusive.
-        return cp.IsInRange(0, 0x7F);
+        return r != null && (r.Value.Value is <= 0x7F);
     }
 
-    public static bool IsAsciiTabOrNewLine(int cp)
+    public static bool IsAsciiTabOrNewLine(Rune? r)
     {
         // An ASCII tab or newline is U+0009 TAB, U+000A LF, or U+000D CR.
-        return cp == '\t' || cp == '\n' || cp == '\r';
+        return r != null && (r.Value.Value is '\t' or '\n' or '\r');
     }
 
-    public static bool IsAsciiWhitespace(int cp)
+    public static bool IsAsciiWhitespace(Rune? r)
     {
         // ASCII whitespace is U+0009 TAB, U+000A LF, U+000C FF, U+000D CR, or
         //   U+0020 SPACE.
-        return cp == '\t' || cp == '\n' || cp == '\f' || cp == '\r' || cp == ' ';
+        return r != null && (r.Value.Value is '\t' or '\n' or '\f' or '\r' or ' ');
     }
+    public static bool IsAsciiWhitespace(int c) => Rune.TryCreate(c, out Rune r) && IsAsciiWhitespace(r);
 
-    public static bool IsC0Control(int cp)
+    public static bool IsC0Control(Rune? r)
     {
         // A C0 control is a code point in the range U+0000 NULL to
         //   U+001F INFORMATION SEPARATOR ONE, inclusive.
-        return cp.IsInRange(0, 0x1F);
+        return r != null && (r.Value.Value is <= 0x1F);
     }
 
-    public static bool IsC0ControlOrSpace(int cp)
+    public static bool IsC0ControlOrSpace(Rune? r)
     {
         // A C0 control or space is a C0 control or U+0020 SPACE.
-        return cp.IsInRange(0, 0x20);
+        return r != null && (r.Value.Value is <= 0x20);
     }
 
-    public static bool IsControl(int cp)
+    public static bool IsControl(Rune? r)
     {
         // A control is a C0 control or a code point in the range U+007F DELETE
         //   to U+009F APPLICATION PROGRAM COMMAND, inclusive.
-        return IsC0Control(cp) || cp.IsInRange(0x7F, 0x9F);
+        return r != null && (r.Value.Value is <= 0x1F or (>= 0x7F and <= 0x9F));
     }
+    public static bool IsControl(int c) => Rune.TryCreate(c, out Rune r) && IsControl(r);
 
-    public static bool IsAsciiDigit(int cp)
+    public static bool IsAsciiDigit(Rune? r)
     {
         // An ASCII digit is a code point in the range U+0030 (0) to U+0039 (9),
         //   inclusive.
-        return cp.IsInRange('0', '9');
+        return r != null && (r.Value.Value is >= 0x30 and <= 0x39);
     }
 
-    public static bool IsAsciiUpperHexDigit(int cp)
+    public static bool IsAsciiUpperHexDigit(Rune? r)
     {
         // An ASCII upper hex digit is an ASCII digit or a code point in the
         //   range U+0041 (A) to U+0046 (F), inclusive.
-        return cp.IsInRange('A', 'F');
+        return r != null && (r.Value.Value is (>= 0x30 and <= 0x39) or (>= 0x41 and <= 0x46));
     }
 
-    public static bool IsAsciiLowerHexDigit(int cp)
+    public static bool IsAsciiLowerHexDigit(Rune? r)
     {
         // An ASCII lower hex digit is an ASCII digit or a code point in the
         //   range U+0061 (a) to U+0066 (f), inclusive.
-        return cp.IsInRange('a', 'f');
+        return r != null && (r.Value.Value is (>= 0x30 and <= 0x39) or (>= 0x61 and <= 0x66));
     }
 
-    public static bool IsAsciiHexDigit(int cp)
+    public static bool IsAsciiHexDigit(Rune? r)
     {
         // An ASCII hex digit is an ASCII upper hex digit or ASCII lower hex
         //   digit.
-        return IsAsciiUpperHexDigit(cp) || IsAsciiLowerHexDigit(cp);
+        return IsAsciiUpperHexDigit(r) || IsAsciiLowerHexDigit(r);
     }
 
-    public static bool IsAsciiUpperAlpha(int cp)
+    public static bool IsAsciiUpperAlpha(Rune? r)
     {
         // An ASCII upper alpha is a code point in the range U+0041 (A) to
         //   U+005A (Z), inclusive.
-        return cp.IsInRange('A', 'Z');
+        return r != null && (r.Value.Value is >= 0x41 and <= 0x5A);
     }
 
-    public static bool IsAsciiLowerAlpha(int cp)
+    public static bool IsAsciiLowerAlpha(Rune? r)
     {
         // An ASCII lower alpha is a code point in the range U+0061 (a) to
         //   U+007A (z), inclusive.
-        return cp.IsInRange('a', 'z');
+        return r != null && (r.Value.Value is >= 0x61 and <= 0x7A);
     }
 
-    public static bool IsAsciiAlpha(int cp)
+    public static bool IsAsciiAlpha(Rune? r)
     {
         // An ASCII alpha is an ASCII upper alpha or ASCII lower alpha.
-        return IsAsciiUpperAlpha(cp) || IsAsciiLowerAlpha(cp);
+        return IsAsciiUpperAlpha(r) || IsAsciiLowerAlpha(r);
     }
 
-    public static bool IsAsciiAlphanumeric(int cp)
+    public static bool IsAsciiAlphanumeric(Rune? r)
     {
         // An ASCII alphanumeric is an ASCII digit or ASCII alpha.
-        return IsAsciiDigit(cp) || IsAsciiAlpha(cp);
+        return IsAsciiDigit(r) || IsAsciiAlpha(r);
     }
 }

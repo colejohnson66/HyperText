@@ -29,52 +29,58 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AngleBracket.Parser;
+using RuneCode.IO;
 
 namespace AngleBracket.Tokenizer;
 
 public partial class HtmlTokenizer : IDisposable
 {
-    private readonly TextReader _input;
+    private readonly RuneReader _input;
 
-    public HtmlTokenizer(TextReader input)
+    public HtmlTokenizer(RuneReader input)
     {
         _input = input;
         _peekBuffer = new();
         InitStateMap();
     }
 
-    private int Peek()
+    private Rune? Peek()
     {
         if (_peekBuffer.Any())
-            return _peekBuffer.Peek().Value;
+            return _peekBuffer.Peek();
 
         // normalize out the carriage returns
         // <https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream>
-        int c;
-        while ((c = _input.Read()) == '\r')
-        { }
-        if (c != -1)
-            _peekBuffer.Push(new Rune(c));
-        return c;
+        Rune? r;
+        do
+        {
+            r = _input.Read();
+        } while (r.HasValue && r.Value.Value == '\r');
+
+        if (r.HasValue)
+            _peekBuffer.Push(r.Value);
+        return r;
     }
 
-    private int Read()
+    private Rune? Read()
     {
         if (_peekBuffer.Any())
-            return _peekBuffer.Pop().Value;
+            return _peekBuffer.Pop();
 
         // normalize out the carriage returns
         // <https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream>
-        int c;
-        while ((c = _input.Read()) == '\r')
-        { }
-        return c;
+        Rune? r;
+        do
+        {
+            r = _input.Read();
+        } while (r.HasValue && r.Value.Value == '\r');
+        return r;
     }
 
-    private void PutBack(int c)
+    private void PutBack(Rune? r)
     {
-        Contract.Requires(c >= 0); // no EOF
-        _peekBuffer.Push(new Rune(c));
+        Contract.Requires(r != null); // no EOF
+        _peekBuffer.Push(r!.Value);
     }
 
     private void AddParseError(ParseError error)
