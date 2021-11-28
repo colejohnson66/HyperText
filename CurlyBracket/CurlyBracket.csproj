@@ -5,4 +5,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Yoakke.Lexer" Version="2021.11.27-2.29.4-nightly" />
+    <PackageReference Include="Yoakke.Parser" Version="2021.11.27-2.29.4-nightly" />
+  </ItemGroup>
+
 </Project>
