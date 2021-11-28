@@ -14,7 +14,7 @@ HyperText is split into seven components:
 | CurlyBracket | The JavaScript engine
 | FiberWire    | Network related stuff
 | HyperText    | The actual browser application
-| RuneCode     | [Rune](https://docs.microsoft.com/en-us/dotnet/api/system.text.rune?view=net-6.0) related things
+| RuneCode     | I/O related things (using [Runes](https://docs.microsoft.com/en-us/dotnet/api/system.text.rune?view=net-6.0))
 | StyleSheet   | The CSS engine
 
 ## License
