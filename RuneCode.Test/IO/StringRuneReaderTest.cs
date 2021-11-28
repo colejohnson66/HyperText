@@ -44,7 +44,7 @@ public class StringRuneReaderTest
         StringBuilder testBuilder = new(TEST_STRING_LENGTH);
 
         for (int i = 0; i < 16; i++)
-            testBuilder.Append((char)random.Next(0x20, 0x7E + 1)); // plus 1 to make it inclusive
+            testBuilder.Append((char)random.Next(0, 0x7E + 1)); // plus 1 to make it inclusive
 
         string test = testBuilder.ToString();
         StringRuneReader reader = new(test);
@@ -63,7 +63,7 @@ public class StringRuneReaderTest
         {
             while (true)
             {
-                int c = random.Next(0x20, 0x10FFFF + 1); // plus 1 to make it inclusive
+                int c = random.Next(0, 0x10FFFF + 1); // plus 1 to make it inclusive
                 if (Rune.IsValid(c)) // ensure the result is a scalar ()
                 {
                     Rune r = new(c);
