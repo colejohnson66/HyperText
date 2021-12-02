@@ -29,8 +29,14 @@ namespace CurlyBracket.Objects;
 
 public abstract partial class JSValue
 {
-    public JSType Type { get; private set; }
-    public dynamic? Value { get; private set; }
+    protected JSValue(JSType type, dynamic? value)
+    {
+        Type = type;
+        Value = value;
+    }
+
+    public JSType Type { get; protected set; }
+    public dynamic? Value { get; protected set; }
 
     /// <summary>
     /// Checks if this value is undefined.
