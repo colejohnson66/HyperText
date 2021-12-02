@@ -27,7 +27,7 @@
 
 using System.IO;
 using AngleBracket.Tokenizer;
-using RuneCode.IO;
+using CodePoint.IO;
 
 namespace AngleBracket.Parser;
 

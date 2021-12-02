@@ -5,7 +5,7 @@ I will almost certainly never finish.
 
 ## Subprojects
 
-HyperText is split into seven components:
+HyperText is split into six components:
 
 | Component    | Description
 |--------------|-------------------------------
@@ -14,7 +14,6 @@ HyperText is split into seven components:
 | CurlyBracket | The JavaScript engine
 | FiberWire    | Network related stuff
 | HyperText    | The actual browser application
-| RuneCode     | I/O related things (using [Runes](https://docs.microsoft.com/en-us/dotnet/api/system.text.rune?view=net-6.0))
 | StyleSheet   | The CSS engine
 
 ## License

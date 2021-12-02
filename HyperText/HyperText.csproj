@@ -6,7 +6,6 @@
     <ProjectReference Include="..\CurlyBracket\CurlyBracket.csproj" />
     <ProjectReference Include="..\FiberWire\FiberWire.csproj" />
     <ProjectReference Include="..\StyleSheet\StyleSheet.csproj" />
-    <ProjectReference Include="..\RuneCode\RuneCode.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

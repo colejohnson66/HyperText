@@ -29,7 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AngleBracket.Parser;
-using RuneCode.IO;
+using CodePoint.IO;
 
 namespace AngleBracket.Tokenizer;
 
