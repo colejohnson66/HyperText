@@ -36,7 +36,7 @@ public partial class HtmlParser : IDisposable
     private readonly HtmlTokenizer _tokenizer;
     private readonly bool _scripting;
     private readonly bool _fragment;
-    private Action<Token>[]? _stateMap;
+    private Action<Token>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()`
 
     private InsertionMode _insertionMode;
     private InsertionMode _originalInsertionMode; // similar to the tokenizer's return state
@@ -57,6 +57,8 @@ public partial class HtmlParser : IDisposable
         _tokenizer = new(input);
         _scripting = scripting;
         _fragment = fragment;
+
+        InitStateMap();
     }
 
     private void InitStateMap()

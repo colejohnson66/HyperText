@@ -37,7 +37,7 @@ public partial class HtmlTokenizer
 {
     private static readonly Rune REPLACEMENT_CHARACTER = Rune.ReplacementChar;
 
-    private Action<Rune?>[]? _stateMap;
+    private Action<Rune?>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()`
     private readonly Queue<Token> _tokensToEmit = new();
     private readonly Stack<Rune> _peekBuffer;
 
@@ -224,7 +224,7 @@ public partial class HtmlTokenizer
                     yield break;
 
                 Rune? r = Read();
-                _stateMap![(int)_state](r); // SAFETY: only nullable to silence the compiler; never null outside constructor
+                _stateMap[(int)_state](r);
             }
         }
     }
@@ -232,7 +232,7 @@ public partial class HtmlTokenizer
     private void Reconsume(TokenizerState newState, Rune? r)
     {
         _state = newState;
-        _stateMap![(int)newState](r); // SAFETY: only nullable to silence the compiler; never null outside constructor
+        _stateMap[(int)newState](r);
     }
 
     private void Data(Rune? r)
