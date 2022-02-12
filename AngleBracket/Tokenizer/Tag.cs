@@ -49,7 +49,7 @@ public class Tag
     public string Name => RuneHelpers.ConvertToString(_name);
     public bool IsSelfClosing { get; private set; }
     public bool IsEndTag { get; }
-    public List<Attribute> Attributes => _attributes;
+    public IReadOnlyList<Attribute> Attributes => _attributes;
 
     public void AppendName(Rune r) => _name.Add(r);
     public void SetSelfClosingFlag() => IsSelfClosing = true;
@@ -76,7 +76,7 @@ public class Tag
         foreach (Attribute thisAttr in _attributes)
         {
             if (seenAttrNames.Contains(thisAttr.Name))
-                Debug.Assert(anyRemoved = _attributes.Remove(thisAttr));
+                Debug.Assert(anyRemoved = _attributes.Remove(thisAttr)); // should never fail
             else
                 seenAttrNames.Add(thisAttr.Name);
         }
@@ -104,9 +104,9 @@ public class Tag
                 if (i != Attributes.Count - 1)
                     ret.Append(", ");
             }
-            ret.Append(" }");
         }
 
+        ret.Append(" }");
         return ret.ToString();
     }
 }

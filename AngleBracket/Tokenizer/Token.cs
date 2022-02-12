@@ -81,9 +81,8 @@ public class Token
 
     public override string ToString()
     {
-        Contract.Requires<InvalidOperationException>(Type == TokenType.Character
-            || Type == TokenType.Comment || Type == TokenType.Doctype
-            || Type == TokenType.EndOfFile || Type == TokenType.Tag,
+        Contract.Requires<InvalidOperationException>(
+            Type is TokenType.Character or TokenType.Comment or TokenType.Doctype or TokenType.EndOfFile or TokenType.Tag,
             $"{nameof(Token)} object is in an invalid state. The type ({Type}) is unknown.");
 
         return Type switch
@@ -93,7 +92,7 @@ public class Token
             TokenType.Doctype => $"Token {{ Doctype {{ {_value} }} }}",
             TokenType.EndOfFile => $"Token {{ EndOfFile }}",
             TokenType.Tag => $"Token {{ Tag {{ {_value} }} }}",
-            _ => throw new Exception(), // unreachable
+            _ => throw new(), // unreachable
         };
     }
 }

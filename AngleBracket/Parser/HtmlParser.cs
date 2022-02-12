@@ -189,11 +189,54 @@ public partial class HtmlParser : IDisposable
     {
         HtmlNode currentNode = AdjustedCurrentNode;
         if (_openElementsStack.Count == 0 ||
-            currentNode.NamespaceAndElement.IsHtml) // TODO: integration points checks
-            _stateMap![(int)_insertionMode](token);
+            currentNode.NamespaceAndElement.IsHtml ||
+            IsValidMathMLIntegrationPoint(currentNode, token) ||
+            IsValidMathMLAnnotationXmlNode(currentNode, token) ||
+            IsValidHtmlIntegrationPoint(currentNode, token) ||
+            token.Type == TokenType.EndOfFile)
+            _stateMap[(int)_insertionMode](token);
         else
             ParseForeign(token);
     }
+    private static bool IsValidMathMLIntegrationPoint(HtmlNode currentNode, Token token)
+    {
+        if (!currentNode.NamespaceAndElement.IsMathML)
+            return false;
+        string element = currentNode.NamespaceAndElement.Element;
+        if (element != "mi" && element != "mo" &&
+            element != "mn" && element != "ms" &&
+            element != "mtext")
+            return false;
+
+        if (token.Type == TokenType.Tag)
+        {
+            Tag tag = token.TagValue;
+            return !tag.IsEndTag && tag.Name != "mglyph" && tag.Name != "malignmark";
+        }
+        return token.Type == TokenType.Character;
+    }
+    private static bool IsValidMathMLAnnotationXmlNode(HtmlNode currentNode, Token token)
+    {
+        if (!currentNode.NamespaceAndElement.IsMathML)
+            return false;
+        if (currentNode.NamespaceAndElement.Namespace != "annotation-xml")
+            return false;
+        if (token.Type == TokenType.Tag)
+        {
+            Tag tag = token.TagValue;
+            return !tag.IsEndTag && tag.Name == "svg";
+        }
+        return false;
+    }
+    private static bool IsValidHtmlIntegrationPoint(HtmlNode currentNode, Token token)
+    {
+        if (!currentNode.NamespaceAndElement.IsHtml)
+            return false;
+        if (token.Type == TokenType.Tag)
+            return !token.TagValue.IsEndTag;
+        return token.Type == TokenType.Character;
+    }
+
     private void ParseInitial(Token token)
     {
     }

@@ -25,7 +25,6 @@
  * =============================================================================
  */
 
-using System.IO;
 using System.Linq;
 using System.Text;
 using AngleBracket.Parser;
@@ -55,7 +54,7 @@ public partial class HtmlTokenizer : IDisposable
         do
         {
             r = _input.Read();
-        } while (r.HasValue && r.Value.Value == '\r');
+        } while (r?.Value == '\r');
 
         if (r.HasValue)
             _peekBuffer.Push(r.Value);
@@ -73,13 +72,13 @@ public partial class HtmlTokenizer : IDisposable
         do
         {
             r = _input.Read();
-        } while (r.HasValue && r.Value.Value == '\r');
+        } while (r?.Value == '\r');
         return r;
     }
 
     private void PutBack(Rune? r)
     {
-        Contract.Requires(r != null); // no EOF
+        Contract.Requires(r is not null); // no EOF
         _peekBuffer.Push(r!.Value);
     }
 

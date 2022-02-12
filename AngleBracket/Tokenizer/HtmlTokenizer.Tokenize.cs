@@ -31,10 +31,13 @@ using AngleBracket.Parser;
 using AngleBracket.Text;
 using static AngleBracket.Infra.CodePoint;
 
+// ReSharper disable ConvertIfStatementToSwitchStatement
+
 namespace AngleBracket.Tokenizer;
 
 public partial class HtmlTokenizer
 {
+    // ReSharper disable once InconsistentNaming
     private static readonly Rune REPLACEMENT_CHARACTER = Rune.ReplacementChar;
 
     private Action<Rune?>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()`
@@ -142,8 +145,7 @@ public partial class HtmlTokenizer
     }
 
     private static bool IsSpecialWhitespace(Rune? r) =>
-        r != null &&
-        (r.Value.Value is '\t' or '\n' or '\f' or ' ');
+        r?.Value is '\t' or '\n' or '\f' or ' ';
     private static Rune ToAsciiLowercase(Rune r) => new(r.Value + ('a' - 'A'));
 
     private bool IsCurrentEndTagAnAppropriateOne()
@@ -152,9 +154,9 @@ public partial class HtmlTokenizer
     }
 
     private bool WasConsumedAsPartOfAnAttribute() =>
-        _returnState == TokenizerState.AttributeValueDoubleQuoted ||
-        _returnState == TokenizerState.AttributeValueSingleQuoted ||
-        _returnState == TokenizerState.AttributeValueUnquoted;
+        _returnState is TokenizerState.AttributeValueDoubleQuoted
+            or TokenizerState.AttributeValueSingleQuoted
+            or TokenizerState.AttributeValueUnquoted;
 
     private void FlushCodePointsConsumedAsCharacterReference()
     {
@@ -352,7 +354,6 @@ public partial class HtmlTokenizer
         {
             // Switch to the script data less-than sign state.
             _state = TokenizerState.ScriptDataLessThanSign;
-            return;
         }
         else if (r?.Value is '\0')
         {
@@ -360,13 +361,11 @@ public partial class HtmlTokenizer
             AddParseError(ParseError.UnexpectedNullCharacter);
             // Emit a U+FFFD REPLACEMENT CHARACTER character token.
             EmitReplacementCharacterToken();
-            return;
         }
         else if (r is null)
         {
             // Emit an end-of-file token.
             EmitEndOfFileToken();
-            return;
         }
         else
         {
@@ -386,13 +385,11 @@ public partial class HtmlTokenizer
             AddParseError(ParseError.UnexpectedNullCharacter);
             // Emit a U+FFFD REPLACEMENT CHARACTER character token.
             EmitReplacementCharacterToken();
-            return;
         }
         else if (r is null)
         {
             // Emit an end-of-file token.
             EmitEndOfFileToken();
-            return;
         }
         else
         {
@@ -1327,7 +1324,7 @@ public partial class HtmlTokenizer
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escape-end-state>
 
         // Consume the next input character:
-        if (IsSpecialWhitespace(r) || r!.Value.Value == '/' || r!.Value.Value == '>')
+        if (IsSpecialWhitespace(r) || r!.Value.Value is '/' or '>')
         {
             if (CompareTemporaryBuffer("script"))
             {
@@ -1347,14 +1344,14 @@ public partial class HtmlTokenizer
         {
             // Append the lowercase version of the current input character (add
             //   0x0020 to the character's code point) to the temporary buffer.
-            _tempBuffer.Add(ToAsciiLowercase(r!.Value));
+            _tempBuffer.Add(ToAsciiLowercase(r.Value));
             // Emit the current input character as a character token.
             EmitCharacterToken(r.Value);
         }
         else if (IsAsciiLowerAlpha(r))
         {
             // Append the current input character to the temporary buffer.
-            _tempBuffer.Add(r!.Value);
+            _tempBuffer.Add(r.Value);
             // Emit the current input character as a character token.
             EmitCharacterToken(r.Value);
         }
@@ -1374,12 +1371,12 @@ public partial class HtmlTokenizer
         {
             // Ignore the character.
         }
-        else if (r?.Value is '/' || r?.Value is '>' || r == null)
+        else if (r?.Value is '/' or '>' || r == null)
         {
             // Reconsume in the after attribute name state.
             Reconsume(TokenizerState.AfterAttributeName, r);
         }
-        else if (r?.Value is '=')
+        else if (r.Value.Value is '=')
         {
             // This is an unexpected-equals-sign-before-attribute-name parse
             //   error.
@@ -1421,14 +1418,14 @@ public partial class HtmlTokenizer
          */
 
         // Consume the next input character:
-        if (IsSpecialWhitespace(r) || r?.Value is '/' || r?.Value is '>' || r == null)
+        if (IsSpecialWhitespace(r) || r?.Value is '/' or '>' || r == null)
         {
             if (_currentTag!.CheckAndCorrectDuplicateAttributes())
                 AddParseError(ParseError.DuplicateAttribute); // see block comment above
             // Reconsume in the after attribute name state.
             Reconsume(TokenizerState.AfterAttributeName, r);
         }
-        else if (r?.Value is '=')
+        else if (r.Value.Value is '=')
         {
             if (_currentTag!.CheckAndCorrectDuplicateAttributes())
                 AddParseError(ParseError.DuplicateAttribute); // see block comment above
@@ -1440,9 +1437,9 @@ public partial class HtmlTokenizer
             // Append the lowercase version of the current input character (add
             //   0x0020 to the character's code point) to the current
             //   attribute's name.
-            _currentAttribute!.AppendName(ToAsciiLowercase(r!.Value));
+            _currentAttribute!.AppendName(ToAsciiLowercase(r.Value));
         }
-        else if (r?.Value is '\0')
+        else if (r.Value.Value is '\0')
         {
             // This is an unexpected-null-character parse error.
             AddParseError(ParseError.UnexpectedNullCharacter);
@@ -1452,7 +1449,7 @@ public partial class HtmlTokenizer
         }
         else
         {
-            if (r!.Value.Value is '"' or '\'' or '<')
+            if (r.Value.Value is '"' or '\'' or '<')
             {
                 // This is an unexpected-character-in-attribute-name parse
                 //   error.
@@ -1661,7 +1658,7 @@ public partial class HtmlTokenizer
         }
         else
         {
-            if (r!.Value.Value is '"' or '\'' or '<' or '=' or '`')
+            if (r.Value.Value is '"' or '\'' or '<' or '=' or '`')
             {
                 // This is an unexpected-character-in-unquoted-attribute-value
                 //   parse error.
@@ -1761,7 +1758,7 @@ public partial class HtmlTokenizer
             // Emit an end-of-file token.
             EmitEndOfFileToken();
         }
-        else if (r?.Value is '\0')
+        else if (r.Value.Value is '\0')
         {
             // This is an unexpected-null-character parse error.
             AddParseError(ParseError.UnexpectedNullCharacter);
@@ -1772,7 +1769,7 @@ public partial class HtmlTokenizer
         else
         {
             // Append the current input character to the comment token's data.
-            _currentComment!.Append(r!.Value);
+            _currentComment!.Append(r.Value);
         }
     }
 
@@ -3214,6 +3211,7 @@ public partial class HtmlTokenizer
         }
         else if (_charRefCode > 0x10FFFF)
         {
+            // ReSharper disable once CommentTypo
             // If the number is greater than 0x10FFFF, then this is a
             //   character-reference-outside-unicode-range parse error.
             AddParseError(ParseError.CharacterReferenceOutsideUnicodeRange);
@@ -3253,7 +3251,7 @@ public partial class HtmlTokenizer
         _tempBuffer.Clear();
         // Append a code point equal to the character reference code to the
         //   temporary buffer.
-        _tempBuffer.Add(new Rune(_charRefCode));
+        _tempBuffer.Add(new(_charRefCode));
         // Flush code points consumed as a character reference.
         FlushCodePointsConsumedAsCharacterReference();
         // Switch to the return state.

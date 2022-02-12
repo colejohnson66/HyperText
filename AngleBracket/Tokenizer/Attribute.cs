@@ -35,8 +35,8 @@ public class Attribute
     private readonly List<Rune> _name = new();
     private readonly List<Rune> _value = new();
 
-    public Attribute()
-    { }
+    // public Attribute()
+    // { }
 
     public string Name => RuneHelpers.ConvertToString(_name);
     public string Value => RuneHelpers.ConvertToString(_value);
@@ -46,6 +46,7 @@ public class Attribute
 
     public override string ToString()
     {
+        // ReSharper disable once ConvertIfStatementToReturnStatement
         if (Value == "")
             return $"Attribute {{ '{Name}' }}";
         return $"Attribute {{ '{Name}' = '{Value}' }}";

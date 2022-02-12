@@ -37,8 +37,8 @@ public class Doctype
     private List<Rune>? _public = null;
     private List<Rune>? _system = null;
 
-    public Doctype()
-    { }
+    // public Doctype()
+    // { }
 
     public string Name => RuneHelpers.ConvertToString(_name);
     public bool QuirksMode { get; private set; }
