@@ -9,7 +9,7 @@
  * <https://262.ecma-international.org/12.0/#sec-object-internal-methods-and-internal-slots>
  * <https://262.ecma-international.org/12.0/#sec-ordinary-object-internal-methods-and-internal-slots>
  * =============================================================================
- * Copyright (c) 2021 Cole Tobin
+ * Copyright (c) 2021-2022 Cole Tobin
  *
  * This file is part of CurlyBracket.
  *

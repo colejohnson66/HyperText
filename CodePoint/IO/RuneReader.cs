@@ -8,7 +8,7 @@
  *   but operating on "Runes" instead of chars. This ensures that all read
  *   characters are valid Unicode scalars.
  * =============================================================================
- * Copyright (c) 2021 Cole Tobin
+ * Copyright (c) 2021-2022 Cole Tobin
  *
  * This file is part of CodePoint.
  *

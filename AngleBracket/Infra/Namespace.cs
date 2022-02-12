@@ -9,7 +9,7 @@
  * As of November 2021, this is located in section 8 "Namespaces":
  * <https://infra.spec.whatwg.org/#namespaces>
  * =============================================================================
- * Copyright (c) 2021 Cole Tobin
+ * Copyright (c) 2021-2022 Cole Tobin
  *
  * This file is part of AngleBracket.
  *

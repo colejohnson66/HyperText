@@ -7,7 +7,7 @@
  * C# 10 adds "global using" directives that will be implicitly included in any
  *   file in the project. This file contains these.
  * =============================================================================
- * Copyright (c) 2021 Cole Tobin
+ * Copyright (c) 2021-2022 Cole Tobin
  *
  * This file is part of AngleBracket.
  *
