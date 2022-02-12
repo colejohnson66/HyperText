@@ -25,9 +25,9 @@
  * =============================================================================
  */
 
-using System.IO;
 using AngleBracket.Tokenizer;
 using CodePoint.IO;
+using Attribute = AngleBracket.Tokenizer.Attribute;
 
 namespace AngleBracket.Parser;
 
@@ -162,12 +162,8 @@ public partial class HtmlParser : IDisposable
             NamespaceAndElement.NewHtml("table"),
             NamespaceAndElement.NewHtml("template"));
     }
-    private bool HasParticularElementInSelectScope()
-    {
-        return ElementInScopeInternal(
-            NamespaceAndElement.NewHtml("optgroup"),
-            NamespaceAndElement.NewHtml("option"));
-    }
+    private bool HasParticularElementInSelectScope() =>
+        ElementInScopeInternal(NamespaceAndElement.NewHtml("optgroup"), NamespaceAndElement.NewHtml("option"));
 
     private void PushActiveFormattingElement(NamespaceAndElement element)
     {
@@ -194,47 +190,83 @@ public partial class HtmlParser : IDisposable
             IsValidMathMLAnnotationXmlNode(currentNode, token) ||
             IsValidHtmlIntegrationPoint(currentNode, token) ||
             token.Type == TokenType.EndOfFile)
+        {
             _stateMap[(int)_insertionMode](token);
+        }
         else
+        {
             ParseForeign(token);
+        }
     }
     private static bool IsValidMathMLIntegrationPoint(HtmlNode currentNode, Token token)
     {
+        // A node is a MathML text integration point if it is one of the following elements:
         if (!currentNode.NamespaceAndElement.IsMathML)
             return false;
-        string element = currentNode.NamespaceAndElement.Element;
-        if (element != "mi" && element != "mo" &&
-            element != "mn" && element != "ms" &&
-            element != "mtext")
+
+        // A MathML mi element
+        // A MathML mo element
+        // A MathML mn element
+        // A MathML ms element
+        // A MathML mtext element
+        if (currentNode.NamespaceAndElement.Element is not ("mi" or "mo" or "mn" or "ms" or "mtext"))
             return false;
 
-        if (token.Type == TokenType.Tag)
+        // If the adjusted current node is a MathML text integration point and the token is a start tag whose tag name
+        //   is neither "mglyph" nor "malignmark"
+        if (token.Type is TokenType.Tag)
         {
             Tag tag = token.TagValue;
-            return !tag.IsEndTag && tag.Name != "mglyph" && tag.Name != "malignmark";
+            return !tag.IsEndTag && tag.Name is not ("mglyph" or "malignmark");
         }
-        return token.Type == TokenType.Character;
+        // If the adjusted current node is a MathML text integration point and the token is a character token
+        return token.Type is TokenType.Character;
     }
     private static bool IsValidMathMLAnnotationXmlNode(HtmlNode currentNode, Token token)
     {
         if (!currentNode.NamespaceAndElement.IsMathML)
             return false;
-        if (currentNode.NamespaceAndElement.Namespace != "annotation-xml")
+
+        // If the adjusted current node is a MathML annotation-xml element...
+        if (currentNode.NamespaceAndElement.Element is not "annotation-xml")
             return false;
-        if (token.Type == TokenType.Tag)
-        {
-            Tag tag = token.TagValue;
-            return !tag.IsEndTag && tag.Name == "svg";
-        }
-        return false;
+        // ...and the token is a start tag whose tag name is "svg"
+        if (token.Type is not TokenType.Tag)
+            return false;
+        Tag tag = token.TagValue;
+        return !tag.IsEndTag && tag.Name == "svg";
     }
     private static bool IsValidHtmlIntegrationPoint(HtmlNode currentNode, Token token)
     {
-        if (!currentNode.NamespaceAndElement.IsHtml)
-            return false;
-        if (token.Type == TokenType.Tag)
+        // A node is an HTML integration point if it is one of the following elements:
+
+        if (currentNode.NamespaceAndElement.IsMathML)
+        {
+            // A MathML annotation-xml element whose start tag token...
+            if (currentNode.NamespaceAndElement.Element is not "annotation-xml" || !currentNode.TokenizedTag.IsEndTag)
+                return false;
+            // ...had an attribute with the name "encoding" whose value...
+            Attribute? encodingAttr = currentNode.TokenizedTag.FindAttribute("encoding");
+            if (encodingAttr is null)
+                return false;
+            // ...was an ASCII case-insensitive match for the string "text/html"
+            // ...was an ASCII case-insensitive match for the string "application/xhtml+xml"
+            return encodingAttr.Value.ToLowerInvariant() is "text/html" or "application/xhtml+xml";
+        }
+
+        if (currentNode.NamespaceAndElement.IsSvg)
+        {
+            // An SVG foreignObject element
+            // An SVG desc element
+            // An SVG title element
+            return currentNode.NamespaceAndElement.Element is "foreignObject" or "desc" or "title";
+        }
+
+        // If the adjusted current node is an HTML integration point and the token is a start tag
+        if (token.Type is TokenType.Tag)
             return !token.TagValue.IsEndTag;
-        return token.Type == TokenType.Character;
+        // If the adjusted current node is an HTML integration point and the token is a character token
+        return token.Type is TokenType.Character;
     }
 
     private void ParseInitial(Token token)

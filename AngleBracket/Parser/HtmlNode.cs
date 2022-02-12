@@ -25,6 +25,8 @@
  * =============================================================================
  */
 
+using AngleBracket.Tokenizer;
+
 namespace AngleBracket.Parser;
 
 public class HtmlNode
@@ -36,7 +38,9 @@ public class HtmlNode
         NamespaceAndElement = nsAndElement;
     }
 
-    public NamespaceAndElement NamespaceAndElement;
+    public NamespaceAndElement NamespaceAndElement { get; }
 
     public static HtmlNode NewMarker() => throw new NotImplementedException();
+
+    public Tag TokenizedTag { get; }
 }

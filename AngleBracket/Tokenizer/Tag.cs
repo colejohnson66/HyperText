@@ -83,6 +83,9 @@ public class Tag
         return anyRemoved;
     }
 
+    public Attribute? FindAttribute(string name) =>
+        _attributes.FirstOrDefault(attr => attr.Name == name);
+
     public override string ToString()
     {
         StringBuilder ret = new("Tag { ");
