@@ -50,13 +50,13 @@ public class Doctype
     public void SetPublicIdentifierToEmptyString() => _public = new();
     public void AppendPublicIdentifier(Rune r)
     {
-        Contract.Requires<ArgumentNullException>(_public != null);
+        Contract.Assert(_public is not null);
         _public!.Add(r);
     }
     public void SetSystemIdentifierToEmptyString() => _system = new();
     public void AppendSystemIdentifier(Rune r)
     {
-        Contract.Requires<ArgumentNullException>(_system != null);
+        Contract.Assert(_system is not null);
         _system!.Add(r);
     }
 

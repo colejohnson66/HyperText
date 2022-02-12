@@ -78,7 +78,7 @@ public partial class HtmlTokenizer : IDisposable
 
     private void PutBack(Rune? r)
     {
-        Contract.Requires(r is not null); // no EOF
+        Contract.Assert(r is not null); // no EOF
         _peekBuffer.Push(r!.Value);
     }
 

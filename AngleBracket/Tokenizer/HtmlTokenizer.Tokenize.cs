@@ -182,20 +182,20 @@ public partial class HtmlTokenizer
     }
     private void EmitCommentToken()
     {
-        Contract.Requires<NullReferenceException>(_currentComment != null);
+        Contract.Assert(_currentComment is not null);
         _tokensToEmit.Enqueue(Token.NewCommentToken(_currentComment!.ToString()));
         _currentComment = null;
     }
     private void EmitDoctypeToken()
     {
-        Contract.Requires<NullReferenceException>(_currentDoctype != null);
+        Contract.Assert(_currentDoctype is not null);
         _tokensToEmit.Enqueue(Token.NewDoctypeToken(_currentDoctype!));
         _currentDoctype = null;
     }
     private void EmitEndOfFileToken() => _tokensToEmit.Enqueue(Token.NewEndOfFileToken());
     private void EmitTagToken()
     {
-        Contract.Requires<NullReferenceException>(_currentTag != null);
+        Contract.Assert(_currentTag is not null);
         _tokensToEmit.Enqueue(Token.NewTagToken(_currentTag!));
         _currentAttribute = null;
         _currentTag = null;

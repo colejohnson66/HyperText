@@ -87,23 +87,23 @@ public abstract class RuneReader : IDisposable
     /// </exception>
     public virtual int Read(Rune?[]? buffer, int index, int count)
     {
-        Contract.Requires<ArgumentNullException>(
-            buffer != null,
+        Contract.Assert(
+            buffer is not null,
             $"{nameof(buffer)} must not be null.");
-        Contract.Requires<ArgumentOutOfRangeException>(
+        Contract.Assert(
             index >= 0,
             $"{nameof(index)} must be non-negative.");
-        Contract.Requires<ArgumentOutOfRangeException>(
+        Contract.Assert(
             count >= 0,
             $"{nameof(count)} must be non-negative.");
-        Contract.Requires<ArgumentException>(
-            buffer!.Length > index + count,
+        Contract.Assert(
+            buffer.Length > index + count,
             $"{nameof(buffer)} must be large enough to store the result.");
 
         for (int i = 0; i < count; i++)
         {
             Rune? r = Read();
-            if (r == null)
+            if (r is null)
                 return i;
             buffer[index + i] = r;
         }

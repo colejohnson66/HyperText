@@ -50,7 +50,7 @@ public class Token
     {
         get
         {
-            Contract.Requires(Type == TokenType.Character);
+            Contract.Assert(Type is TokenType.Character);
             return _value!;
         }
     }
@@ -58,7 +58,7 @@ public class Token
     {
         get
         {
-            Contract.Requires(Type == TokenType.Comment);
+            Contract.Assert(Type is TokenType.Comment);
             return _value!;
         }
     }
@@ -66,7 +66,7 @@ public class Token
     {
         get
         {
-            Contract.Requires(Type == TokenType.Doctype);
+            Contract.Assert(Type is TokenType.Doctype);
             return _value!;
         }
     }
@@ -74,14 +74,14 @@ public class Token
     {
         get
         {
-            Contract.Requires(Type == TokenType.Tag);
+            Contract.Assert(Type is TokenType.Tag);
             return _value!;
         }
     }
 
     public override string ToString()
     {
-        Contract.Requires<InvalidOperationException>(
+        Contract.Assert(
             Type is TokenType.Character or TokenType.Comment or TokenType.Doctype or TokenType.EndOfFile or TokenType.Tag,
             $"{nameof(Token)} object is in an invalid state. The type ({Type}) is unknown.");
 
