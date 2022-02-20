@@ -159,4 +159,89 @@ public class JSNumber : JSValue
     }
 
     #endregion
+
+    #region Abstract Testing/Comparison Operations
+
+
+    public override bool IsArray()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsCallable()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsConstructor()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsExtensible()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsIntegralNumber()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsLessThan(JSValue other, bool leftFirst)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsLooselyEqual(JSValue other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsPropertyKey()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsRegExp()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsStrictlyEqual(JSValue other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsStringPrefix(JSString p)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsStringWellFormedUnicode()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> RequireObjectCoercible()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool SameValue(JSValue other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool SameValueNonNumeric(JSValue other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool SameValueZero(JSValue other)
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
 }

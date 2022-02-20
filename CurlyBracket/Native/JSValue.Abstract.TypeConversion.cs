@@ -4,7 +4,7 @@
  * =============================================================================
  * Purpose:
  *
- * Defines the "Type conversions" section of ECMAScript.
+ * Defines the "Type Conversions" section of ECMAScript.
  * <https://tc39.es/ecma262/#sec-type-conversion>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
