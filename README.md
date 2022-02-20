@@ -5,7 +5,7 @@ I will almost certainly never finish.
 
 ## Subprojects
 
-HyperText is split into six components:
+HyperText is split into several components:
 
 | Component    | Description
 |--------------|-------------------------------
@@ -13,6 +13,7 @@ HyperText is split into six components:
 | CodePoint    | All things Unicode
 | CurlyBracket | The JavaScript engine
 | FiberWire    | Network related stuff
+| HyperLib     | Miscellaneous shared code
 | HyperText    | The actual browser application
 | StyleSheet   | The CSS engine
 
