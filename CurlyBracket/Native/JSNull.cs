@@ -25,6 +25,8 @@
  * =============================================================================
  */
 
+using CurlyBracket.Engine;
+
 namespace CurlyBracket.Native;
 
 public class JSNull : JSValue
@@ -33,4 +35,128 @@ public class JSNull : JSValue
     {
         throw new NotImplementedException();
     }
+
+    #region Abstract Type Conversions
+
+    public override Result<JSString, TypeError> AbstractToString()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> StringToBigInt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> StringToNumber()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSBigInt, TypeError> ToBigInt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSBigInt, TypeError> ToBigInt64()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSBigInt, TypeError> ToBigUInt64()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override JSBoolean ToBoolean()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToIndex()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToInt16()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToInt32()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToInt8()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToLength()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToNumber()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToNumeric()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSObject, TypeError> ToObject()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToPropertyKey()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToUInt16()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToUInt32()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToUInt8()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToUInt8Clamp()
+    {
+        throw new NotImplementedException();
+    }
+
+    #endregion
 }
