@@ -1,13 +1,12 @@
 /* =============================================================================
- * File:   _GlobalUsing.cs
+ * File:   JSObject.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * C# 10 adds "global using" directives that will be implicitly included in any
- *   file in the project. This file contains these.
+ * <TODO>
  * =============================================================================
- * Copyright (c) 2021-2022 Cole Tobin
+ * Copyright (c) 2022 Cole Tobin
  *
  * This file is part of CurlyBracket.
  *
@@ -26,6 +25,12 @@
  * =============================================================================
  */
 
-global using HyperLib;
-global using System;
-global using System.Diagnostics.Contracts;
+namespace CurlyBracket.Native;
+
+public class JSObject : JSValue
+{
+    public JSObject() : base(JSType.Object)
+    {
+        throw new NotImplementedException();
+    }
+}

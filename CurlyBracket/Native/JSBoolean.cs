@@ -1,13 +1,12 @@
 /* =============================================================================
- * File:   _GlobalUsing.cs
+ * File:   JSBoolean.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * C# 10 adds "global using" directives that will be implicitly included in any
- *   file in the project. This file contains these.
+ * <TODO>
  * =============================================================================
- * Copyright (c) 2021-2022 Cole Tobin
+ * Copyright (c) 2022 Cole Tobin
  *
  * This file is part of CurlyBracket.
  *
@@ -26,6 +25,41 @@
  * =============================================================================
  */
 
-global using HyperLib;
-global using System;
-global using System.Diagnostics.Contracts;
+namespace CurlyBracket.Native;
+
+public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
+{
+    public static JSBoolean True { get; } = new(true);
+    public static JSBoolean False { get; } = new(false);
+
+    public JSBoolean(bool value)
+        : base(JSType.Boolean)
+    {
+        Value = value;
+    }
+
+    public bool Value { get; }
+
+    public override bool Equals(object? obj) =>
+        Equals(obj as JSBoolean);
+
+    public bool Equals(JSValue? other) =>
+        Equals(other as JSBoolean);
+
+    public bool Equals(JSBoolean? other)
+    {
+        if (other is null)
+            return false;
+
+        if (ReferenceEquals(this, other))
+            return true;
+
+        return Value == other.Value;
+    }
+
+    public override int GetHashCode() =>
+        Value.GetHashCode();
+
+    public override string ToString() =>
+        $"JSBoolean {{ {(Value ? "true" : "false")} }}";
+}
