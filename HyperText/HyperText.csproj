@@ -1,17 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\AngleBracket\AngleBracket.csproj" />
-    <ProjectReference Include="..\CodePoint\CodePoint.csproj" />
-    <ProjectReference Include="..\CurlyBracket\CurlyBracket.csproj" />
-    <ProjectReference Include="..\FiberWire\FiberWire.csproj" />
-    <ProjectReference Include="..\StyleSheet\StyleSheet.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AngleBracket\AngleBracket.csproj" />
+    <ProjectReference Include="..\CodePoint\CodePoint.csproj" />
+    <ProjectReference Include="..\CurlyBracket\CurlyBracket.csproj" />
+    <ProjectReference Include="..\FiberWire\FiberWire.csproj" />
+    <ProjectReference Include="..\HyperLib\HyperLib.csproj" />
+    <ProjectReference Include="..\StyleSheet\StyleSheet.csproj" />
+  </ItemGroup>
 
 </Project>
