@@ -67,78 +67,55 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
 
     #region Abstract Type Conversions
 
-    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null)
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null) =>
+        Result<JSValue, TypeError>.OK(this);
 
     public override Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
     {
         throw new NotImplementedException();
     }
 
-    public override JSBoolean ToBoolean()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSBoolean ToBoolean() =>
+        this;
 
-    public override Result<JSValue, TypeError> ToNumeric()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToNumeric() =>
+        Result<JSValue, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToNumber() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
     public override Result<JSValue, TypeError> StringToNumber()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToIntegerOrInfinity() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToInt32() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt32() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToInt16() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt16() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToInt8() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt8() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt8Clamp()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt8Clamp() =>
+        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
     public override Result<JSBigInt, TypeError> ToBigInt()
     {
+        // 1n if true; 0n if false
         throw new NotImplementedException();
     }
 
@@ -149,16 +126,19 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
 
     public override Result<JSBigInt, TypeError> ToBigInt64()
     {
+        // 1n if true; 0n if false
         throw new NotImplementedException();
     }
 
     public override Result<JSBigInt, TypeError> ToBigUInt64()
     {
+        // 1n if true; 0n if false
         throw new NotImplementedException();
     }
 
     public override Result<JSString, TypeError> AbstractToString()
     {
+        // "true" if true; "false" if false
         throw new NotImplementedException();
     }
 
@@ -172,10 +152,8 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToLength()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToLength() =>
+        Result<JSValue, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
 
     public override Result<JSValue, TypeError> CanonicalNumericIndexString()
     {
@@ -192,45 +170,31 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
     #region Abstract Testing/Comparison Operations
 
 
-    public override Result<JSValue, TypeError> RequireObjectCoercible()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> RequireObjectCoercible() =>
+        Result<JSValue, TypeError>.OK(this);
 
-    public override Result<bool, TypeError> IsArray()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<bool, TypeError> IsArray() =>
+        Result<bool, TypeError>.OK(false);
 
-    public override bool IsCallable()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsCallable() =>
+        false;
 
-    public override bool IsConstructor()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsConstructor() =>
+        false;
 
     public override bool IsExtensible()
     {
         throw new NotImplementedException();
     }
 
-    public override bool IsIntegralNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsIntegralNumber() =>
+        false;
 
-    public override bool IsPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsPropertyKey() =>
+        false;
 
-    public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsRegExp() =>
+        false;
 
     public override bool IsStringPrefix(JSString p)
     {
@@ -244,17 +208,22 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
 
     public override bool SameValue(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Boolean)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueZero(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Boolean)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueNonNumeric(JSValue other)
     {
-        throw new NotImplementedException();
+        Contract.Assert(other.Type is JSType.Boolean);
+        return Value == ((JSBoolean)other).Value;
     }
 
     public override bool IsLessThan(JSValue other, bool leftFirst)
@@ -264,12 +233,17 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
 
     public override bool IsLooselyEqual(JSValue other)
     {
+        if (other.Type is JSType.Boolean)
+            return IsStrictlyEqual(other);
+        // If Type(x) is Boolean, return IsLooselyEqual(! ToNumber(x), y).
         throw new NotImplementedException();
     }
 
     public override bool IsStrictlyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Boolean)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     #endregion

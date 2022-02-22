@@ -35,6 +35,7 @@ public class JSNumber : JSValue, IEquatable<JSValue>, IEquatable<JSNumber>
     public static JSNumber Infinity { get; } = new(double.PositiveInfinity);
     public static JSNumber NegativeInfinity { get; } = new(double.NegativeInfinity);
     public static JSNumber Zero { get; } = new(0);
+    public static JSNumber One { get; } = new(1); // useful for ToBoolean() operations
 
     public JSNumber(double value)
         : base(JSType.Number)

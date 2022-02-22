@@ -183,17 +183,22 @@ public class JSNull : JSValue
 
     public override bool SameValue(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Null)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueZero(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Null)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueNonNumeric(JSValue other)
     {
-        throw new NotImplementedException();
+        Contract.Assert(other.Type is JSType.Null);
+        return true;
     }
 
     public override bool IsLessThan(JSValue other, bool leftFirst)
@@ -203,12 +208,20 @@ public class JSNull : JSValue
 
     public override bool IsLooselyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is JSType.Null)
+            return IsStrictlyEqual(other);
+
+        if (other.Type is JSType.Undefined)
+            return true;
+
+        return false;
     }
 
     public override bool IsStrictlyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Null)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     #endregion
