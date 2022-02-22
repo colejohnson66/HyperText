@@ -38,12 +38,7 @@ public class JSBigInt : JSValue
 
     #region Abstract Type Conversions
 
-    public override Result<JSString, TypeError> AbstractToString()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
+    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null)
     {
         throw new NotImplementedException();
     }
@@ -53,67 +48,7 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToBigInt()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> StringToNumber()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSBigInt, TypeError> ToBigInt()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSBigInt, TypeError> ToBigInt64()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSBigInt, TypeError> ToBigUInt64()
-    {
-        throw new NotImplementedException();
-    }
-
     public override JSBoolean ToBoolean()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> ToIndex()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSNumber, TypeError> ToInt16()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSNumber, TypeError> ToInt32()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSNumber, TypeError> ToInt8()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> ToLength()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSNumber, TypeError> ToNumber()
     {
         throw new NotImplementedException();
     }
@@ -123,17 +58,32 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSObject, TypeError> ToObject()
+    public override Result<JSNumber, TypeError> ToNumber()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null)
+    public override Result<JSValue, TypeError> StringToNumber()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToPropertyKey()
+    public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToInt32()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToUInt32()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSNumber, TypeError> ToInt16()
     {
         throw new NotImplementedException();
     }
@@ -143,7 +93,7 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToUInt32()
+    public override Result<JSNumber, TypeError> ToInt8()
     {
         throw new NotImplementedException();
     }
@@ -158,10 +108,65 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
+    public override Result<JSBigInt, TypeError> ToBigInt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> StringToBigInt()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSBigInt, TypeError> ToBigInt64()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSBigInt, TypeError> ToBigUInt64()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSString, TypeError> AbstractToString()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSObject, TypeError> ToObject()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToPropertyKey()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToLength()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
+    {
+        throw new NotImplementedException();
+    }
+
+    public override Result<JSValue, TypeError> ToIndex()
+    {
+        throw new NotImplementedException();
+    }
+
     #endregion
 
     #region Abstract Testing/Comparison Operations
 
+
+    public override Result<JSValue, TypeError> RequireObjectCoercible()
+    {
+        throw new NotImplementedException();
+    }
 
     public override bool IsArray()
     {
@@ -188,27 +193,12 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsLessThan(JSValue other, bool leftFirst)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        throw new NotImplementedException();
-    }
-
     public override bool IsPropertyKey()
     {
         throw new NotImplementedException();
     }
 
     public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsStrictlyEqual(JSValue other)
     {
         throw new NotImplementedException();
     }
@@ -223,12 +213,12 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> RequireObjectCoercible()
+    public override bool SameValue(JSValue other)
     {
         throw new NotImplementedException();
     }
 
-    public override bool SameValue(JSValue other)
+    public override bool SameValueZero(JSValue other)
     {
         throw new NotImplementedException();
     }
@@ -238,7 +228,17 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool SameValueZero(JSValue other)
+    public override bool IsLessThan(JSValue other, bool leftFirst)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsLooselyEqual(JSValue other)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override bool IsStrictlyEqual(JSValue other)
     {
         throw new NotImplementedException();
     }

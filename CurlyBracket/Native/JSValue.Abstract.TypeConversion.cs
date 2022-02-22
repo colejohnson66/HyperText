@@ -35,7 +35,6 @@ public abstract partial class JSValue
     /// <summary>
     /// Implements the <c>ToPrimitive</c> abstract operation.
     /// </summary>
-    /// <param name="input"></param>
     /// <param name="preferredType"></param>
     /// <returns></returns>
     /// <remarks>
@@ -46,8 +45,7 @@ public abstract partial class JSValue
     /// <summary>
     /// Implements the <c>OrdinaryToPrimitive</c> abstract operation.
     /// </summary>
-    /// <param name="o"></param>
-    /// <param name="preferredType"></param>
+    /// <param name="hint"></param>
     /// <returns></returns>
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-ordinarytoprimitive
@@ -57,7 +55,6 @@ public abstract partial class JSValue
     /// <summary>
     /// Implements the <c>ToBoolean</c> abstract operation.
     /// </summary>
-    /// <param name="argument"></param>
     /// <returns></returns>
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toboolean
