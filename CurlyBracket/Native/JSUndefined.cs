@@ -29,12 +29,31 @@ using CurlyBracket.Engine;
 
 namespace CurlyBracket.Native;
 
-public class JSUndefined : JSValue
+public class JSUndefined : JSValue, IEquatable<JSValue>, IEquatable<JSUndefined>
 {
-    public JSUndefined() : base(JSType.Undefined)
+    public JSUndefined()
+        : base(JSType.Undefined)
+    { }
+
+    public override bool Equals(object? obj) =>
+        Equals(obj as JSUndefined);
+
+    public bool Equals(JSValue? other) =>
+        Equals(other as JSUndefined);
+
+    public bool Equals(JSUndefined? other)
     {
-        throw new NotImplementedException();
+        if (other is null)
+            return false;
+
+        return true;
     }
+
+    public override int GetHashCode() =>
+        base.GetHashCode();
+
+    public override string ToString() =>
+        $"JSUndefined";
 
     #region Abstract Type Conversions
 

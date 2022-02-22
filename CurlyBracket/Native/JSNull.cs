@@ -29,12 +29,31 @@ using CurlyBracket.Engine;
 
 namespace CurlyBracket.Native;
 
-public class JSNull : JSValue
+public class JSNull : JSValue, IEquatable<JSValue>, IEquatable<JSNull>
 {
-    public JSNull() : base(JSType.Null)
+    public JSNull()
+        : base(JSType.Null)
+    { }
+
+    public override bool Equals(object? obj) =>
+        Equals(obj as JSNull);
+
+    public bool Equals(JSValue? other) =>
+        Equals(other as JSNull);
+
+    public bool Equals(JSNull? other)
     {
-        throw new NotImplementedException();
+        if (other is null)
+            return false;
+
+        return true;
     }
+
+    public override int GetHashCode() =>
+        base.GetHashCode();
+
+    public override string ToString() =>
+        $"JSNull";
 
     #region Abstract Type Conversions
 
