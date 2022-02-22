@@ -48,7 +48,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-isarray
     /// </remarks>
-    public abstract bool IsArray();
+    public abstract Result<bool, TypeError> IsArray();
 
     /// <summary>
     /// Implements the <c>IsCallable</c> abstract operation.

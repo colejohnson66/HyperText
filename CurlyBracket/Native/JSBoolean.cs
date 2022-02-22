@@ -197,7 +197,7 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
         throw new NotImplementedException();
     }
 
-    public override bool IsArray()
+    public override Result<bool, TypeError> IsArray()
     {
         throw new NotImplementedException();
     }

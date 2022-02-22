@@ -199,7 +199,7 @@ public class JSNumber : JSValue, IEquatable<JSValue>, IEquatable<JSNumber>
         throw new NotImplementedException();
     }
 
-    public override bool IsArray()
+    public override Result<bool, TypeError> IsArray()
     {
         throw new NotImplementedException();
     }

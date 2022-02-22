@@ -168,7 +168,7 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsArray()
+    public override Result<bool, TypeError> IsArray()
     {
         throw new NotImplementedException();
     }
