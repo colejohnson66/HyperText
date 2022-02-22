@@ -63,7 +63,14 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToNumber()
+    /// <summary>
+    /// Implements the <c>StringToNumber</c> abstract operation.
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-stringtonumber
+    /// </remarks>
+    public Result<JSValue, TypeError> StringToNumber()
     {
         throw new NotImplementedException();
     }
@@ -113,7 +120,14 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToBigInt()
+    /// <summary>
+    /// Implements the <c>StringToBigInt</c> abstract operation.
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-stringtobigint
+    /// </remarks>
+    public Result<JSValue, TypeError> StringToBigInt()
     {
         throw new NotImplementedException();
     }
@@ -148,7 +162,14 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
+    /// <summary>
+    /// Implements the <c>CanonicalNumericIndexString</c> abstract operation.
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-canonicalnumericindexstring
+    /// </remarks>
+    public Result<JSValue, TypeError> CanonicalNumericIndexString()
     {
         throw new NotImplementedException();
     }
@@ -183,11 +204,6 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsExtensible()
-    {
-        throw new NotImplementedException();
-    }
-
     public override bool IsIntegralNumber()
     {
         throw new NotImplementedException();
@@ -203,12 +219,27 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsStringPrefix(JSString p)
+    /// <summary>
+    /// Implements the <c>IsStringPrefix</c> abstract operation.
+    /// </summary>
+    /// <param name="p"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-isstringprefix
+    /// </remarks>
+    public bool IsStringPrefix(JSString p)
     {
         throw new NotImplementedException();
     }
 
-    public override bool IsStringWellFormedUnicode()
+    /// <summary>
+    /// Implements the <c>IsStringWellFormedUnicode</c> abstract operation.
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-isstringwellformedunicode
+    /// </remarks>
+    public bool IsStringWellFormedUnicode()
     {
         throw new NotImplementedException();
     }

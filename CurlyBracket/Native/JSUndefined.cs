@@ -74,11 +74,6 @@ public class JSUndefined : JSValue, IEquatable<JSValue>, IEquatable<JSUndefined>
     public override Result<JSNumber, TypeError> ToNumber() =>
         Result<JSNumber, TypeError>.OK(JSNumber.NaN);
 
-    public override Result<JSValue, TypeError> StringToNumber()
-    {
-        throw new NotImplementedException();
-    }
-
     public override Result<JSNumber, TypeError> ToIntegerOrInfinity() =>
         Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
@@ -106,11 +101,6 @@ public class JSUndefined : JSValue, IEquatable<JSValue>, IEquatable<JSUndefined>
     public override Result<JSBigInt, TypeError> ToBigInt()
     {
         // TypeError
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> StringToBigInt()
-    {
         throw new NotImplementedException();
     }
 
@@ -146,11 +136,6 @@ public class JSUndefined : JSValue, IEquatable<JSValue>, IEquatable<JSUndefined>
     public override Result<JSValue, TypeError> ToLength() =>
         Result<JSValue, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
-    {
-        throw new NotImplementedException();
-    }
-
     public override Result<JSValue, TypeError> ToIndex() =>
         Result<JSValue, TypeError>.OK(JSNumber.Zero);
 
@@ -174,11 +159,6 @@ public class JSUndefined : JSValue, IEquatable<JSValue>, IEquatable<JSUndefined>
     public override bool IsConstructor() =>
         false;
 
-    public override bool IsExtensible()
-    {
-        throw new NotImplementedException();
-    }
-
     public override bool IsIntegralNumber() =>
         false;
 
@@ -187,16 +167,6 @@ public class JSUndefined : JSValue, IEquatable<JSValue>, IEquatable<JSUndefined>
 
     public override bool IsRegExp() =>
         false;
-
-    public override bool IsStringPrefix(JSString p)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsStringWellFormedUnicode()
-    {
-        throw new NotImplementedException();
-    }
 
     public override bool SameValue(JSValue other)
     {

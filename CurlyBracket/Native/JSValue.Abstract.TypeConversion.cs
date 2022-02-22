@@ -80,15 +80,6 @@ public abstract partial class JSValue
     public abstract Result<JSNumber, TypeError> ToNumber();
 
     /// <summary>
-    /// Implements the <c>StringToNumber</c> abstract operation.
-    /// </summary>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-stringtonumber
-    /// </remarks>
-    public abstract Result<JSValue, TypeError> StringToNumber();
-
-    /// <summary>
     /// Implements the <c>ToIntegerOrInfinity</c> abstract operation.
     /// </summary>
     /// <returns></returns>
@@ -170,15 +161,6 @@ public abstract partial class JSValue
     public abstract Result<JSBigInt, TypeError> ToBigInt();
 
     /// <summary>
-    /// Implements the <c>StringToBigInt</c> abstract operation.
-    /// </summary>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-stringtobigint
-    /// </remarks>
-    public abstract Result<JSValue, TypeError> StringToBigInt();
-
-    /// <summary>
     /// Implements the <c>ToBigInt64</c> abstract operation.
     /// </summary>
     /// <returns></returns>
@@ -232,15 +214,6 @@ public abstract partial class JSValue
     /// https://tc39.es/ecma262/#sec-tolength
     /// </remarks>
     public abstract Result<JSValue, TypeError> ToLength();
-
-    /// <summary>
-    /// Implements the <c>CanonicalNumericIndexString</c> abstract operation.
-    /// </summary>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-canonicalnumericindexstring
-    /// </remarks>
-    public abstract Result<JSValue, TypeError> CanonicalNumericIndexString();
 
     /// <summary>
     /// Implements the <c>ToIndex</c> abstract operation.

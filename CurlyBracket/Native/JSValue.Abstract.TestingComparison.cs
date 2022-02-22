@@ -69,15 +69,6 @@ public abstract partial class JSValue
     public abstract bool IsConstructor();
 
     /// <summary>
-    /// Implements the <c>IsExtensible</c> abstract operation.
-    /// </summary>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-isextensible-o
-    /// </remarks>
-    public abstract bool IsExtensible();
-
-    /// <summary>
     /// Implements the <c>IsIntegralNumber</c> abstract operation.
     /// </summary>
     /// <returns></returns>
@@ -103,25 +94,6 @@ public abstract partial class JSValue
     /// https://tc39.es/ecma262/#sec-isregexp
     /// </remarks>
     public abstract bool IsRegExp();
-
-    /// <summary>
-    /// Implements the <c>IsStringPrefix</c> abstract operation.
-    /// </summary>
-    /// <param name="p"></param>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-isstringprefix
-    /// </remarks>
-    public abstract bool IsStringPrefix(JSString p);
-
-    /// <summary>
-    /// Implements the <c>IsStringWellFormedUnicode</c> abstract operation.
-    /// </summary>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-isstringwellformedunicode
-    /// </remarks>
-    public abstract bool IsStringWellFormedUnicode();
 
     /// <summary>
     /// Implements the <c>SameValue</c> abstract operation.

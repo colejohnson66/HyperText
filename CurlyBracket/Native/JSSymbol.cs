@@ -63,11 +63,6 @@ public class JSSymbol : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToNumber()
-    {
-        throw new NotImplementedException();
-    }
-
     public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
     {
         throw new NotImplementedException();
@@ -113,11 +108,6 @@ public class JSSymbol : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToBigInt()
-    {
-        throw new NotImplementedException();
-    }
-
     public override Result<JSBigInt, TypeError> ToBigInt64()
     {
         throw new NotImplementedException();
@@ -144,11 +134,6 @@ public class JSSymbol : JSValue
     }
 
     public override Result<JSValue, TypeError> ToLength()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
     {
         throw new NotImplementedException();
     }
@@ -183,11 +168,6 @@ public class JSSymbol : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsExtensible()
-    {
-        throw new NotImplementedException();
-    }
-
     public override bool IsIntegralNumber()
     {
         throw new NotImplementedException();
@@ -199,16 +179,6 @@ public class JSSymbol : JSValue
     }
 
     public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsStringPrefix(JSString p)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsStringWellFormedUnicode()
     {
         throw new NotImplementedException();
     }

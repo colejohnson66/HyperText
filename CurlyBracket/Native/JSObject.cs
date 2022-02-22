@@ -63,11 +63,6 @@ public class JSObject : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToNumber()
-    {
-        throw new NotImplementedException();
-    }
-
     public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
     {
         throw new NotImplementedException();
@@ -113,11 +108,6 @@ public class JSObject : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> StringToBigInt()
-    {
-        throw new NotImplementedException();
-    }
-
     public override Result<JSBigInt, TypeError> ToBigInt64()
     {
         throw new NotImplementedException();
@@ -144,11 +134,6 @@ public class JSObject : JSValue
     }
 
     public override Result<JSValue, TypeError> ToLength()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override Result<JSValue, TypeError> CanonicalNumericIndexString()
     {
         throw new NotImplementedException();
     }
@@ -183,7 +168,14 @@ public class JSObject : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsExtensible()
+    /// <summary>
+    /// Implements the <c>IsExtensible</c> abstract operation.
+    /// </summary>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-isextensible-o
+    /// </remarks>
+    public bool IsExtensible()
     {
         throw new NotImplementedException();
     }
@@ -199,16 +191,6 @@ public class JSObject : JSValue
     }
 
     public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsStringPrefix(JSString p)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool IsStringWellFormedUnicode()
     {
         throw new NotImplementedException();
     }
