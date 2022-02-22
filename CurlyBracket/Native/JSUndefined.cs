@@ -142,43 +142,32 @@ public class JSUndefined : JSValue
 
     public override Result<JSValue, TypeError> RequireObjectCoercible()
     {
+        // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<bool, TypeError> IsArray()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<bool, TypeError> IsArray() =>
+        Result<bool, TypeError>.OK(false);
 
-    public override bool IsCallable()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsCallable() =>
+        false;
 
-    public override bool IsConstructor()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsConstructor() =>
+        false;
 
     public override bool IsExtensible()
     {
         throw new NotImplementedException();
     }
 
-    public override bool IsIntegralNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsIntegralNumber() =>
+        false;
 
-    public override bool IsPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsPropertyKey() =>
+        false;
 
-    public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsRegExp() =>
+        false;
 
     public override bool IsStringPrefix(JSString p)
     {
@@ -192,17 +181,22 @@ public class JSUndefined : JSValue
 
     public override bool SameValue(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Undefined)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueZero(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Undefined)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueNonNumeric(JSValue other)
     {
-        throw new NotImplementedException();
+        Contract.Assert(other.Type is JSType.Undefined);
+        return true;
     }
 
     public override bool IsLessThan(JSValue other, bool leftFirst)
@@ -212,12 +206,20 @@ public class JSUndefined : JSValue
 
     public override bool IsLooselyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is JSType.Undefined)
+            return IsStrictlyEqual(other);
+
+        if (other.Type is JSType.Null)
+            return true;
+
+        return false;
     }
 
     public override bool IsStrictlyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.Undefined)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     #endregion
