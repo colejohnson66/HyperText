@@ -38,78 +38,55 @@ public class JSNull : JSValue
 
     #region Abstract Type Conversions
 
-    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null)
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null) =>
+        Result<JSValue, TypeError>.OK(this);
 
     public override Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
     {
         throw new NotImplementedException();
     }
 
-    public override JSBoolean ToBoolean()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSBoolean ToBoolean() =>
+        JSBoolean.False;
 
-    public override Result<JSValue, TypeError> ToNumeric()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToNumeric() =>
+        Result<JSValue, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToNumber() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
     public override Result<JSValue, TypeError> StringToNumber()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToIntegerOrInfinity() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToInt32() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt32() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToInt16() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt16() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToInt8() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt8() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSNumber, TypeError> ToUInt8Clamp()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSNumber, TypeError> ToUInt8Clamp() =>
+        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
     public override Result<JSBigInt, TypeError> ToBigInt()
     {
+        // TypeError
         throw new NotImplementedException();
     }
 
@@ -120,21 +97,25 @@ public class JSNull : JSValue
 
     public override Result<JSBigInt, TypeError> ToBigInt64()
     {
+        // TypeError
         throw new NotImplementedException();
     }
 
     public override Result<JSBigInt, TypeError> ToBigUInt64()
     {
+        // TypeError
         throw new NotImplementedException();
     }
 
     public override Result<JSString, TypeError> AbstractToString()
     {
+        // "null"
         throw new NotImplementedException();
     }
 
     public override Result<JSObject, TypeError> ToObject()
     {
+        // TypeError
         throw new NotImplementedException();
     }
 
@@ -143,10 +124,8 @@ public class JSNull : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToLength()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToLength() =>
+        Result<JSValue, TypeError>.OK(JSNumber.Zero);
 
     public override Result<JSValue, TypeError> CanonicalNumericIndexString()
     {
@@ -165,43 +144,32 @@ public class JSNull : JSValue
 
     public override Result<JSValue, TypeError> RequireObjectCoercible()
     {
+        // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<bool, TypeError> IsArray()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<bool, TypeError> IsArray() =>
+        Result<bool, TypeError>.OK(false);
 
-    public override bool IsCallable()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsCallable() =>
+        false;
 
-    public override bool IsConstructor()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsConstructor() =>
+        false;
 
     public override bool IsExtensible()
     {
         throw new NotImplementedException();
     }
 
-    public override bool IsIntegralNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsIntegralNumber() =>
+        false;
 
-    public override bool IsPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsPropertyKey() =>
+        false;
 
-    public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsRegExp() =>
+        false;
 
     public override bool IsStringPrefix(JSString p)
     {
