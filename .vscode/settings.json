@@ -12,4 +12,5 @@
     "files.trimFinalNewlines": true,
     "files.trimTrailingWhitespace": true,
     "git.ignoreLimitWarning": true,
+    "omnisharp.organizeImportsOnFormat": false,
 }
