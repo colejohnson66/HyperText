@@ -51,6 +51,6 @@ public class Result<TOK, TError>
     public TOK? OKValue { get; }
     public TError? ErrorValue { get; }
 
-    public Result<TOK, TError> OK(TOK value) => new(value);
-    public Result<TOK, TError> Error(TError value) => new(value);
+    public static Result<TOK, TError> OK(TOK value) => new(value);
+    public static Result<TOK, TError> Error(TError value) => new(value);
 }
