@@ -29,12 +29,43 @@ using CurlyBracket.Engine;
 
 namespace CurlyBracket.Native;
 
-public class JSNumber : JSValue
+public class JSNumber : JSValue, IEquatable<JSValue>, IEquatable<JSNumber>
 {
-    public JSNumber() : base(JSType.Number)
+    public static JSNumber NaN { get; } = new(double.NaN);
+    public static JSNumber Infinity { get; } = new(double.PositiveInfinity);
+    public static JSNumber NegativeInfinity { get; } = new(double.NegativeInfinity);
+    public static JSNumber Zero { get; } = new(0);
+
+    public JSNumber(double value)
+        : base(JSType.Number)
     {
+        Value = value;
+    }
+
+    public double Value { get; }
+
+    public override bool Equals(object? obj) =>
+        Equals(obj as JSNumber);
+
+    public bool Equals(JSValue? other) =>
+        Equals(other as JSNumber);
+
+    public bool Equals(JSNumber? other)
+    {
+        if (other is null)
+            return false;
+
+        if (ReferenceEquals(this, other))
+            return true;
+
         throw new NotImplementedException();
     }
+
+    public override int GetHashCode() =>
+        Value.GetHashCode();
+
+    public override string ToString() =>
+        $"JSNumber {{ {Value} }}";
 
     #region Abstract Type Conversions
 
