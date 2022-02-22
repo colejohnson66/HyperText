@@ -29,7 +29,7 @@ using CurlyBracket.Engine;
 
 namespace CurlyBracket.Native;
 
-public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
+public class JSBoolean : JSValue
 {
     public static JSBoolean True { get; } = new(true);
     public static JSBoolean False { get; } = new(false);
@@ -41,26 +41,6 @@ public class JSBoolean : JSValue, IEquatable<JSValue>, IEquatable<JSBoolean>
     }
 
     public bool Value { get; }
-
-    public override bool Equals(object? obj) =>
-        Equals(obj as JSBoolean);
-
-    public bool Equals(JSValue? other) =>
-        Equals(other as JSBoolean);
-
-    public bool Equals(JSBoolean? other)
-    {
-        if (other is null)
-            return false;
-
-        if (ReferenceEquals(this, other))
-            return true;
-
-        return Value == other.Value;
-    }
-
-    public override int GetHashCode() =>
-        Value.GetHashCode();
 
     public override string ToString() =>
         $"JSBoolean {{ {(Value ? "true" : "false")} }}";
