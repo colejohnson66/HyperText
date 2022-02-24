@@ -76,59 +76,37 @@ public class JSNull : JSValue
     public override Result<JSNumber, TypeError> ToUInt8Clamp() =>
         Result<JSNumber, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSBigInt, TypeError> ToBigInt()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override Result<JSBigInt, TypeError> ToBigInt() =>
+        Result<JSBigInt, TypeError>.Error(new());
 
-    public override Result<JSBigInt, TypeError> ToBigInt64()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override Result<JSBigInt, TypeError> ToBigInt64() =>
+        Result<JSBigInt, TypeError>.Error(new());
 
-    public override Result<JSBigInt, TypeError> ToBigUInt64()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override Result<JSBigInt, TypeError> ToBigUInt64() =>
+        Result<JSBigInt, TypeError>.Error(new());
 
-    public override Result<JSString, TypeError> AbstractToString()
-    {
-        // "null"
-        throw new NotImplementedException();
-    }
+    public override Result<JSString, TypeError> AbstractToString() =>
+        Result<JSString, TypeError>.OK(new("null"));
 
-    public override Result<JSObject, TypeError> ToObject()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override Result<JSObject, TypeError> ToObject() =>
+        Result<JSObject, TypeError>.Error(new());
 
-    public override Result<JSValue, TypeError> ToPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToPropertyKey() =>
+        Result<JSValue, TypeError>.OK(new JSString("null"));
 
     public override Result<JSValue, TypeError> ToLength() =>
         Result<JSValue, TypeError>.OK(JSNumber.Zero);
 
-    public override Result<JSValue, TypeError> ToIndex()
-    {
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> ToIndex() =>
+        Result<JSValue, TypeError>.OK(JSNumber.Zero);
 
     #endregion
 
     #region Abstract Testing/Comparison Operations
 
 
-    public override Result<JSValue, TypeError> RequireObjectCoercible()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override Result<JSValue, TypeError> RequireObjectCoercible() =>
+        Result<JSValue, TypeError>.Error(new());
 
     public override Result<bool, TypeError> IsArray() =>
         Result<bool, TypeError>.OK(false);
