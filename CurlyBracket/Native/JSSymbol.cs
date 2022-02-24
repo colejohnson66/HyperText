@@ -43,11 +43,6 @@ public class JSSymbol : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
-    {
-        throw new NotImplementedException();
-    }
-
     public override JSBoolean ToBoolean()
     {
         throw new NotImplementedException();

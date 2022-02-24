@@ -43,7 +43,15 @@ public class JSObject : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
+    /// <summary>
+    /// Implements the <c>OrdinaryToPrimitive</c> abstract operation.
+    /// </summary>
+    /// <param name="hint"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// https://tc39.es/ecma262/#sec-ordinarytoprimitive
+    /// </remarks>
+    public Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
     {
         throw new NotImplementedException();
     }

@@ -43,11 +43,6 @@ public class JSUndefined : JSValue
     public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null) =>
         Result<JSValue, TypeError>.OK(this);
 
-    public override Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint)
-    {
-        throw new NotImplementedException();
-    }
-
     public override JSBoolean ToBoolean() =>
         JSBoolean.False;
 

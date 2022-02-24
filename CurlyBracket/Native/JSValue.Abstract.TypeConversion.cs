@@ -43,16 +43,6 @@ public abstract partial class JSValue
     public abstract Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null);
 
     /// <summary>
-    /// Implements the <c>OrdinaryToPrimitive</c> abstract operation.
-    /// </summary>
-    /// <param name="hint"></param>
-    /// <returns></returns>
-    /// <remarks>
-    /// https://tc39.es/ecma262/#sec-ordinarytoprimitive
-    /// </remarks>
-    public abstract Result<JSValue, TypeError> OrdinaryToPrimitive(JSType hint);
-
-    /// <summary>
     /// Implements the <c>ToBoolean</c> abstract operation.
     /// </summary>
     /// <returns></returns>
