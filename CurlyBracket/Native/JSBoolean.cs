@@ -81,23 +81,14 @@ public class JSBoolean : JSValue
     public override JSNumber ToUInt8Clamp() =>
         Value ? JSNumber.One : JSNumber.Zero;
 
-    public override JSBigInt ToBigInt()
-    {
-        // 1n if true; 0n if false
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigInt() =>
+        Value ? JSBigInt.One : JSBigInt.Zero;
 
-    public override JSBigInt ToBigInt64()
-    {
-        // 1n if true; 0n if false
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigInt64() =>
+        Value ? JSBigInt.One : JSBigInt.Zero;
 
-    public override JSBigInt ToBigUInt64()
-    {
-        // 1n if true; 0n if false
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigUInt64() =>
+        Value ? JSBigInt.One : JSBigInt.Zero;
 
     public override JSString AbstractToString() =>
         new(Value ? "true" : "false");

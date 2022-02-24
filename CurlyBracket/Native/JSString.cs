@@ -39,6 +39,9 @@ public class JSString : JSValue
 
     public string Value { get; }
 
+    public override string ToString() =>
+        $"JSString {{ {Value} }}";
+
     #region Abstract Type Conversions
 
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
@@ -234,7 +237,6 @@ public class JSString : JSValue
 
         // if (other.Type is JSType.BigInt)
         //     IsLooselyEqual(other, this);
-        //     ToBigInt().IsStrictlyEqual(other);
 
         if (other.Type is JSType.Object)
             return IsLooselyEqual(other.ToPrimitive());

@@ -25,81 +25,68 @@
  * =============================================================================
  */
 
+using CurlyBracket.Runtime;
+using System.Numerics;
+
 namespace CurlyBracket.Native;
 
 public class JSBigInt : JSValue
 {
-    public JSBigInt() : base(JSType.BigInt)
+    public static JSBigInt Zero { get; } = new(BigInteger.Zero);
+    public static JSBigInt One { get; } = new(BigInteger.One);
+    public static JSBigInt NegativeOne { get; } = new(BigInteger.MinusOne);
+
+    public JSBigInt(BigInteger value)
+        : base(JSType.BigInt)
     {
-        throw new NotImplementedException();
+        Value = value;
     }
+
+    public BigInteger Value { get; }
+
+    public override string ToString() =>
+        $"JSBigInt {{ {Value} }}";
 
     #region Abstract Type Conversions
 
-    public override JSValue ToPrimitive(JSType? preferredType = null)
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+        this;
 
-    public override JSBoolean ToBoolean()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSBoolean ToBoolean() =>
+        Value.IsZero ? JSBoolean.False : JSBoolean.True;
 
-    public override JSValue ToNumeric()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToNumeric() =>
+        this;
 
-    public override JSNumber ToNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToNumber() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToIntegerOrInfinity()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToIntegerOrInfinity() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToInt32() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToUInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt32() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToInt16() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToUInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt16() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToInt8() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToUInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt8() =>
+        throw new TypeErrorException();
 
-    public override JSNumber ToUInt8Clamp()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt8Clamp() =>
+        throw new TypeErrorException();
 
-    public override JSBigInt ToBigInt()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigInt() =>
+        this;
 
     public override JSBigInt ToBigInt64()
     {
@@ -113,6 +100,7 @@ public class JSBigInt : JSValue
 
     public override JSString AbstractToString()
     {
+        // return BigInt::ToString(Value);
         throw new NotImplementedException();
     }
 
@@ -121,75 +109,60 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSValue ToPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToPropertyKey() =>
+        AbstractToString();
 
-    public override JSValue ToLength()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToLength() =>
+        throw new TypeErrorException();
 
-    public override JSValue ToIndex()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToIndex() =>
+        throw new TypeErrorException();
 
     #endregion
 
     #region Abstract Testing/Comparison Operations
 
 
-    public override JSValue RequireObjectCoercible()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue RequireObjectCoercible() =>
+        this;
 
-    public override bool IsArray()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsArray() =>
+        false;
 
-    public override bool IsCallable()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsCallable() =>
+        false;
 
-    public override bool IsConstructor()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsConstructor() =>
+        false;
 
-    public override bool IsIntegralNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsIntegralNumber() =>
+        false;
 
-    public override bool IsPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsPropertyKey() =>
+        false;
 
-    public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsRegExp() =>
+        false;
 
     public override bool SameValue(JSValue other)
     {
+        if (other.Type is not JSType.BigInt)
+            return false;
+        // return BigInt::SaveValue(this, other);
         throw new NotImplementedException();
     }
 
     public override bool SameValueZero(JSValue other)
     {
+        if (other.Type is not JSType.BigInt)
+            return false;
+        // return BigInt::SaveValueZero(this, other);
         throw new NotImplementedException();
     }
 
-    public override bool SameValueNonNumeric(JSValue other)
-    {
-        throw new NotImplementedException();
-    }
+    // not implemented for JSNumber or JSBigInt
+    public override bool SameValueNonNumeric(JSValue other) =>
+        throw new InvalidOperationException();
 
     public override bool IsLessThan(JSValue other, bool leftFirst)
     {
@@ -203,6 +176,9 @@ public class JSBigInt : JSValue
 
     public override bool IsStrictlyEqual(JSValue other)
     {
+        if (other.Type is not JSType.BigInt)
+            return false;
+        // return BigInt::Equal(this, other) == 0;
         throw new NotImplementedException();
     }
 
