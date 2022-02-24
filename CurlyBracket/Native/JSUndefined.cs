@@ -25,6 +25,8 @@
  * =============================================================================
  */
 
+using CurlyBracket.Runtime;
+
 namespace CurlyBracket.Native;
 
 public class JSUndefined : JSValue
@@ -74,40 +76,23 @@ public class JSUndefined : JSValue
     public override JSNumber ToUInt8Clamp() =>
         JSNumber.Zero;
 
-    public override JSBigInt ToBigInt()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigInt() =>
+        throw new TypeErrorException();
 
-    public override JSBigInt ToBigInt64()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigInt64() =>
+        throw new TypeErrorException();
 
-    public override JSBigInt ToBigUInt64()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override JSBigInt ToBigUInt64() =>
+        throw new TypeErrorException();
 
-    public override JSString AbstractToString()
-    {
-        // "undefined"
-        throw new NotImplementedException();
-    }
+    public override JSString AbstractToString() =>
+        new("undefined");
 
-    public override JSObject ToObject()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override JSObject ToObject() =>
+        throw new TypeErrorException();
 
-    public override JSValue ToPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToPropertyKey() =>
+        new JSString("undefined");
 
     public override JSValue ToLength() =>
         JSNumber.Zero;
@@ -120,11 +105,8 @@ public class JSUndefined : JSValue
     #region Abstract Testing/Comparison Operations
 
 
-    public override JSValue RequireObjectCoercible()
-    {
-        // TypeError
-        throw new NotImplementedException();
-    }
+    public override JSValue RequireObjectCoercible() =>
+        throw new TypeErrorException();
 
     public override bool IsArray() =>
         false;

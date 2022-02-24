@@ -148,6 +148,14 @@ public class JSNull : JSValue
 
     public override bool IsLessThan(JSValue other, bool leftFirst)
     {
+        JSValue px = leftFirst ? this : other;
+        JSValue py = leftFirst ? other : this;
+
+        JSValue nx = px.ToNumeric();
+        JSValue ny = py.ToNumeric();
+        // if (nx.Type == ny.Type)
+        //     return nx.Type is JSType.Number ? Number::LessThan(nx, ny) : BigInt::LessThan(nx, ny);
+
         throw new NotImplementedException();
     }
 

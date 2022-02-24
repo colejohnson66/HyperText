@@ -99,29 +99,22 @@ public class JSBoolean : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSString AbstractToString()
-    {
-        // "true" if true; "false" if false
-        throw new NotImplementedException();
-    }
+    public override JSString AbstractToString() =>
+        new(Value ? "true" : "false");
 
     public override JSObject ToObject()
     {
         throw new NotImplementedException();
     }
 
-    public override JSValue ToPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToPropertyKey() =>
+        new JSString(Value ? "true" : "false");
 
     public override JSValue ToLength() =>
         Value ? JSNumber.One : JSNumber.Zero;
 
-    public override JSValue ToIndex()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToIndex() =>
+        ToIntegerOrInfinity();
 
     #endregion
 
