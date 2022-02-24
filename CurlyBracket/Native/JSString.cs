@@ -25,6 +25,8 @@
  * =============================================================================
  */
 
+using CurlyBracket.Runtime;
+
 namespace CurlyBracket.Native;
 
 public class JSString : JSValue
@@ -39,25 +41,17 @@ public class JSString : JSValue
 
     #region Abstract Type Conversions
 
-    public override JSValue ToPrimitive(JSType? preferredType = null)
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+        this;
 
-    public override JSBoolean ToBoolean()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSBoolean ToBoolean() =>
+        Value.Length is 0 ? JSBoolean.False : JSBoolean.True;
 
-    public override JSValue ToNumeric()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToNumeric() =>
+        StringToNumber();
 
-    public override JSNumber ToNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToNumber() =>
+        StringToNumber();
 
     /// <summary>
     /// Implements the <c>StringToNumber</c> abstract operation.
@@ -66,54 +60,41 @@ public class JSString : JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-stringtonumber
     /// </remarks>
-    public JSValue StringToNumber()
+    public JSNumber StringToNumber()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToIntegerOrInfinity()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToIntegerOrInfinity() =>
+        ToNumber().ToIntegerOrInfinity();
 
-    public override JSNumber ToInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToInt32() =>
+        ToNumber().ToInt32();
 
-    public override JSNumber ToUInt32()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt32() =>
+        ToNumber().ToUInt32();
 
-    public override JSNumber ToInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToInt16() =>
+        ToNumber().ToInt16();
 
-    public override JSNumber ToUInt16()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt16() =>
+        ToNumber().ToUInt16();
 
-    public override JSNumber ToInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToInt8() =>
+        ToNumber().ToInt8();
 
-    public override JSNumber ToUInt8()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt8() =>
+        ToNumber().ToUInt8();
 
-    public override JSNumber ToUInt8Clamp()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSNumber ToUInt8Clamp() =>
+        ToNumber().ToUInt8Clamp();
 
     public override JSBigInt ToBigInt()
     {
-        throw new NotImplementedException();
+        JSValue n = StringToBigInt();
+        if (n.Type is JSType.Undefined)
+            throw new SyntaxErrorException();
+        return (JSBigInt)n;
     }
 
     /// <summary>
@@ -138,25 +119,19 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSString AbstractToString()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSString AbstractToString() =>
+        this;
 
     public override JSObject ToObject()
     {
         throw new NotImplementedException();
     }
 
-    public override JSValue ToPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToPropertyKey() =>
+        this;
 
-    public override JSValue ToLength()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToLength() =>
+        ToNumber().ToLength();
 
     /// <summary>
     /// Implements the <c>CanonicalNumericIndexString</c> abstract operation.
@@ -170,50 +145,34 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSValue ToIndex()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue ToIndex() =>
+        ToNumber().ToIndex();
 
     #endregion
 
     #region Abstract Testing/Comparison Operations
 
 
-    public override JSValue RequireObjectCoercible()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSValue RequireObjectCoercible() =>
+        this;
 
-    public override bool IsArray()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsArray() =>
+        false;
 
-    public override bool IsCallable()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsCallable() =>
+        false;
 
-    public override bool IsConstructor()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsConstructor() =>
+        false;
 
-    public override bool IsIntegralNumber()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsIntegralNumber() =>
+        false;
 
-    public override bool IsPropertyKey()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsPropertyKey() =>
+        true;
 
-    public override bool IsRegExp()
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsRegExp() =>
+        false;
 
     /// <summary>
     /// Implements the <c>IsStringPrefix</c> abstract operation.
@@ -242,17 +201,22 @@ public class JSString : JSValue
 
     public override bool SameValue(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.String)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueZero(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.String)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     public override bool SameValueNonNumeric(JSValue other)
     {
-        throw new NotImplementedException();
+        Contract.Assert(other.Type is JSType.String);
+        return Value == ((JSString)other).Value;
     }
 
     public override bool IsLessThan(JSValue other, bool leftFirst)
@@ -262,12 +226,27 @@ public class JSString : JSValue
 
     public override bool IsLooselyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is JSType.String)
+            IsStrictlyEqual(other);
+
+        if (other.Type is JSType.Number)
+            ToNumber().IsStrictlyEqual(other);
+
+        // if (other.Type is JSType.BigInt)
+        //     IsLooselyEqual(other, this);
+        //     ToBigInt().IsStrictlyEqual(other);
+
+        if (other.Type is JSType.Object)
+            return IsLooselyEqual(other.ToPrimitive());
+
+        return false;
     }
 
     public override bool IsStrictlyEqual(JSValue other)
     {
-        throw new NotImplementedException();
+        if (other.Type is not JSType.String)
+            return false;
+        return SameValueNonNumeric(other);
     }
 
     #endregion
