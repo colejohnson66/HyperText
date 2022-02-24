@@ -26,8 +26,6 @@
  * =============================================================================
  */
 
-using CurlyBracket.Engine;
-
 namespace CurlyBracket.Native;
 
 public abstract partial class JSValue
@@ -39,7 +37,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-requireobjectcoercible
     /// </remarks>
-    public abstract Result<JSValue, TypeError> RequireObjectCoercible();
+    public abstract JSValue RequireObjectCoercible();
 
     /// <summary>
     /// Implements the <c>IsArray</c> abstract operation.
@@ -48,7 +46,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-isarray
     /// </remarks>
-    public abstract Result<bool, TypeError> IsArray();
+    public abstract bool IsArray();
 
     /// <summary>
     /// Implements the <c>IsCallable</c> abstract operation.

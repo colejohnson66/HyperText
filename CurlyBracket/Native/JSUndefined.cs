@@ -25,8 +25,6 @@
  * =============================================================================
  */
 
-using CurlyBracket.Engine;
-
 namespace CurlyBracket.Native;
 
 public class JSUndefined : JSValue
@@ -40,96 +38,96 @@ public class JSUndefined : JSValue
 
     #region Abstract Type Conversions
 
-    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null) =>
-        Result<JSValue, TypeError>.OK(this);
+    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+        this;
 
     public override JSBoolean ToBoolean() =>
         JSBoolean.False;
 
-    public override Result<JSValue, TypeError> ToNumeric() =>
-        Result<JSValue, TypeError>.OK(JSNumber.NaN);
+    public override JSValue ToNumeric() =>
+        JSNumber.NaN;
 
-    public override Result<JSNumber, TypeError> ToNumber() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.NaN);
+    public override JSNumber ToNumber() =>
+        JSNumber.NaN;
 
-    public override Result<JSNumber, TypeError> ToIntegerOrInfinity() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToIntegerOrInfinity() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToInt32() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToInt32() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt32() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToUInt32() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToInt16() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToInt16() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt16() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToUInt16() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToInt8() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToInt8() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt8() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToUInt8() =>
+        JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt8Clamp() =>
-        Result<JSNumber, TypeError>.OK(JSNumber.Zero);
+    public override JSNumber ToUInt8Clamp() =>
+        JSNumber.Zero;
 
-    public override Result<JSBigInt, TypeError> ToBigInt()
+    public override JSBigInt ToBigInt()
     {
         // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigInt64()
+    public override JSBigInt ToBigInt64()
     {
         // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigUInt64()
+    public override JSBigInt ToBigUInt64()
     {
         // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<JSString, TypeError> AbstractToString()
+    public override JSString AbstractToString()
     {
         // "undefined"
         throw new NotImplementedException();
     }
 
-    public override Result<JSObject, TypeError> ToObject()
+    public override JSObject ToObject()
     {
         // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToPropertyKey()
+    public override JSValue ToPropertyKey()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToLength() =>
-        Result<JSValue, TypeError>.OK(JSNumber.Zero);
+    public override JSValue ToLength() =>
+        JSNumber.Zero;
 
-    public override Result<JSValue, TypeError> ToIndex() =>
-        Result<JSValue, TypeError>.OK(JSNumber.Zero);
+    public override JSValue ToIndex() =>
+        JSNumber.Zero;
 
     #endregion
 
     #region Abstract Testing/Comparison Operations
 
 
-    public override Result<JSValue, TypeError> RequireObjectCoercible()
+    public override JSValue RequireObjectCoercible()
     {
         // TypeError
         throw new NotImplementedException();
     }
 
-    public override Result<bool, TypeError> IsArray() =>
-        Result<bool, TypeError>.OK(false);
+    public override bool IsArray() =>
+        false;
 
     public override bool IsCallable() =>
         false;

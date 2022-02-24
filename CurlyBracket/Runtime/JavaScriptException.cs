@@ -1,5 +1,5 @@
 /* =============================================================================
- * File:   TypeError.cs
+ * File:   JavaScriptException.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
@@ -25,7 +25,18 @@
  * =============================================================================
  */
 
-namespace CurlyBracket.Engine;
+namespace CurlyBracket.Runtime;
 
-public record TypeError(
-    string? Message = null);
+public class JavaScriptException : Exception
+{
+    public JavaScriptException()
+    { }
+
+    public JavaScriptException(string? message)
+        : base(message)
+    { }
+
+    public JavaScriptException(string? message, Exception? innerException)
+        : base(message, innerException)
+    { }
+}

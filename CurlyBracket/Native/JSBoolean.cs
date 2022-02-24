@@ -25,8 +25,6 @@
  * =============================================================================
  */
 
-using CurlyBracket.Engine;
-
 namespace CurlyBracket.Native;
 
 public class JSBoolean : JSValue
@@ -47,80 +45,80 @@ public class JSBoolean : JSValue
 
     #region Abstract Type Conversions
 
-    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null) =>
-        Result<JSValue, TypeError>.OK(this);
+    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+        this;
 
     public override JSBoolean ToBoolean() =>
         this;
 
-    public override Result<JSValue, TypeError> ToNumeric() =>
-        Result<JSValue, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSValue ToNumeric() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToNumber() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToNumber() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToIntegerOrInfinity() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToIntegerOrInfinity() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToInt32() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToInt32() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt32() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToUInt32() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToInt16() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToInt16() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt16() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToUInt16() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToInt8() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToInt8() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt8() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToUInt8() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSNumber, TypeError> ToUInt8Clamp() =>
-        Result<JSNumber, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSNumber ToUInt8Clamp() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSBigInt, TypeError> ToBigInt()
+    public override JSBigInt ToBigInt()
     {
         // 1n if true; 0n if false
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigInt64()
+    public override JSBigInt ToBigInt64()
     {
         // 1n if true; 0n if false
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigUInt64()
+    public override JSBigInt ToBigUInt64()
     {
         // 1n if true; 0n if false
         throw new NotImplementedException();
     }
 
-    public override Result<JSString, TypeError> AbstractToString()
+    public override JSString AbstractToString()
     {
         // "true" if true; "false" if false
         throw new NotImplementedException();
     }
 
-    public override Result<JSObject, TypeError> ToObject()
+    public override JSObject ToObject()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToPropertyKey()
+    public override JSValue ToPropertyKey()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToLength() =>
-        Result<JSValue, TypeError>.OK(Value ? JSNumber.One : JSNumber.Zero);
+    public override JSValue ToLength() =>
+        Value ? JSNumber.One : JSNumber.Zero;
 
-    public override Result<JSValue, TypeError> ToIndex()
+    public override JSValue ToIndex()
     {
         throw new NotImplementedException();
     }
@@ -130,11 +128,11 @@ public class JSBoolean : JSValue
     #region Abstract Testing/Comparison Operations
 
 
-    public override Result<JSValue, TypeError> RequireObjectCoercible() =>
-        Result<JSValue, TypeError>.OK(this);
+    public override JSValue RequireObjectCoercible() =>
+        this;
 
-    public override Result<bool, TypeError> IsArray() =>
-        Result<bool, TypeError>.OK(false);
+    public override bool IsArray() =>
+        false;
 
     public override bool IsCallable() =>
         false;

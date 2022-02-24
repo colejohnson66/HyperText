@@ -26,8 +26,6 @@
  * =============================================================================
  */
 
-using CurlyBracket.Engine;
-
 namespace CurlyBracket.Native;
 
 public abstract partial class JSValue
@@ -40,7 +38,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toprimitive
     /// </remarks>
-    public abstract Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null);
+    public abstract JSValue ToPrimitive(JSType? preferredType = null);
 
     /// <summary>
     /// Implements the <c>ToBoolean</c> abstract operation.
@@ -58,7 +56,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tonumeric
     /// </remarks>
-    public abstract Result<JSValue, TypeError> ToNumeric();
+    public abstract JSValue ToNumeric();
 
     /// <summary>
     /// Implements the <c>ToNumber</c> abstract operation.
@@ -67,7 +65,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tonumber
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToNumber();
+    public abstract JSNumber ToNumber();
 
     /// <summary>
     /// Implements the <c>ToIntegerOrInfinity</c> abstract operation.
@@ -76,7 +74,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tointegerorinfinity
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToIntegerOrInfinity();
+    public abstract JSNumber ToIntegerOrInfinity();
 
     /// <summary>
     /// Implements the <c>ToInt32</c> abstract operation.
@@ -85,7 +83,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toint32
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToInt32();
+    public abstract JSNumber ToInt32();
 
     /// <summary>
     /// Implements the <c>ToUInt32</c> abstract operation.
@@ -94,7 +92,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint32
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToUInt32();
+    public abstract JSNumber ToUInt32();
 
     /// <summary>
     /// Implements the <c>ToInt16</c> abstract operation.
@@ -103,7 +101,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toint16
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToInt16();
+    public abstract JSNumber ToInt16();
 
     /// <summary>
     /// Implements the <c>ToUInt16</c> abstract operation.
@@ -112,7 +110,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint16
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToUInt16();
+    public abstract JSNumber ToUInt16();
 
     /// <summary>
     /// Implements the <c>ToInt8</c> abstract operation.
@@ -121,7 +119,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toint8
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToInt8();
+    public abstract JSNumber ToInt8();
 
     /// <summary>
     /// Implements the <c>ToUInt8</c> abstract operation.
@@ -130,7 +128,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint8
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToUInt8();
+    public abstract JSNumber ToUInt8();
 
     /// <summary>
     /// Implements the <c>ToUInt8Clamp</c> abstract operation.
@@ -139,7 +137,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint8clamp
     /// </remarks>
-    public abstract Result<JSNumber, TypeError> ToUInt8Clamp();
+    public abstract JSNumber ToUInt8Clamp();
 
     /// <summary>
     /// Implements the <c>ToBigInt</c> abstract operation.
@@ -148,7 +146,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tobigint
     /// </remarks>
-    public abstract Result<JSBigInt, TypeError> ToBigInt();
+    public abstract JSBigInt ToBigInt();
 
     /// <summary>
     /// Implements the <c>ToBigInt64</c> abstract operation.
@@ -157,7 +155,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tobigint64
     /// </remarks>
-    public abstract Result<JSBigInt, TypeError> ToBigInt64();
+    public abstract JSBigInt ToBigInt64();
 
     /// <summary>
     /// Implements the <c>ToBigUInt64</c> abstract operation.
@@ -166,7 +164,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tobiguint64
     /// </remarks>
-    public abstract Result<JSBigInt, TypeError> ToBigUInt64();
+    public abstract JSBigInt ToBigUInt64();
 
     /// <summary>
     /// Implements the <c>ToString</c> abstract operation.
@@ -176,7 +174,7 @@ public abstract partial class JSValue
     /// Named with the "Abstract" prefix to avoid naming conflicts with <see cref="Object.ToString" />.
     /// https://tc39.es/ecma262/#sec-tostring
     /// </remarks>
-    public abstract Result<JSString, TypeError> AbstractToString();
+    public abstract JSString AbstractToString();
 
     /// <summary>
     /// Implements the <c>ToObject</c> abstract operation.
@@ -185,7 +183,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toobject
     /// </remarks>
-    public abstract Result<JSObject, TypeError> ToObject();
+    public abstract JSObject ToObject();
 
     /// <summary>
     /// Implements the <c>ToPropertyKey</c> abstract operation.
@@ -194,7 +192,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-topropertykey
     /// </remarks>
-    public abstract Result<JSValue, TypeError> ToPropertyKey();
+    public abstract JSValue ToPropertyKey();
 
     /// <summary>
     /// Implements the <c>ToLength</c> abstract operation.
@@ -203,7 +201,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tolength
     /// </remarks>
-    public abstract Result<JSValue, TypeError> ToLength();
+    public abstract JSValue ToLength();
 
     /// <summary>
     /// Implements the <c>ToIndex</c> abstract operation.
@@ -212,5 +210,5 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toindex
     /// </remarks>
-    public abstract Result<JSValue, TypeError> ToIndex();
+    public abstract JSValue ToIndex();
 }

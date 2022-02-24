@@ -25,8 +25,6 @@
  * =============================================================================
  */
 
-using CurlyBracket.Engine;
-
 namespace CurlyBracket.Native;
 
 public class JSNumber : JSValue
@@ -50,7 +48,7 @@ public class JSNumber : JSValue
 
     #region Abstract Type Conversions
 
-    public override Result<JSValue, TypeError> ToPrimitive(JSType? preferredType = null)
+    public override JSValue ToPrimitive(JSType? preferredType = null)
     {
         throw new NotImplementedException();
     }
@@ -60,92 +58,92 @@ public class JSNumber : JSValue
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToNumeric()
+    public override JSValue ToNumeric()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToNumber()
+    public override JSNumber ToNumber()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToIntegerOrInfinity()
+    public override JSNumber ToIntegerOrInfinity()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToInt32()
+    public override JSNumber ToInt32()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToUInt32()
+    public override JSNumber ToUInt32()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToInt16()
+    public override JSNumber ToInt16()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToUInt16()
+    public override JSNumber ToUInt16()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToInt8()
+    public override JSNumber ToInt8()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToUInt8()
+    public override JSNumber ToUInt8()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSNumber, TypeError> ToUInt8Clamp()
+    public override JSNumber ToUInt8Clamp()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigInt()
+    public override JSBigInt ToBigInt()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigInt64()
+    public override JSBigInt ToBigInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSBigInt, TypeError> ToBigUInt64()
+    public override JSBigInt ToBigUInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSString, TypeError> AbstractToString()
+    public override JSString AbstractToString()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSObject, TypeError> ToObject()
+    public override JSObject ToObject()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToPropertyKey()
+    public override JSValue ToPropertyKey()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToLength()
+    public override JSValue ToLength()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<JSValue, TypeError> ToIndex()
+    public override JSValue ToIndex()
     {
         throw new NotImplementedException();
     }
@@ -155,12 +153,12 @@ public class JSNumber : JSValue
     #region Abstract Testing/Comparison Operations
 
 
-    public override Result<JSValue, TypeError> RequireObjectCoercible()
+    public override JSValue RequireObjectCoercible()
     {
         throw new NotImplementedException();
     }
 
-    public override Result<bool, TypeError> IsArray()
+    public override bool IsArray()
     {
         throw new NotImplementedException();
     }
