@@ -31,10 +31,13 @@ namespace CurlyBracket.Native;
 
 public class JSString : JSValue
 {
-    public JSString() : base(JSType.String)
+    public JSString(string value)
+        : base(JSType.String)
     {
-        throw new NotImplementedException();
+        Value = value;
     }
+
+    public string Value { get; }
 
     #region Abstract Type Conversions
 

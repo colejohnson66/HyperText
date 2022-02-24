@@ -27,6 +27,5 @@
 
 namespace CurlyBracket.Engine;
 
-public class TypeError
-{
-}
+public record TypeError(
+    string? Message = null);
