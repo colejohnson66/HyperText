@@ -45,12 +45,13 @@ public class Token
     public static Token NewEndOfFileToken() => new(TokenType.EndOfFile);
     public static Token NewTagToken(Tag tag) => new(TokenType.Tag, tag);
 
-    public TokenType Type { get; private set; }
+    public TokenType Type { get; }
     public Rune CharacterValue
     {
         get
         {
-            Contract.Assert(Type is TokenType.Character);
+            if (Type is not TokenType.Character)
+                throw new InvalidOperationException($"{nameof(Token)}.{nameof(Type)} is not {nameof(TokenType.Character)}.");
             return _value!;
         }
     }
@@ -58,7 +59,8 @@ public class Token
     {
         get
         {
-            Contract.Assert(Type is TokenType.Comment);
+            if (Type is not TokenType.Comment)
+                throw new InvalidOperationException($"{nameof(Token)}.{nameof(Type)} is not {nameof(TokenType.Comment)}.");
             return _value!;
         }
     }
@@ -66,7 +68,8 @@ public class Token
     {
         get
         {
-            Contract.Assert(Type is TokenType.Doctype);
+            if (Type is not TokenType.Doctype)
+                throw new InvalidOperationException($"{nameof(Token)}.{nameof(Type)} is not {nameof(TokenType.Doctype)}.");
             return _value!;
         }
     }
@@ -74,24 +77,24 @@ public class Token
     {
         get
         {
-            Contract.Assert(Type is TokenType.Tag);
+            if (Type is not TokenType.Tag)
+                throw new InvalidOperationException($"{nameof(Token)}.{nameof(Type)} is not {nameof(TokenType.Tag)}.");
             return _value!;
         }
     }
 
     public override string ToString()
     {
-        Contract.Assert(
-            Type is TokenType.Character or TokenType.Comment or TokenType.Doctype or TokenType.EndOfFile or TokenType.Tag,
-            $"{nameof(Token)} object is in an invalid state. The type ({Type}) is unknown.");
+        if (!Enum.IsDefined(Type))
+            throw new InvalidOperationException($"{nameof(Token)} is in an invalid state; The type is unknown.");
 
         return Type switch
         {
-            TokenType.Character => $"Token {{ Character {{ {_value} }} }}",
-            TokenType.Comment => $"Token {{ Comment {{ {_value} }} }}",
-            TokenType.Doctype => $"Token {{ Doctype {{ {_value} }} }}",
+            TokenType.Character => $"Token {{ Character {{ {CharacterValue} }} }}",
+            TokenType.Comment => $"Token {{ Comment {{ {CommentValue} }} }}",
+            TokenType.Doctype => $"Token {{ {DoctypeValue} }}", // `Doctype` writes its type
             TokenType.EndOfFile => $"Token {{ EndOfFile }}",
-            TokenType.Tag => $"Token {{ Tag {{ {_value} }} }}",
+            TokenType.Tag => $"Token {{ {TagValue} }}", // `Tag` writes its type
             _ => throw new(), // unreachable
         };
     }

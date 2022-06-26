@@ -25,10 +25,11 @@
  * =============================================================================
  */
 
-using System.Linq;
-using System.Text;
 using AngleBracket.Parser;
 using AngleBracket.Text;
+using System.Linq;
+using System.Text;
+using System.Diagnostics;
 using static AngleBracket.Infra.CodePoint;
 
 // ReSharper disable ConvertIfStatementToSwitchStatement
@@ -182,20 +183,20 @@ public partial class HtmlTokenizer
     }
     private void EmitCommentToken()
     {
-        Contract.Assert(_currentComment is not null);
+        Debug.Assert(_currentComment is not null);
         _tokensToEmit.Enqueue(Token.NewCommentToken(_currentComment!.ToString()));
         _currentComment = null;
     }
     private void EmitDoctypeToken()
     {
-        Contract.Assert(_currentDoctype is not null);
+        Debug.Assert(_currentDoctype is not null);
         _tokensToEmit.Enqueue(Token.NewDoctypeToken(_currentDoctype!));
         _currentDoctype = null;
     }
     private void EmitEndOfFileToken() => _tokensToEmit.Enqueue(Token.NewEndOfFileToken());
     private void EmitTagToken()
     {
-        Contract.Assert(_currentTag is not null);
+        Debug.Assert(_currentTag is not null);
         _tokensToEmit.Enqueue(Token.NewTagToken(_currentTag!));
         _currentAttribute = null;
         _currentTag = null;

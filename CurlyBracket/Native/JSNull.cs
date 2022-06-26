@@ -26,6 +26,7 @@
  */
 
 using CurlyBracket.Runtime;
+using System.Diagnostics;
 
 namespace CurlyBracket.Native;
 
@@ -142,7 +143,7 @@ public class JSNull : JSValue
 
     public override bool SameValueNonNumeric(JSValue other)
     {
-        Contract.Assert(other.Type is JSType.Null);
+        Debug.Assert(other.Type is JSType.Null);
         return true;
     }
 

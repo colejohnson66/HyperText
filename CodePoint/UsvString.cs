@@ -27,6 +27,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace CodePoint;
@@ -140,7 +141,7 @@ public sealed class UsvString :
         if (obj is null)
             return 1; // nulls come first
 
-        Contract.Assert(obj is UsvString);
+        Debug.Assert(obj is UsvString);
 
         return CompareTo((UsvString)obj);
     }

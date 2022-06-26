@@ -25,6 +25,8 @@
  * =============================================================================
  */
 
+using System.Diagnostics;
+
 namespace CurlyBracket.Native;
 
 public class JSBoolean : JSValue
@@ -149,7 +151,7 @@ public class JSBoolean : JSValue
 
     public override bool SameValueNonNumeric(JSValue other)
     {
-        Contract.Assert(other.Type is JSType.Boolean);
+        Debug.Assert(other.Type is JSType.Boolean);
         return Value == ((JSBoolean)other).Value;
     }
 

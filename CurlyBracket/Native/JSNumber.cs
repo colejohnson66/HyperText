@@ -26,6 +26,7 @@
  */
 
 using CurlyBracket.Runtime;
+using System.Diagnostics;
 
 namespace CurlyBracket.Native;
 
@@ -150,7 +151,7 @@ public class JSNumber : JSValue
         JSValue clamped = ToLength();
         if (!integer.SameValue(clamped))
             throw new RangeErrorException();
-        Contract.Assert(integer.Value is >= 0 and <= MAX_SAFE_INTEGER);
+        Debug.Assert(integer.Value is >= 0 and <= MAX_SAFE_INTEGER);
         return integer;
     }
 

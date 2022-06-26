@@ -25,10 +25,11 @@
  * =============================================================================
  */
 
-using System.Linq;
-using System.Text;
 using AngleBracket.Parser;
 using CodePoint.IO;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
 
 namespace AngleBracket.Tokenizer;
 
@@ -78,8 +79,8 @@ public partial class HtmlTokenizer : IDisposable
 
     private void PutBack(Rune? r)
     {
-        Contract.Assert(r is not null); // no EOF
-        _peekBuffer.Push(r!.Value);
+        Debug.Assert(r is not null); // no EOF
+        _peekBuffer.Push(r.Value);
     }
 
     private void AddParseError(ParseError error)

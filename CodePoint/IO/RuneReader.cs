@@ -66,18 +66,13 @@ public abstract class RuneReader : IDisposable
     /// <exception cref="ArgumentNullException">If <paramref name="buffer" /> is <c>null</c>.</exception>
     public virtual int Read(Rune?[]? buffer, int index, int count)
     {
-        Contract.Assert(
-            buffer is not null,
-            $"{nameof(buffer)} must not be null.");
-        Contract.Assert(
-            index >= 0,
-            $"{nameof(index)} must be non-negative.");
-        Contract.Assert(
-            count >= 0,
-            $"{nameof(count)} must be non-negative.");
-        Contract.Assert(
-            buffer.Length > index + count,
-            $"{nameof(buffer)} must be large enough to store the result.");
+        ArgumentNullException.ThrowIfNull(buffer);
+        if (index < 0)
+            throw new ArgumentException("Index must be non-negative.");
+        if (count < 0)
+            throw new ArgumentException("Count must be non-negative.");
+        if (index + count > buffer.Length)
+            throw new ArgumentException("Buffer must be large enough to store the result.");
 
         for (int i = 0; i < count; i++)
         {

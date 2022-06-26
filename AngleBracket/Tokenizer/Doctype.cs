@@ -25,8 +25,9 @@
  * =============================================================================
  */
 
-using System.Text;
 using AngleBracket.Text;
+using System.Diagnostics;
+using System.Text;
 
 namespace AngleBracket.Tokenizer;
 
@@ -42,22 +43,24 @@ public class Doctype
 
     public string Name => RuneHelpers.ConvertToString(_name);
     public bool QuirksMode { get; private set; }
-    public string? PublicIdentifier => _public is null ? null : RuneHelpers.ConvertToString(_public);
-    public string? SystemIdentifier => _system is null ? null : RuneHelpers.ConvertToString(_system);
+    public string? PublicIdentifier =>
+        _public is null ? null : RuneHelpers.ConvertToString(_public);
+    public string? SystemIdentifier =>
+        _system is null ? null : RuneHelpers.ConvertToString(_system);
 
     public void AppendName(Rune r) => _name.Add(r);
     public void SetQuirksFlag() => QuirksMode = true;
     public void SetPublicIdentifierToEmptyString() => _public = new();
     public void AppendPublicIdentifier(Rune r)
     {
-        Contract.Assert(_public is not null);
-        _public!.Add(r);
+        Debug.Assert(_public is not null);
+        _public.Add(r);
     }
     public void SetSystemIdentifierToEmptyString() => _system = new();
     public void AppendSystemIdentifier(Rune r)
     {
-        Contract.Assert(_system is not null);
-        _system!.Add(r);
+        Debug.Assert(_system is not null);
+        _system.Add(r);
     }
 
     public override string ToString()
