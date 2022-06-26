@@ -46,9 +46,7 @@ namespace CodePoint;
 /// To create a normalized <see cref="UsvString" />, use <c>TODO</c>.
 /// </remarks>
 public sealed class UsvString :
-    ICloneable,
-    IComparable, IComparable<UsvString>, IComparable<string>,
-    IEnumerable, IEnumerable<Rune>
+    ICloneable, IComparable, IComparable<UsvString>, IComparable<string>, IEnumerable<Rune>
 #pragma warning restore CA1710, CA1036
 {
     private readonly List<Rune> _runes;
@@ -79,8 +77,7 @@ public sealed class UsvString :
                 continue;
             }
 
-            throw new ArgumentException(
-                $"Invalid Unicode codepoint in input at index {i}");
+            throw new ArgumentException($"Invalid Unicode codepoint in input at index {i}.");
         }
 
         _runes.TrimExcess();
@@ -98,6 +95,8 @@ public sealed class UsvString :
 
     public static bool operator ==(UsvString? lhs, UsvString? rhs)
     {
+        if (ReferenceEquals(lhs, rhs))
+            return true;
         if (lhs is null || rhs is null)
             return false;
         if (lhs.Length != rhs.Length)
@@ -111,23 +110,8 @@ public sealed class UsvString :
 
         return true;
     }
-    public static bool operator !=(UsvString? lhs, UsvString? rhs)
-    {
-        if (lhs is null && rhs is null) // two nulls are equal
-            return true;
-        if (lhs is null || rhs is null) // but only one is not
-            return false;
-        if (lhs.Length != rhs.Length)
-            return true;
-
-        for (int i = 0; i < lhs.Length; i++)
-        {
-            if (lhs[i] != rhs[i])
-                return true;
-        }
-
-        return false;
-    }
+    public static bool operator !=(UsvString? lhs, UsvString? rhs) =>
+        !(lhs == rhs);
 
     public override bool Equals(object? obj)
     {
@@ -138,7 +122,7 @@ public sealed class UsvString :
 
     public override int GetHashCode() => _runes.GetHashCode();
 
-    public override string? ToString()
+    public override string ToString()
     {
         StringBuilder builder = new(Length * 2);
         foreach (Rune r in this)
@@ -189,11 +173,9 @@ public sealed class UsvString :
     }
     #endregion
 
-    #region IEnumerator
-    public IEnumerator GetEnumerator() => _runes.GetEnumerator();
-    #endregion
-
     #region IEnumerator<Rune>
+    public IEnumerator GetEnumerator() => _runes.GetEnumerator();
+
     IEnumerator<Rune> IEnumerable<Rune>.GetEnumerator() => _runes.GetEnumerator();
     #endregion
 }
