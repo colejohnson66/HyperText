@@ -35,7 +35,9 @@ public class JSNumber : JSValue
     public static JSNumber Infinity { get; } = new(double.PositiveInfinity);
     public static JSNumber NegativeInfinity { get; } = new(double.NegativeInfinity);
     public static JSNumber Zero { get; } = new(0);
-    public static JSNumber One { get; } = new(1); // useful for ToBoolean() operations
+    public static JSNumber NegativeZero { get; } = new(-0);
+    public static JSNumber One { get; } = new(1);
+    public static JSNumber NegativeOne { get; } = new(-1);
     public const double MAX_SAFE_INTEGER = 9007199254740991;
     public static JSNumber MaxSafeInteger { get; } = new(9007199254740991);
     public static JSNumber MinSafeInteger { get; } = new(-9007199254740991);
