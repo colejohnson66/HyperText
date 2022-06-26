@@ -27,5 +27,6 @@
  */
 
 global using HyperLib;
+global using JetBrains.Annotations;
 global using System;
 global using System.Diagnostics.Contracts;
