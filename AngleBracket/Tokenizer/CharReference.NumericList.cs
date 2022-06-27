@@ -1,10 +1,15 @@
 /* =============================================================================
- * File:   NumericCharReference.cs
+ * File:   CharReference.NumericList.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Contains the list of "numeric character references" as defined in the HTML
+ *   standard from WHATWG.
+ *
+ * As of the 17 June 2022 version, this is located in section 13.2.5.80 "Numeric
+ *   character reference end state":
+ *   <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
  * =============================================================================
  * Copyright (c) 2021-2022 Cole Tobin
  *
@@ -29,9 +34,9 @@ using System.Collections.ObjectModel;
 
 namespace AngleBracket.Tokenizer;
 
-public static class NumericCharReference
+public static partial class CharReference
 {
-    public static readonly ReadOnlyDictionary<int, int> List = new(new Dictionary<int, int>
+    public static readonly ReadOnlyDictionary<int, int> NumericList = new(new Dictionary<int, int>
     {
         { 0x80, 0x20AC },
         { 0x82, 0x201A },

@@ -41,7 +41,7 @@ public partial class HtmlTokenizer
     // ReSharper disable once InconsistentNaming
     private static readonly Rune REPLACEMENT_CHARACTER = Rune.ReplacementChar;
 
-    private Action<Rune?>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()`
+    private Action<Rune?>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()` by ctor
     private readonly Queue<Token> _tokensToEmit = new();
     private readonly Stack<Rune> _peekBuffer;
 
@@ -55,11 +55,6 @@ public partial class HtmlTokenizer
     private Doctype? _currentDoctype = null;
     private Tag? _currentTag = null;
 
-    /// <summary>
-    /// Initializes the internal state map.
-    /// This can't be <c>static</c> due to the tokenizer function pointers not
-    ///   being <c>static</c> themselves.
-    /// </summary>
     private void InitStateMap()
     {
         _stateMap = new Action<Rune?>[(int)TokenizerState.__Count];
