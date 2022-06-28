@@ -63,7 +63,11 @@ public partial class HtmlParser : IDisposable
 
     private void InitStateMap()
     {
-        _stateMap = new Action<Token>[(int)InsertionMode.__Count];
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_stateMap is not null)
+            return;
+
+        _stateMap = new Action<Token>[Enum.GetValues<InsertionMode>().Length];
         _stateMap[(int)InsertionMode.Initial] = ParseInitial;
         _stateMap[(int)InsertionMode.BeforeHtml] = ParseBeforeHtml;
         _stateMap[(int)InsertionMode.BeforeHead] = ParseBeforeHead;

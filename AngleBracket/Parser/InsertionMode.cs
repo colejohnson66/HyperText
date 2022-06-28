@@ -52,6 +52,4 @@ public enum InsertionMode
     AfterFrameset,
     AfterAfterBody,
     AfterAfterFrameset,
-
-    __Count,
 }
