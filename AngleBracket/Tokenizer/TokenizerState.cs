@@ -119,7 +119,4 @@ public enum TokenizerState
     HexadecimalCharacterReference,
     DecimalCharacterReference,
     NumericCharacterReferenceEnd,
-
-    // ReSharper disable once InconsistentNaming
-    __Count,
 }

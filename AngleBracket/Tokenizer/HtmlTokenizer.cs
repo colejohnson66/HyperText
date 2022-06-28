@@ -26,6 +26,7 @@
  */
 
 using AngleBracket.Parser;
+using AngleBracket.Text;
 using CodePoint.IO;
 using System.Diagnostics;
 using System.Linq;
@@ -35,6 +36,23 @@ namespace AngleBracket.Tokenizer;
 
 public partial class HtmlTokenizer : IDisposable
 {
+    // ReSharper disable once InconsistentNaming
+    private static readonly Rune REPLACEMENT_CHARACTER = Rune.ReplacementChar;
+
+    private Action<Rune?>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()` by `Tokenize()`
+    private readonly Queue<Token> _tokensToEmit = new();
+    private readonly Stack<Rune> _peekBuffer;
+
+    private TokenizerState _state = TokenizerState.Data;
+    private TokenizerState? _returnState = null;
+    private readonly List<Rune> _tempBuffer = new();
+    private int _charRefCode = 0;
+
+    private Attribute? _currentAttribute = null;
+    private StringBuilder? _currentComment = null;
+    private Doctype? _currentDoctype = null;
+    private Tag? _currentTag = null;
+
     private readonly RuneReader _input;
 
     public HtmlTokenizer(RuneReader input)
@@ -86,6 +104,160 @@ public partial class HtmlTokenizer : IDisposable
     private void AddParseError(ParseError error)
     {
         // TODO
+    }
+
+    private void InitStateMap()
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (_stateMap is not null)
+            return;
+
+        _stateMap = new Action<Rune?>[Enum.GetValues<TokenizerState>().Length];
+        _stateMap[(int)TokenizerState.Data] = Data;
+        _stateMap[(int)TokenizerState.RCData] = RCData;
+        _stateMap[(int)TokenizerState.RawText] = RawText;
+        _stateMap[(int)TokenizerState.ScriptData] = ScriptData;
+        _stateMap[(int)TokenizerState.Plaintext] = Plaintext;
+        _stateMap[(int)TokenizerState.TagOpen] = TagOpen;
+        _stateMap[(int)TokenizerState.EndTagOpen] = EndTagOpen;
+        _stateMap[(int)TokenizerState.TagName] = TagName;
+        _stateMap[(int)TokenizerState.RCDataLessThanSign] = RCDataLessThanSign;
+        _stateMap[(int)TokenizerState.RCDataEndTagOpen] = RCDataEndTagOpen;
+        _stateMap[(int)TokenizerState.RCDataEndTagName] = RCDataEndTagName;
+        _stateMap[(int)TokenizerState.RawTextLessThanSign] = RawTextLessThanSign;
+        _stateMap[(int)TokenizerState.RawTextEndTagOpen] = RawTextEndTagOpen;
+        _stateMap[(int)TokenizerState.RawTextEndTagName] = RawTextEndTagName;
+        _stateMap[(int)TokenizerState.ScriptDataLessThanSign] = ScriptDataLessThanSign;
+        _stateMap[(int)TokenizerState.ScriptDataEndTagOpen] = ScriptDataEndTagOpen;
+        _stateMap[(int)TokenizerState.ScriptDataEndTagName] = ScriptDataEndTagName;
+        _stateMap[(int)TokenizerState.ScriptDataEscapeStart] = ScriptDataEscapeStart;
+        _stateMap[(int)TokenizerState.ScriptDataEscapeStartDash] = ScriptDataEscapeStartDash;
+        _stateMap[(int)TokenizerState.ScriptDataEscaped] = ScriptDataEscaped;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedDash] = ScriptDataEscapedDash;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedDashDash] = ScriptDataEscapedDashDash;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedLessThanSign] = ScriptDataEscapedLessThanSign;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedEndTagOpen] = ScriptDataEscapedEndTagOpen;
+        _stateMap[(int)TokenizerState.ScriptDataEscapedEndTagName] = ScriptDataEscapedEndTagName;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapeStart] = ScriptDataDoubleEscapeStart;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscaped] = ScriptDataDoubleEscaped;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapedDash] = ScriptDataDoubleEscapedDash;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapedDashDash] = ScriptDataDoubleEscapedDashDash;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapedLessThanSign] = ScriptDataDoubleEscapedLessThanSign;
+        _stateMap[(int)TokenizerState.ScriptDataDoubleEscapeEnd] = ScriptDataDoubleEscapeEnd;
+        _stateMap[(int)TokenizerState.BeforeAttributeName] = BeforeAttributeName;
+        _stateMap[(int)TokenizerState.AttributeName] = AttributeName;
+        _stateMap[(int)TokenizerState.AfterAttributeName] = AfterAttributeName;
+        _stateMap[(int)TokenizerState.BeforeAttributeValue] = BeforeAttributeValue;
+        _stateMap[(int)TokenizerState.AttributeValueDoubleQuoted] = AttributeValueDoubleQuoted;
+        _stateMap[(int)TokenizerState.AttributeValueSingleQuoted] = AttributeValueSingleQuoted;
+        _stateMap[(int)TokenizerState.AttributeValueUnquoted] = AttributeValueUnquoted;
+        _stateMap[(int)TokenizerState.AfterAttributeValueQuoted] = AfterAttributeValueQuoted;
+        _stateMap[(int)TokenizerState.SelfClosingStartTag] = SelfClosingStartTag;
+        _stateMap[(int)TokenizerState.BogusComment] = BogusComment;
+        _stateMap[(int)TokenizerState.MarkupDeclarationOpen] = MarkupDeclarationOpen;
+        _stateMap[(int)TokenizerState.CommentStart] = CommentStart;
+        _stateMap[(int)TokenizerState.CommentStartDash] = CommentStartDash;
+        _stateMap[(int)TokenizerState.Comment] = Comment;
+        _stateMap[(int)TokenizerState.CommentLessThanSign] = CommentLessThanSign;
+        _stateMap[(int)TokenizerState.CommentLessThanSignBang] = CommentLessThanSignBang;
+        _stateMap[(int)TokenizerState.CommentLessThanSignBangDash] = CommentLessThanSignBangDash;
+        _stateMap[(int)TokenizerState.CommentLessThanSignBangDashDash] = CommentLessThanSignBangDashDash;
+        _stateMap[(int)TokenizerState.CommentEndDash] = CommentEndDash;
+        _stateMap[(int)TokenizerState.CommentEnd] = CommentEnd;
+        _stateMap[(int)TokenizerState.CommentEndBang] = CommentEndBang;
+        _stateMap[(int)TokenizerState.Doctype] = Doctype;
+        _stateMap[(int)TokenizerState.BeforeDoctypeName] = BeforeDoctypeName;
+        _stateMap[(int)TokenizerState.DoctypeName] = DoctypeName;
+        _stateMap[(int)TokenizerState.AfterDoctypeName] = AfterDoctypeName;
+        _stateMap[(int)TokenizerState.AfterDoctypePublicKeyword] = AfterDoctypePublicKeyword;
+        _stateMap[(int)TokenizerState.BeforeDoctypePublicIdentifier] = BeforeDoctypePublicIdentifier;
+        _stateMap[(int)TokenizerState.DoctypePublicIdentifierDoubleQuoted] = DoctypePublicIdentifierDoubleQuoted;
+        _stateMap[(int)TokenizerState.DoctypePublicIdentifierSingleQuoted] = DoctypePublicIdentifierSingleQuoted;
+        _stateMap[(int)TokenizerState.AfterDoctypePublicIdentifier] = AfterDoctypePublicIdentifier;
+        _stateMap[(int)TokenizerState.BetweenDoctypePublicAndSystemIdentifiers] = BetweenDoctypePublicAndSystemIdentifiers;
+        _stateMap[(int)TokenizerState.AfterDoctypeSystemKeyword] = AfterDoctypeSystemKeyword;
+        _stateMap[(int)TokenizerState.BeforeDoctypeSystemIdentifier] = BeforeDoctypeSystemIdentifier;
+        _stateMap[(int)TokenizerState.DoctypeSystemIdentifierDoubleQuoted] = DoctypeSystemIdentifierDoubleQuoted;
+        _stateMap[(int)TokenizerState.DoctypeSystemIdentifierSingleQuoted] = DoctypeSystemIdentifierSingleQuoted;
+        _stateMap[(int)TokenizerState.AfterDoctypeSystemIdentifier] = AfterDoctypeSystemIdentifier;
+        _stateMap[(int)TokenizerState.BogusDoctype] = BogusDoctype;
+        _stateMap[(int)TokenizerState.CDataSection] = CDataSection;
+        _stateMap[(int)TokenizerState.CDataSectionBracket] = CDataSectionBracket;
+        _stateMap[(int)TokenizerState.CDataSectionEnd] = CDataSectionEnd;
+        _stateMap[(int)TokenizerState.CharacterReference] = CharacterReference;
+        _stateMap[(int)TokenizerState.NamedCharacterReference] = NamedCharacterReference;
+        _stateMap[(int)TokenizerState.AmbiguousAmpersand] = AmbiguousAmpersand;
+        _stateMap[(int)TokenizerState.NumericCharacterReference] = NumericCharacterReference;
+        _stateMap[(int)TokenizerState.HexadecimalCharacterReferenceStart] = HexadecimalCharacterReferenceStart;
+        _stateMap[(int)TokenizerState.DecimalCharacterReferenceStart] = DecimalCharacterReferenceStart;
+        _stateMap[(int)TokenizerState.HexadecimalCharacterReference] = HexadecimalCharacterReference;
+        _stateMap[(int)TokenizerState.DecimalCharacterReference] = DecimalCharacterReference;
+        _stateMap[(int)TokenizerState.NumericCharacterReferenceEnd] = NumericCharacterReferenceEnd;
+    }
+
+    private static bool IsSpecialWhitespace(Rune? r) =>
+        r?.Value is '\t' or '\n' or '\f' or ' ';
+    private static Rune ToAsciiLowercase(Rune r) => new(r.Value + ('a' - 'A'));
+
+    private bool IsCurrentEndTagAnAppropriateOne()
+    {
+        throw new NotImplementedException();
+    }
+
+    private bool WasConsumedAsPartOfAnAttribute() =>
+        _returnState is TokenizerState.AttributeValueDoubleQuoted
+            or TokenizerState.AttributeValueSingleQuoted
+            or TokenizerState.AttributeValueUnquoted;
+
+    private void FlushCodePointsConsumedAsCharacterReference()
+    {
+        if (WasConsumedAsPartOfAnAttribute())
+        {
+            foreach (Rune r in _tempBuffer)
+                _currentAttribute!.AppendValue(r);
+            return;
+        }
+
+        foreach (Rune r in _tempBuffer)
+            EmitCharacterToken(r);
+    }
+
+    private void EmitCharacterToken(char c) => EmitCharacterToken(new Rune(c));
+    private void EmitCharacterToken(Rune r) => _tokensToEmit.Enqueue(Token.NewCharacterToken(r));
+    private void EmitReplacementCharacterToken() => EmitCharacterToken(REPLACEMENT_CHARACTER);
+    private void EmitCharacterTokensFromTemporaryBuffer()
+    {
+        foreach (Rune r in _tempBuffer)
+            EmitCharacterToken(r);
+        _tempBuffer.Clear();
+    }
+    private void EmitCommentToken()
+    {
+        Debug.Assert(_currentComment is not null);
+        _tokensToEmit.Enqueue(Token.NewCommentToken(_currentComment!.ToString()));
+        _currentComment = null;
+    }
+    private void EmitDoctypeToken()
+    {
+        Debug.Assert(_currentDoctype is not null);
+        _tokensToEmit.Enqueue(Token.NewDoctypeToken(_currentDoctype!));
+        _currentDoctype = null;
+    }
+    private void EmitEndOfFileToken() => _tokensToEmit.Enqueue(Token.NewEndOfFileToken());
+    private void EmitTagToken()
+    {
+        Debug.Assert(_currentTag is not null);
+        _tokensToEmit.Enqueue(Token.NewTagToken(_currentTag!));
+        _currentAttribute = null;
+        _currentTag = null;
+    }
+
+    private bool CompareTemporaryBuffer(string compareTo)
+    {
+        if (_tempBuffer.Count != compareTo.Length)
+            return false;
+
+        return RuneHelpers.ConvertToString(_tempBuffer) == compareTo;
     }
 
     #region IDisposable
