@@ -148,7 +148,12 @@ public class JSString : JSValue
     /// </remarks>
     public JSValue CanonicalNumericIndexString()
     {
-        throw new NotImplementedException();
+        if (Value is "-0")
+            return JSNumber.NegativeZero;
+        JSNumber n = ToNumber();
+        if (n.AbstractToString() != Value)
+            return Undefined;
+        return n;
     }
 
     public override JSValue ToIndex() =>
