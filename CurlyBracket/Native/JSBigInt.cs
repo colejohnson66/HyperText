@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Implements the ECMAScript BigInt type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-bigint-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -45,15 +46,15 @@ public class JSBigInt : JSValue
     public BigInteger Value { get; }
 
     public override string ToString() =>
-        $"JSBigInt {{ {Value} }}";
+        $"{nameof(JSBigInt)} {{ {Value} }}";
 
     #region Abstract Type Conversions
 
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
         this;
 
-    public override JSBoolean ToBoolean() =>
-        Value.IsZero ? JSBoolean.False : JSBoolean.True;
+    public override bool ToBoolean() =>
+        !Value.IsZero;
 
     public override JSValue ToNumeric() =>
         this;
@@ -64,41 +65,41 @@ public class JSBigInt : JSValue
     public override JSNumber ToIntegerOrInfinity() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToInt32() =>
+    public override int ToInt32() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToUInt32() =>
+    public override uint ToUInt32() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToInt16() =>
+    public override short ToInt16() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToUInt16() =>
+    public override ushort ToUInt16() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToInt8() =>
+    public override sbyte ToInt8() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToUInt8() =>
+    public override byte ToUInt8() =>
         throw new TypeErrorException();
 
-    public override JSNumber ToUInt8Clamp() =>
+    public override byte ToUInt8Clamp() =>
         throw new TypeErrorException();
 
-    public override JSBigInt ToBigInt() =>
-        this;
+    public override BigInteger ToBigInt() =>
+        Value;
 
-    public override JSBigInt ToBigInt64()
+    public override long ToBigInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigUInt64()
+    public override ulong ToBigUInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override JSString AbstractToString()
+    public override string AbstractToString()
     {
         // return BigInt::ToString(Value);
         throw new NotImplementedException();
@@ -110,7 +111,7 @@ public class JSBigInt : JSValue
     }
 
     public override JSValue ToPropertyKey() =>
-        AbstractToString();
+        new JSString(AbstractToString());
 
     public override JSValue ToLength() =>
         throw new TypeErrorException();
@@ -121,7 +122,6 @@ public class JSBigInt : JSValue
     #endregion
 
     #region Abstract Testing/Comparison Operations
-
 
     public override JSValue RequireObjectCoercible() =>
         this;

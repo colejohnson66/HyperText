@@ -26,6 +26,8 @@
  * =============================================================================
  */
 
+using System.Numerics;
+
 namespace CurlyBracket.Native;
 
 public abstract partial class JSValue
@@ -47,7 +49,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toboolean
     /// </remarks>
-    public abstract JSBoolean ToBoolean();
+    public abstract bool ToBoolean();
 
     /// <summary>
     /// Implements the <c>ToNumeric</c> abstract operation.
@@ -83,7 +85,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toint32
     /// </remarks>
-    public abstract JSNumber ToInt32();
+    public abstract int ToInt32();
 
     /// <summary>
     /// Implements the <c>ToUInt32</c> abstract operation.
@@ -92,7 +94,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint32
     /// </remarks>
-    public abstract JSNumber ToUInt32();
+    public abstract uint ToUInt32();
 
     /// <summary>
     /// Implements the <c>ToInt16</c> abstract operation.
@@ -101,7 +103,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toint16
     /// </remarks>
-    public abstract JSNumber ToInt16();
+    public abstract short ToInt16();
 
     /// <summary>
     /// Implements the <c>ToUInt16</c> abstract operation.
@@ -110,7 +112,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint16
     /// </remarks>
-    public abstract JSNumber ToUInt16();
+    public abstract ushort ToUInt16();
 
     /// <summary>
     /// Implements the <c>ToInt8</c> abstract operation.
@@ -119,7 +121,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toint8
     /// </remarks>
-    public abstract JSNumber ToInt8();
+    public abstract sbyte ToInt8();
 
     /// <summary>
     /// Implements the <c>ToUInt8</c> abstract operation.
@@ -128,7 +130,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint8
     /// </remarks>
-    public abstract JSNumber ToUInt8();
+    public abstract byte ToUInt8();
 
     /// <summary>
     /// Implements the <c>ToUInt8Clamp</c> abstract operation.
@@ -137,7 +139,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-touint8clamp
     /// </remarks>
-    public abstract JSNumber ToUInt8Clamp();
+    public abstract byte ToUInt8Clamp();
 
     /// <summary>
     /// Implements the <c>ToBigInt</c> abstract operation.
@@ -146,7 +148,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tobigint
     /// </remarks>
-    public abstract JSBigInt ToBigInt();
+    public abstract BigInteger ToBigInt();
 
     /// <summary>
     /// Implements the <c>ToBigInt64</c> abstract operation.
@@ -155,7 +157,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tobigint64
     /// </remarks>
-    public abstract JSBigInt ToBigInt64();
+    public abstract long ToBigInt64();
 
     /// <summary>
     /// Implements the <c>ToBigUInt64</c> abstract operation.
@@ -164,7 +166,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-tobiguint64
     /// </remarks>
-    public abstract JSBigInt ToBigUInt64();
+    public abstract ulong ToBigUInt64();
 
     /// <summary>
     /// Implements the <c>ToString</c> abstract operation.
@@ -174,7 +176,7 @@ public abstract partial class JSValue
     /// Named with the "Abstract" prefix to avoid naming conflicts with <see cref="Object.ToString" />.
     /// https://tc39.es/ecma262/#sec-tostring
     /// </remarks>
-    public abstract JSString AbstractToString();
+    public abstract string AbstractToString();
 
     /// <summary>
     /// Implements the <c>ToObject</c> abstract operation.

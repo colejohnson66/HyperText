@@ -26,6 +26,8 @@
  * =============================================================================
  */
 
+using System.Numerics;
+
 namespace CurlyBracket.Native;
 
 #pragma warning disable CA1720 // Identifier contains type name
@@ -56,6 +58,7 @@ public enum JSType
 
     /// <summary>
     /// The ECMAScript "Boolean" type.
+    /// Internally, a <see cref="JSBoolean" /> is a wrapper around a <see cref="bool" />.
     /// </summary>
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-ecmascript-language-types-boolean-type
@@ -64,6 +67,7 @@ public enum JSType
 
     /// <summary>
     /// The ECMAScript "String" type.
+    /// Internally, a <see cref="JSString" /> is a wrapper around a <see cref="string" />.
     /// </summary>
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-ecmascript-language-types-string-type
@@ -81,6 +85,7 @@ public enum JSType
     /// <summary>
     /// The ECMAScript "Number" type.
     /// This includes floating-point numbers and integers.
+    /// Internally, a <see cref="JSNumber" /> is a wrapper around a <see cref="double" />.
     /// </summary>
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type
@@ -89,6 +94,7 @@ public enum JSType
 
     /// <summary>
     /// The ECMAScript "BigInt" type.
+    /// Internally, a <see cref="JSBigInt" /> is a wrapper around a <see cref="BigInteger" />.
     /// </summary>
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-ecmascript-language-types-bigint-type

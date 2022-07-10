@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Implements the ECMAScript string type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-string-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -27,6 +28,7 @@
 
 using CurlyBracket.Runtime;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace CurlyBracket.Native;
 
@@ -41,15 +43,15 @@ public class JSString : JSValue
     public string Value { get; }
 
     public override string ToString() =>
-        $"JSString {{ {Value} }}";
+        $"{nameof(JSString)} {{ {Value} }}";
 
     #region Abstract Type Conversions
 
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
         this;
 
-    public override JSBoolean ToBoolean() =>
-        Value.Length is 0 ? JSBoolean.False : JSBoolean.True;
+    public override bool ToBoolean() =>
+        Value.Length is not 0;
 
     public override JSValue ToNumeric() =>
         StringToNumber();
@@ -72,33 +74,33 @@ public class JSString : JSValue
     public override JSNumber ToIntegerOrInfinity() =>
         ToNumber().ToIntegerOrInfinity();
 
-    public override JSNumber ToInt32() =>
+    public override int ToInt32() =>
         ToNumber().ToInt32();
 
-    public override JSNumber ToUInt32() =>
+    public override uint ToUInt32() =>
         ToNumber().ToUInt32();
 
-    public override JSNumber ToInt16() =>
+    public override short ToInt16() =>
         ToNumber().ToInt16();
 
-    public override JSNumber ToUInt16() =>
+    public override ushort ToUInt16() =>
         ToNumber().ToUInt16();
 
-    public override JSNumber ToInt8() =>
+    public override sbyte ToInt8() =>
         ToNumber().ToInt8();
 
-    public override JSNumber ToUInt8() =>
+    public override byte ToUInt8() =>
         ToNumber().ToUInt8();
 
-    public override JSNumber ToUInt8Clamp() =>
+    public override byte ToUInt8Clamp() =>
         ToNumber().ToUInt8Clamp();
 
-    public override JSBigInt ToBigInt()
+    public override BigInteger ToBigInt()
     {
         JSValue n = StringToBigInt();
         if (n.Type is JSType.Undefined)
             throw new SyntaxErrorException();
-        return (JSBigInt)n;
+        return ((JSBigInt)n).Value;
     }
 
     /// <summary>
@@ -113,18 +115,18 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigInt64()
+    public override long ToBigInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigUInt64()
+    public override ulong ToBigUInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override JSString AbstractToString() =>
-        this;
+    public override string AbstractToString() =>
+        Value;
 
     public override JSObject ToObject()
     {
@@ -155,7 +157,6 @@ public class JSString : JSValue
     #endregion
 
     #region Abstract Testing/Comparison Operations
-
 
     public override JSValue RequireObjectCoercible() =>
         this;
@@ -203,19 +204,11 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool SameValue(JSValue other)
-    {
-        if (other.Type is not JSType.String)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool SameValue(JSValue other) =>
+        other.Type is JSType.String && SameValueNonNumeric(other);
 
-    public override bool SameValueZero(JSValue other)
-    {
-        if (other.Type is not JSType.String)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool SameValueZero(JSValue other) =>
+        other.Type is JSType.String && SameValueNonNumeric(other);
 
     public override bool SameValueNonNumeric(JSValue other)
     {
@@ -228,29 +221,18 @@ public class JSString : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        if (other.Type is JSType.String)
-            IsStrictlyEqual(other);
+    public override bool IsLooselyEqual(JSValue other) =>
+        other.Type switch
+        {
+            JSType.String => IsStrictlyEqual(other),
+            JSType.Number => ToNumber().IsStrictlyEqual(other),
+            JSType.BigInt => ((JSBigInt)other).IsLooselyEqual(this),
+            JSType.Object => IsLooselyEqual(other.ToPrimitive()),
+            _ => false,
+        };
 
-        if (other.Type is JSType.Number)
-            ToNumber().IsStrictlyEqual(other);
-
-        // if (other.Type is JSType.BigInt)
-        //     IsLooselyEqual(other, this);
-
-        if (other.Type is JSType.Object)
-            return IsLooselyEqual(other.ToPrimitive());
-
-        return false;
-    }
-
-    public override bool IsStrictlyEqual(JSValue other)
-    {
-        if (other.Type is not JSType.String)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool IsStrictlyEqual(JSValue other) =>
+        other.Type is JSType.String && SameValueNonNumeric(other);
 
     #endregion
 }

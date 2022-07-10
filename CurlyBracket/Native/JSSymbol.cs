@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Implements the ECMAScript symbol type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-symbol-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -25,14 +26,22 @@
  * =============================================================================
  */
 
+using System.Numerics;
+
 namespace CurlyBracket.Native;
 
 public class JSSymbol : JSValue
 {
-    public JSSymbol() : base(JSType.Symbol)
+    public JSSymbol(string description)
+        : base(JSType.Symbol)
     {
-        throw new NotImplementedException();
+        Description = description;
     }
+
+    public string Description { get; }
+
+    public override string ToString() =>
+        $"{nameof(JSSymbol)} {{ {Description} }}";
 
     #region Abstract Type Conversions
 
@@ -41,7 +50,7 @@ public class JSSymbol : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSBoolean ToBoolean()
+    public override bool ToBoolean()
     {
         throw new NotImplementedException();
     }
@@ -61,57 +70,57 @@ public class JSSymbol : JSValue
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToInt32()
+    public override int ToInt32()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt32()
+    public override uint ToUInt32()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToInt16()
+    public override short ToInt16()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt16()
+    public override ushort ToUInt16()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToInt8()
+    public override sbyte ToInt8()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt8()
+    public override byte ToUInt8()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt8Clamp()
+    public override byte ToUInt8Clamp()
     {
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigInt()
+    public override BigInteger ToBigInt()
     {
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigInt64()
+    public override long ToBigInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigUInt64()
+    public override ulong ToBigUInt64()
     {
         throw new NotImplementedException();
     }
 
-    public override JSString AbstractToString()
+    public override string AbstractToString()
     {
         throw new NotImplementedException();
     }
@@ -139,7 +148,6 @@ public class JSSymbol : JSValue
     #endregion
 
     #region Abstract Testing/Comparison Operations
-
 
     public override JSValue RequireObjectCoercible()
     {

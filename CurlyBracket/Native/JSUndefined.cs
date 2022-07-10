@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Implements the ECMAScript undefined type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-undefined-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -27,6 +28,7 @@
 
 using CurlyBracket.Runtime;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace CurlyBracket.Native;
 
@@ -37,15 +39,15 @@ public class JSUndefined : JSValue
     { }
 
     public override string ToString() =>
-        $"JSUndefined";
+        nameof(JSUndefined);
 
     #region Abstract Type Conversions
 
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
         this;
 
-    public override JSBoolean ToBoolean() =>
-        JSBoolean.False;
+    public override bool ToBoolean() =>
+        false;
 
     public override JSValue ToNumeric() =>
         JSNumber.NaN;
@@ -56,38 +58,38 @@ public class JSUndefined : JSValue
     public override JSNumber ToIntegerOrInfinity() =>
         JSNumber.Zero;
 
-    public override JSNumber ToInt32() =>
-        JSNumber.Zero;
+    public override int ToInt32() =>
+        0;
 
-    public override JSNumber ToUInt32() =>
-        JSNumber.Zero;
+    public override uint ToUInt32() =>
+        0;
 
-    public override JSNumber ToInt16() =>
-        JSNumber.Zero;
+    public override short ToInt16() =>
+        0;
 
-    public override JSNumber ToUInt16() =>
-        JSNumber.Zero;
+    public override ushort ToUInt16() =>
+        0;
 
-    public override JSNumber ToInt8() =>
-        JSNumber.Zero;
+    public override sbyte ToInt8() =>
+        0;
 
-    public override JSNumber ToUInt8() =>
-        JSNumber.Zero;
+    public override byte ToUInt8() =>
+        0;
 
-    public override JSNumber ToUInt8Clamp() =>
-        JSNumber.Zero;
+    public override byte ToUInt8Clamp() =>
+        0;
 
-    public override JSBigInt ToBigInt() =>
+    public override BigInteger ToBigInt() =>
         throw new TypeErrorException();
 
-    public override JSBigInt ToBigInt64() =>
+    public override long ToBigInt64() =>
         throw new TypeErrorException();
 
-    public override JSBigInt ToBigUInt64() =>
+    public override ulong ToBigUInt64() =>
         throw new TypeErrorException();
 
-    public override JSString AbstractToString() =>
-        new("undefined");
+    public override string AbstractToString() =>
+        "undefined";
 
     public override JSObject ToObject() =>
         throw new TypeErrorException();
@@ -104,7 +106,6 @@ public class JSUndefined : JSValue
     #endregion
 
     #region Abstract Testing/Comparison Operations
-
 
     public override JSValue RequireObjectCoercible() =>
         throw new TypeErrorException();
@@ -127,19 +128,11 @@ public class JSUndefined : JSValue
     public override bool IsRegExp() =>
         false;
 
-    public override bool SameValue(JSValue other)
-    {
-        if (other.Type is not JSType.Undefined)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool SameValue(JSValue other) =>
+        other.Type is JSType.Undefined && SameValueNonNumeric(other);
 
-    public override bool SameValueZero(JSValue other)
-    {
-        if (other.Type is not JSType.Undefined)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool SameValueZero(JSValue other) =>
+        other.Type is JSType.Undefined && SameValueNonNumeric(other);
 
     public override bool SameValueNonNumeric(JSValue other)
     {
@@ -152,23 +145,16 @@ public class JSUndefined : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        if (other.Type is JSType.Undefined)
-            return IsStrictlyEqual(other);
+    public override bool IsLooselyEqual(JSValue other) =>
+        other.Type switch
+        {
+            JSType.Undefined => IsStrictlyEqual(other),
+            JSType.Null => true,
+            _ => false,
+        };
 
-        if (other.Type is JSType.Null)
-            return true;
-
-        return false;
-    }
-
-    public override bool IsStrictlyEqual(JSValue other)
-    {
-        if (other.Type is not JSType.Undefined)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool IsStrictlyEqual(JSValue other) =>
+        other.Type is JSType.Undefined && SameValueNonNumeric(other);
 
     #endregion
 }

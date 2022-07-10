@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Implements the ECMAScript number type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -27,6 +28,7 @@
 
 using CurlyBracket.Runtime;
 using System.Diagnostics;
+using System.Numerics;
 
 namespace CurlyBracket.Native;
 
@@ -52,15 +54,15 @@ public class JSNumber : JSValue
     public double Value { get; }
 
     public override string ToString() =>
-        $"JSNumber {{ {Value} }}";
+        $"{nameof(JSNumber)} {{ {Value} }}";
 
     #region Abstract Type Conversions
 
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
         this;
 
-    public override JSBoolean ToBoolean() =>
-        Value is 0 or double.NaN ? JSBoolean.False : JSBoolean.True;
+    public override bool ToBoolean() =>
+        Value is not (0 or double.NaN);
 
     public override JSValue ToNumeric() =>
         this;
@@ -81,51 +83,51 @@ public class JSNumber : JSValue
         return new(Math.Truncate(Value));
     }
 
-    public override JSNumber ToInt32()
+    public override int ToInt32()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt32()
+    public override uint ToUInt32()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToInt16()
+    public override short ToInt16()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt16()
+    public override ushort ToUInt16()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToInt8()
+    public override sbyte ToInt8()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt8()
+    public override byte ToUInt8()
     {
         throw new NotImplementedException();
     }
 
-    public override JSNumber ToUInt8Clamp()
+    public override byte ToUInt8Clamp()
     {
         throw new NotImplementedException();
     }
 
-    public override JSBigInt ToBigInt() =>
+    public override BigInteger ToBigInt() =>
         throw new TypeErrorException();
 
-    public override JSBigInt ToBigInt64() =>
+    public override long ToBigInt64() =>
         throw new TypeErrorException();
 
-    public override JSBigInt ToBigUInt64() =>
+    public override ulong ToBigUInt64() =>
         throw new TypeErrorException();
 
-    public override JSString AbstractToString()
+    public override string AbstractToString()
     {
         // Number::ToString(this)
         throw new NotImplementedException();
@@ -137,7 +139,7 @@ public class JSNumber : JSValue
     }
 
     public override JSValue ToPropertyKey() =>
-        AbstractToString();
+        new JSString(AbstractToString());
 
     public override JSValue ToLength()
     {
@@ -159,7 +161,6 @@ public class JSNumber : JSValue
 
     #region Abstract Testing/Comparison Operations
 
-
     public override JSValue RequireObjectCoercible() =>
         this;
 
@@ -177,6 +178,7 @@ public class JSNumber : JSValue
         if (Value is 0 or double.NaN)
             return false;
         double abs = Math.Abs(Value);
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
         return Math.Floor(abs) == abs;
     }
 
@@ -211,26 +213,16 @@ public class JSNumber : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        if (other.Type is JSType.Number)
-            return IsStrictlyEqual(other);
-
-        if (other.Type is JSType.String)
-            return IsStrictlyEqual(other.ToNumber());
-
-        if (other.Type is JSType.Object)
-            return IsLooselyEqual(other.ToPrimitive());
-
-        if (other.Type is JSType.BigInt)
+    public override bool IsLooselyEqual(JSValue other) =>
+        other.Type switch
         {
-            if (double.IsNaN(Value) || double.IsPositiveInfinity(Value) || double.IsNegativeInfinity(Value))
-                return false;
-            // return Value == other.Value;
-            throw new NotImplementedException();
-        }
-        return false;
-    }
+            JSType.Number => IsStrictlyEqual(other),
+            JSType.String => IsStrictlyEqual(other.ToNumber()),
+            JSType.Object => IsLooselyEqual(other.ToPrimitive()),
+            JSType.BigInt when double.IsNaN(Value) || double.IsPositiveInfinity(Value) || double.IsNegativeInfinity(Value) => false,
+            JSType.BigInt => throw new NotImplementedException(), // Value == other.Value
+            _ => false,
+        };
 
     public override bool IsStrictlyEqual(JSValue other)
     {

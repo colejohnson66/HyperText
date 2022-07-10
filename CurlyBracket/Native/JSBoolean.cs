@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Implements the ECMAScript boolean type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-boolean-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -26,6 +27,7 @@
  */
 
 using System.Diagnostics;
+using System.Numerics;
 
 namespace CurlyBracket.Native;
 
@@ -43,15 +45,15 @@ public class JSBoolean : JSValue
     public bool Value { get; }
 
     public override string ToString() =>
-        $"JSBoolean {{ {(Value ? "true" : "false")} }}";
+        $"{nameof(JSBoolean)} {{ {(Value ? "true" : "false")} }}";
 
     #region Abstract Type Conversions
 
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
         this;
 
-    public override JSBoolean ToBoolean() =>
-        this;
+    public override bool ToBoolean() =>
+        Value;
 
     public override JSValue ToNumeric() =>
         Value ? JSNumber.One : JSNumber.Zero;
@@ -62,38 +64,38 @@ public class JSBoolean : JSValue
     public override JSNumber ToIntegerOrInfinity() =>
         Value ? JSNumber.One : JSNumber.Zero;
 
-    public override JSNumber ToInt32() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override int ToInt32() =>
+        Value ? 1 : 0;
 
-    public override JSNumber ToUInt32() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override uint ToUInt32() =>
+        Value ? 1u : 0u;
 
-    public override JSNumber ToInt16() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override short ToInt16() =>
+        Value ? (short)1 : (short)0;
 
-    public override JSNumber ToUInt16() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override ushort ToUInt16() =>
+        Value ? (ushort)1 : (ushort)0;
 
-    public override JSNumber ToInt8() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override sbyte ToInt8() =>
+        Value ? (sbyte)1 : (sbyte)0;
 
-    public override JSNumber ToUInt8() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override byte ToUInt8() =>
+        Value ? (byte)1 : (byte)0;
 
-    public override JSNumber ToUInt8Clamp() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override byte ToUInt8Clamp() =>
+        Value ? (byte)1 : (byte)0;
 
-    public override JSBigInt ToBigInt() =>
-        Value ? JSBigInt.One : JSBigInt.Zero;
+    public override BigInteger ToBigInt() =>
+        Value ? BigInteger.One : BigInteger.Zero;
 
-    public override JSBigInt ToBigInt64() =>
-        Value ? JSBigInt.One : JSBigInt.Zero;
+    public override long ToBigInt64() =>
+        Value ? 1L : 0L;
 
-    public override JSBigInt ToBigUInt64() =>
-        Value ? JSBigInt.One : JSBigInt.Zero;
+    public override ulong ToBigUInt64() =>
+        Value ? 1ul : 0ul;
 
-    public override JSString AbstractToString() =>
-        new(Value ? "true" : "false");
+    public override string AbstractToString() =>
+        Value ? "true" : "false";
 
     public override JSObject ToObject()
     {
@@ -112,7 +114,6 @@ public class JSBoolean : JSValue
     #endregion
 
     #region Abstract Testing/Comparison Operations
-
 
     public override JSValue RequireObjectCoercible() =>
         this;
@@ -135,19 +136,11 @@ public class JSBoolean : JSValue
     public override bool IsRegExp() =>
         false;
 
-    public override bool SameValue(JSValue other)
-    {
-        if (other.Type is not JSType.Boolean)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool SameValue(JSValue other) =>
+        other.Type is JSType.Boolean && SameValueNonNumeric(other);
 
-    public override bool SameValueZero(JSValue other)
-    {
-        if (other.Type is not JSType.Boolean)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool SameValueZero(JSValue other) =>
+        other.Type is JSType.Boolean && SameValueNonNumeric(other);
 
     public override bool SameValueNonNumeric(JSValue other)
     {
@@ -168,12 +161,8 @@ public class JSBoolean : JSValue
         throw new NotImplementedException();
     }
 
-    public override bool IsStrictlyEqual(JSValue other)
-    {
-        if (other.Type is not JSType.Boolean)
-            return false;
-        return SameValueNonNumeric(other);
-    }
+    public override bool IsStrictlyEqual(JSValue other) =>
+        other.Type is JSType.Boolean && SameValueNonNumeric(other);
 
     #endregion
 }
