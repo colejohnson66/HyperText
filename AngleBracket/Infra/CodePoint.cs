@@ -72,7 +72,7 @@ public static class CodePoint
     public static bool IsScalarValue(int c)
     {
         Debug.Assert(c >= 0);
-        return !IsSurrogate(c);
+        return c is <= 0xD7FF or (>= 0xE000 and <= 0x10FFFF);
     }
 
 
