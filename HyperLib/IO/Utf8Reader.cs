@@ -8,27 +8,27 @@
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
- * This file is part of CodePoint.
+ * This file is part of HyperLib.
  *
- * CodePoint is free software: you can redistribute it and/or modify it under
- *   the terms of the GNU General Public License as published by the Free
- *   Software Foundation, either version 3 of the License, or (at your option)
- *   any later version.
+ * HyperLib is free software: you can redistribute it and/or modify it under the
+ *   terms of the GNU General Public License as published by the Free Software
+ *   Foundation, either version 3 of the License, or (at your option) any later
+ *   version.
  *
- * CodePoint is distributed in the hope that it will be useful, but WITHOUT ANY
+ * HyperLib is distributed in the hope that it will be useful, but WITHOUT ANY
  *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  *   FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
  *   details.
  *
  * You should have received a copy of the GNU General Public License along with
- *   CodePoint. If not, see <http://www.gnu.org/licenses/>.
+ *   HyperLib. If not, see <http://www.gnu.org/licenses/>.
  * =============================================================================
  */
 
 using System.Collections.Generic;
 using System.IO;
 
-namespace CodePoint.IO;
+namespace HyperLib.IO;
 
 /// <summary>
 /// A <see cref="CodePointReader" /> that reads from a UTF-8 encoded stream.
