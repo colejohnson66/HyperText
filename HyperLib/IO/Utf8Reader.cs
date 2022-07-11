@@ -25,7 +25,6 @@
  * =============================================================================
  */
 
-using System.Collections.Generic;
 using System.IO;
 
 namespace HyperLib.IO;
@@ -38,7 +37,7 @@ public class Utf8Reader : CodePointReader
     private readonly Stream _stream;
     private readonly bool _throwOnOverlong;
     private readonly bool _throwOnSurrogates;
-    private readonly Stack<int> _peekBuffer = new();
+    private int _peek = -1;
 
     /// <summary>
     /// Construct a new <see cref="Utf8Reader" /> object from a stream.
@@ -78,12 +77,12 @@ public class Utf8Reader : CodePointReader
     /// <inheritdoc />
     public override int Peek()
     {
-        if (_peekBuffer.TryPeek(out int c))
-            return c;
+        if (_peek > 0)
+            return _peek;
 
         // nothing in the buffer, so read one and save it
-        c = Read();
-        _peekBuffer.Push(c);
+        int c = Read();
+        _peek = c;
         return c;
     }
 
@@ -98,8 +97,12 @@ public class Utf8Reader : CodePointReader
     /// <exception cref="InvalidDataException">If an encoded code point is greater than <c>U+10FFFF</c>.</exception>
     public override int Read()
     {
-        if (_peekBuffer.TryPop(out int c))
-            return c;
+        if (_peek > 0)
+        {
+            int peek = _peek;
+            _peek = -1;
+            return peek;
+        }
 
         // ReSharper disable CommentTypo
         /* UTF-8 is encoded as follows:
@@ -124,24 +127,24 @@ public class Utf8Reader : CodePointReader
          */
         // ReSharper restore CommentTypo
 
-        int c0 = _stream.ReadByte();
-        if (c0 is -1)
+        int b0 = _stream.ReadByte();
+        if (b0 is -1)
             return -1;
-        if ((c0 & 0x80) == 0)
-            return c0; // one byte code point (ASCII)
+        if ((b0 & 0x80) == 0)
+            return b0; // one byte code point (ASCII)
 
-        if ((c0 & 0xE0) == 0xC0)
+        if ((b0 & 0xE0) == 0xC0)
         {
             // two bytes
-            c = (c0 & 0x1F) << 6;
+            int c = (b0 & 0x1F) << 6;
 
-            int c1 = _stream.ReadByte();
-            if (c1 is -1)
+            int b1 = _stream.ReadByte();
+            if (b1 is -1)
                 throw new EndOfStreamException(EM.EndOfStream.EofInUtf8Codepoint);
-            if ((c1 & 0xC0) != 0x80)
+            if ((b1 & 0xC0) != 0x80)
                 throw new InvalidDataException(EM.InvalidData.Utf8InvalidContinuation);
 
-            c |= c1 & 0x3F;
+            c |= b1 & 0x3F;
 
             // two byte encoded code points can never be surrogates, so don't bother checking
             if (_throwOnOverlong && c < 0x80)
@@ -150,20 +153,20 @@ public class Utf8Reader : CodePointReader
             return c;
         }
 
-        if ((c0 & 0xF0) == 0xE0)
+        if ((b0 & 0xF0) == 0xE0)
         {
             // three bytes
-            c = (c0 & 0x0F) << 12;
+            int c = (b0 & 0x0F) << 12;
 
-            int c1 = _stream.ReadByte();
-            int c2 = _stream.ReadByte();
-            if (c1 is -1 || c2 is -1)
+            int b1 = _stream.ReadByte();
+            int b2 = _stream.ReadByte();
+            if (b1 is -1 || b2 is -1)
                 throw new EndOfStreamException(EM.EndOfStream.EofInUtf8Codepoint);
-            if ((c1 & 0xC0) != 0x80 || (c2 & 0xC0) != 0x80)
+            if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80)
                 throw new InvalidDataException(EM.InvalidData.Utf8InvalidContinuation);
 
-            c |= (c1 & 0x3F) << 6;
-            c |= c2 & 0x3F;
+            c |= (b1 & 0x3F) << 6;
+            c |= b2 & 0x3F;
 
             if (_throwOnOverlong && c < 0x800)
                 throw new InvalidDataException(EM.InvalidData.Utf8Overlong);
@@ -173,22 +176,22 @@ public class Utf8Reader : CodePointReader
             return c;
         }
 
-        if ((c0 & 0xF8) == 0xF0)
+        if ((b0 & 0xF8) == 0xF0)
         {
             // four bytes
-            c = (c0 & 7) << 18;
+            int c = (b0 & 7) << 18;
 
-            int c1 = _stream.ReadByte();
-            int c2 = _stream.ReadByte();
-            int c3 = _stream.ReadByte();
-            if (c1 is -1 || c2 is -1 || c3 is -1)
+            int b1 = _stream.ReadByte();
+            int b2 = _stream.ReadByte();
+            int b3 = _stream.ReadByte();
+            if (b1 is -1 || b2 is -1 || b3 is -1)
                 throw new EndOfStreamException(EM.EndOfStream.EofInUtf8Codepoint);
-            if ((c1 & 0xC0) != 0x80 || (c2 & 0xC0) != 0x80 || (c3 & 0xC0) != 0x80)
+            if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80)
                 throw new InvalidDataException(EM.InvalidData.Utf8InvalidContinuation);
 
-            c |= (c1 & 0x3F) << 12;
-            c |= (c2 & 0x3F) << 6;
-            c |= c3 & 0x3F;
+            c |= (b1 & 0x3F) << 12;
+            c |= (b2 & 0x3F) << 6;
+            c |= b3 & 0x3F;
 
             if (_throwOnOverlong && c < 0x10000)
                 throw new InvalidDataException(EM.InvalidData.Utf8Overlong);
