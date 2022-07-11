@@ -6,6 +6,10 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\HyperLib\HyperLib.csproj" />
+    </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
   </ItemGroup>

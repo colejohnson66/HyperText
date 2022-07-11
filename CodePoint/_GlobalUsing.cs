@@ -26,5 +26,6 @@
  * =============================================================================
  */
 
+global using HyperLib;
 global using JetBrains.Annotations;
 global using System;
