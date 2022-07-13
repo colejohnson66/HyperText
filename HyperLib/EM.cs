@@ -61,6 +61,10 @@ public static class EM
     {
         /// <summary>The EOF was reached in the middle of a UTF-8 encoded code point.</summary>
         public static string InUtf8CodePoint = "The EOF was reached in the middle of a UTF-8 encoded code point.";
+        /// <summary>The EOF was reached in the middle of a UTF-16 code unit.</summary>
+        public static string InUtf16CodeUnit = "The EOF was reached in the middle of a UTF-16 code unit.";
+        /// <summary>The EOF was reached in the middle of a UTF-16 surrogate pair.</summary>
+        public static string InUtf16SurrogatePair = "The EOF was reached in the middle of a UTF-16 surrogate pair.";
     }
 
     /// <summary>Exception messages for <see cref="InvalidDataException" /> objects.</summary>
@@ -76,5 +80,7 @@ public static class EM
         public static string Utf8Overlong = "An \"overlong\" UTF-8 encoded code point was encountered.";
         /// <summary>A UTF-8 encoded surrogate code point was encountered.</summary>
         public static string Utf8Surrogate = "A UTF-8 encoded surrogate code point was encountered.";
+        /// <summary>A UTF-16 encoded code point contained an unpaired surrogate.</summary>
+        public static string Utf16UnpairedSurrogate = "A UTF-16 encoded code point contained an unpaired surrogate.";
     }
 }
