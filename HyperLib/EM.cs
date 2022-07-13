@@ -60,7 +60,7 @@ public static class EM
     public static class EndOfStream
     {
         /// <summary>The EOF was reached in the middle of a UTF-8 encoded code point.</summary>
-        public static string EofInUtf8Codepoint = "The EOF was reached in the middle of a UTF-8 encoded code point.";
+        public static string InUtf8CodePoint = "The EOF was reached in the middle of a UTF-8 encoded code point.";
     }
 
     /// <summary>Exception messages for <see cref="InvalidDataException" /> objects.</summary>

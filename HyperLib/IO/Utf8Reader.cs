@@ -1,5 +1,5 @@
 ﻿/* =============================================================================
- * File:   CodePointReader.cs
+ * File:   Utf8Reader.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
@@ -75,6 +75,14 @@ public class Utf8Reader : CodePointReader
     }
 
     /// <inheritdoc />
+    /// <exception cref="EndOfStreamException">
+    /// If the EOF is reached in the middle of a multibyte code point.
+    /// </exception>
+    /// <exception cref="InvalidDataException">If the first byte is invalid.</exception>
+    /// <exception cref="InvalidDataException">If an invalid continuation byte is encountered.</exception>
+    /// <exception cref="InvalidDataException">If an overlong code point is encountered.</exception>
+    /// <exception cref="InvalidDataException">If a surrogate code point is encountered.</exception>
+    /// <exception cref="InvalidDataException">If an encoded code point is greater than <c>U+10FFFF</c>.</exception>
     public override int Peek()
     {
         if (_peek > 0)
@@ -140,7 +148,7 @@ public class Utf8Reader : CodePointReader
 
             int b1 = _stream.ReadByte();
             if (b1 is -1)
-                throw new EndOfStreamException(EM.EndOfStream.EofInUtf8Codepoint);
+                throw new EndOfStreamException(EM.EndOfStream.InUtf8CodePoint);
             if ((b1 & 0xC0) != 0x80)
                 throw new InvalidDataException(EM.InvalidData.Utf8InvalidContinuation);
 
@@ -161,7 +169,7 @@ public class Utf8Reader : CodePointReader
             int b1 = _stream.ReadByte();
             int b2 = _stream.ReadByte();
             if (b1 is -1 || b2 is -1)
-                throw new EndOfStreamException(EM.EndOfStream.EofInUtf8Codepoint);
+                throw new EndOfStreamException(EM.EndOfStream.InUtf8CodePoint);
             if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80)
                 throw new InvalidDataException(EM.InvalidData.Utf8InvalidContinuation);
 
@@ -185,7 +193,7 @@ public class Utf8Reader : CodePointReader
             int b2 = _stream.ReadByte();
             int b3 = _stream.ReadByte();
             if (b1 is -1 || b2 is -1 || b3 is -1)
-                throw new EndOfStreamException(EM.EndOfStream.EofInUtf8Codepoint);
+                throw new EndOfStreamException(EM.EndOfStream.InUtf8CodePoint);
             if ((b1 & 0xC0) != 0x80 || (b2 & 0xC0) != 0x80 || (b3 & 0xC0) != 0x80)
                 throw new InvalidDataException(EM.InvalidData.Utf8InvalidContinuation);
 
