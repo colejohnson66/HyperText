@@ -207,7 +207,7 @@ public class Utf8Reader : CodePointReader
                 throw new InvalidDataException(EM.InvalidData.Utf8Surrogate);
 
             if (c > 0x10FFFF)
-                throw new InvalidDataException(EM.InvalidData.Utf8InvalidPlane);
+                throw new InvalidDataException(EM.InvalidData.InvalidPlane);
 
             return c;
         }

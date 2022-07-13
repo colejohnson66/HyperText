@@ -57,6 +57,7 @@ public class Utf16Reader : CodePointReader
     /// <exception cref="EndOfStreamException">If the EOF is reached in the middle of a code unit.</exception>
     /// <exception cref="EndOfStreamException">If the EOF is reached in the middle of a surrogate pair.</exception>
     /// <exception cref="InvalidDataException">If an unpaired surrogate is encountered.</exception>
+    /// <exception cref="InvalidDataException">If an encoded code point is greater than <c>U+10FFFF</c>.</exception>
     public override int Peek()
     {
         if (_peek > 0)
@@ -72,6 +73,7 @@ public class Utf16Reader : CodePointReader
     /// <exception cref="EndOfStreamException">If the EOF is reached in the middle of a code unit.</exception>
     /// <exception cref="EndOfStreamException">If the EOF is reached in the middle of a surrogate pair.</exception>
     /// <exception cref="InvalidDataException">If an unpaired surrogate is encountered.</exception>
+    /// <exception cref="InvalidDataException">If an encoded code point is greater than <c>U+10FFFF</c>.</exception>
     public override int Read()
     {
         if (_peek > 0)
@@ -122,7 +124,12 @@ public class Utf16Reader : CodePointReader
 
         int high = c0 & 0x3FF;
         int low = c1 & 0x3FF;
-        return 0x10000 + ((high << 10) | low);
+        int c = 0x10000 + ((high << 10) | low);
+
+        if (c is < 0 or > 0x10FFFF)
+            throw new InvalidDataException(EM.InvalidData.InvalidPlane);
+
+        return c;
     }
 
     private int ReadWord()

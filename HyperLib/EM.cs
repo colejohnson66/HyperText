@@ -65,17 +65,19 @@ public static class EM
         public static string InUtf16CodeUnit = "The EOF was reached in the middle of a UTF-16 code unit.";
         /// <summary>The EOF was reached in the middle of a UTF-16 surrogate pair.</summary>
         public static string InUtf16SurrogatePair = "The EOF was reached in the middle of a UTF-16 surrogate pair.";
+        /// <summary>The EOF was reached in the middle of a UTF-32 encoded code point.</summary>
+        public static string InUtf32CodePoint = "The EOF was reached in the middle of a UTF-32 encoded code point.";
     }
 
     /// <summary>Exception messages for <see cref="InvalidDataException" /> objects.</summary>
     public static class InvalidData
     {
+        /// <summary>A code point is in an invalid plane.</summary>
+        public static string InvalidPlane = "A code point is in an invalid plane.";
         /// <summary>An invalid "first byte" of a UTF-8 was encountered.</summary>
         public static string Utf8InvalidByte0 = "An invalid first byte of a UTF-8 encoded code point was encountered.";
         /// <summary>An invalid UTF-8 continuation byte was encountered.</summary>
         public static string Utf8InvalidContinuation = "An invalid UTF-8 continuation byte was encountered.";
-        /// <summary>A UTF-8 encoded code point is in an invalid plane.</summary>
-        public static string Utf8InvalidPlane = "A UTF-8 encoded code point is in an invalid plane.";
         /// <summary>An "overlong" UTF-8 encoded code point was encountered.</summary>
         public static string Utf8Overlong = "An \"overlong\" UTF-8 encoded code point was encountered.";
         /// <summary>A UTF-8 encoded surrogate code point was encountered.</summary>
