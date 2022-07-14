@@ -33,39 +33,42 @@ namespace AngleBracket.Tokenizer;
 
 public class Doctype
 {
-    private readonly List<Rune> _name = new();
-    // private bool _quirks;
-    private List<Rune>? _public = null;
-    private List<Rune>? _system = null;
+    private readonly StringBuilder _name = new();
+    private StringBuilder? _public = null;
+    private StringBuilder? _system = null;
 
     // public Doctype()
     // { }
 
-    public string Name => RuneHelpers.ConvertToString(_name);
+    public string Name => _name.ToString();
     public bool QuirksMode { get; private set; }
-    public string? PublicIdentifier =>
-        _public is null ? null : RuneHelpers.ConvertToString(_public);
-    public string? SystemIdentifier =>
-        _system is null ? null : RuneHelpers.ConvertToString(_system);
+    public string? PublicIdentifier => _public?.ToString();
+    public string? SystemIdentifier => _system?.ToString();
 
-    public void AppendName(Rune r) => _name.Add(r);
+    public void AppendName(int c)
+    {
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        _name.Append(new Rune(c).ToString());
+    }
     public void SetQuirksFlag() => QuirksMode = true;
     public void SetPublicIdentifierToEmptyString() => _public = new();
-    public void AppendPublicIdentifier(Rune r)
+    public void AppendPublicIdentifier(int c)
     {
         Debug.Assert(_public is not null);
-        _public.Add(r);
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        _public.Append(new Rune(c).ToString());
     }
     public void SetSystemIdentifierToEmptyString() => _system = new();
-    public void AppendSystemIdentifier(Rune r)
+    public void AppendSystemIdentifier(int c)
     {
         Debug.Assert(_system is not null);
-        _system.Add(r);
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        _system.Append(new Rune(c).ToString());
     }
 
     public override string ToString()
     {
-        StringBuilder ret = new("Doctype { ");
+        StringBuilder ret = new($"{nameof(Doctype)} {{ ");
 
         ret.Append(Name);
 

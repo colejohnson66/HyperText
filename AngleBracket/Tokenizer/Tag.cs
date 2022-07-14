@@ -25,18 +25,17 @@
  * =============================================================================
  */
 
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using AngleBracket.Text;
 
 namespace AngleBracket.Tokenizer;
 
 public class Tag
 {
-    private readonly List<Rune> _name = new();
-    // private bool _selfClosing;
-    // private bool _isEndTag;
+    private readonly StringBuilder _name = new();
+    private string? _nameCache;
     private readonly List<Attribute> _attributes = new();
 
     private Tag(bool isEndTag)
@@ -46,12 +45,17 @@ public class Tag
     public static Tag NewStartTag() => new(false);
     public static Tag NewEndTag() => new(true);
 
-    public string Name => RuneHelpers.ConvertToString(_name);
+    public string Name => _nameCache ??= _name.ToString();
     public bool IsSelfClosing { get; private set; }
     public bool IsEndTag { get; }
-    public IReadOnlyList<Attribute> Attributes => _attributes;
+    public ReadOnlyCollection<Attribute> Attributes => new(_attributes);
 
-    public void AppendName(Rune r) => _name.Add(r);
+    public void AppendName(int c)
+    {
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        _name.Append(new Rune(c).ToString());
+        _nameCache = null;
+    }
     public void SetSelfClosingFlag() => IsSelfClosing = true;
     public Attribute NewAttribute()
     {
@@ -62,12 +66,11 @@ public class Tag
 
     /// <summary>
     /// Checks this tag's list of attributes for duplicate attributes.
-    /// A duplicate attribute is one with a name that is the same as an earlier
-    ///   attribute's name.
+    /// A duplicate attribute is one with a name that is the same as an earlier attribute's name.
     /// If any are found, the first one is kept, and all others are dropped.
     /// </summary>
     /// <returns>
-    /// <c>true</c> if any attributes were removed; otherwise <c>false</c>
+    /// <c>true</c> if any attributes were removed; otherwise <c>false</c>.
     /// </returns>
     public bool CheckAndCorrectDuplicateAttributes()
     {
@@ -76,9 +79,14 @@ public class Tag
         foreach (Attribute thisAttr in _attributes)
         {
             if (seenAttrNames.Contains(thisAttr.Name))
-                Debug.Assert(anyRemoved = _attributes.Remove(thisAttr)); // should never fail
+            {
+                anyRemoved = _attributes.Remove(thisAttr);
+                Debug.Assert(anyRemoved);
+            }
             else
+            {
                 seenAttrNames.Add(thisAttr.Name);
+            }
         }
         return anyRemoved;
     }
@@ -88,28 +96,25 @@ public class Tag
 
     public override string ToString()
     {
-        StringBuilder ret = new("Tag { ");
+        StringBuilder ret = new("<");
+
+        if (IsEndTag)
+            ret.Append('/');
 
         ret.Append(Name);
 
-        if (IsSelfClosing)
-            ret.Append(", SelfClosing");
-
-        if (IsEndTag)
-            ret.Append(", EndTag");
-
-        if (Attributes.Any())
+        foreach (Attribute attr in _attributes)
         {
-            ret.Append(", Attributes { ");
-            for (int i = 0; i < Attributes.Count; i++)
-            {
-                ret.Append(Attributes[i]);
-                if (i != Attributes.Count - 1)
-                    ret.Append(", ");
-            }
+            ret.Append(
+                attr.Value is ""
+                    ? $" {attr.Name}"
+                    : $" {attr.Name}=\"{attr.Value}\"");
         }
 
-        ret.Append(" }");
+        if (IsSelfClosing)
+            ret.Append(" /");
+
+        ret.Append('>');
         return ret.ToString();
     }
 }

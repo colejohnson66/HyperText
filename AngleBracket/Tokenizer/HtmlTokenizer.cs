@@ -26,26 +26,28 @@
  */
 
 using AngleBracket.Parser;
-using AngleBracket.Text;
-using CodePoint.IO;
+using HyperLib.IO;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace AngleBracket.Tokenizer;
 
+/// <summary>
+/// An HTML tokenizer complying with the WHATWG HTML standard.
+/// </summary>
 public partial class HtmlTokenizer : IDisposable
 {
-    // ReSharper disable once InconsistentNaming
-    private static readonly Rune REPLACEMENT_CHARACTER = Rune.ReplacementChar;
+    private const int REPLACEMENT_CHARACTER = 0xFFFD;
+    private const int EOF = -1;
 
-    private Action<Rune?>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()` by `Tokenize()`
+    private Action<int>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()` by `Tokenize()`
     private readonly Queue<Token> _tokensToEmit = new();
-    private readonly Stack<Rune> _peekBuffer;
+    private readonly List<int> _peekBuffer;
 
     private TokenizerState _state = TokenizerState.Data;
     private TokenizerState? _returnState = null;
-    private readonly List<Rune> _tempBuffer = new();
+    private readonly List<int> _tempBuffer = new();
     private int _charRefCode = 0;
 
     private Attribute? _currentAttribute = null;
@@ -53,55 +55,60 @@ public partial class HtmlTokenizer : IDisposable
     private Doctype? _currentDoctype = null;
     private Tag? _currentTag = null;
 
-    private readonly RuneReader _input;
+    private readonly CodePointReader _input;
 
-    public HtmlTokenizer(RuneReader input)
+    public HtmlTokenizer(CodePointReader input)
     {
         _input = input;
         _peekBuffer = new();
         InitStateMap();
     }
 
-    private Rune? Peek()
+    private int Peek()
     {
         if (_peekBuffer.Any())
-            return _peekBuffer.Peek();
+            return _peekBuffer[0];
 
         // normalize out the carriage returns
         // <https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream>
-        Rune? r;
+        int c;
         do
         {
-            r = _input.Read();
-        } while (r?.Value == '\r');
+            c = _input.Read();
+        } while (c is '\r');
 
-        if (r.HasValue)
-            _peekBuffer.Push(r.Value);
-        return r;
+        if (c > 0)
+            _peekBuffer.Add(c);
+        return c;
     }
 
-    private Rune? Read()
+    private int Read()
     {
+        int c;
         if (_peekBuffer.Any())
-            return _peekBuffer.Pop();
+        {
+            c = _peekBuffer[0];
+            _peekBuffer.RemoveAt(0);
+            return c;
+        }
 
         // normalize out the carriage returns
         // <https://html.spec.whatwg.org/multipage/parsing.html#preprocessing-the-input-stream>
-        Rune? r;
         do
         {
-            r = _input.Read();
-        } while (r?.Value == '\r');
-        return r;
+            c = _input.Read();
+        } while (c is '\r');
+
+        return c;
     }
 
-    private void PutBack(Rune? r)
+    private void PutBack(int c)
     {
-        Debug.Assert(r is not null); // no EOF
-        _peekBuffer.Push(r.Value);
+        Debug.Assert(c > 0); // no EOF
+        _peekBuffer.Add(c);
     }
 
-    private void AddParseError(ParseError error)
+    private void ReportParseError(ParseError error)
     {
         // TODO
     }
@@ -112,7 +119,7 @@ public partial class HtmlTokenizer : IDisposable
         if (_stateMap is not null)
             return;
 
-        _stateMap = new Action<Rune?>[Enum.GetValues<TokenizerState>().Length];
+        _stateMap = new Action<int>[Enum.GetValues<TokenizerState>().Length];
         _stateMap[(int)TokenizerState.Data] = Data;
         _stateMap[(int)TokenizerState.RCData] = RCData;
         _stateMap[(int)TokenizerState.RawText] = RawText;
@@ -195,12 +202,14 @@ public partial class HtmlTokenizer : IDisposable
         _stateMap[(int)TokenizerState.NumericCharacterReferenceEnd] = NumericCharacterReferenceEnd;
     }
 
-    private static bool IsSpecialWhitespace(Rune? r) =>
-        r?.Value is '\t' or '\n' or '\f' or ' ';
-    private static Rune ToAsciiLowercase(Rune r) => new(r.Value + ('a' - 'A'));
+    private static bool IsSpecialWhitespace(int c) =>
+        c is '\t' or '\n' or '\f' or ' ';
+    private static int ToAsciiLowercase(int c) => c + ('a' - 'A');
 
+    // ReSharper disable once MemberCanBeMadeStatic.Local
     private bool IsCurrentEndTagAnAppropriateOne()
     {
+        // ReSharper disable once ArrangeMethodOrOperatorBody
         throw new NotImplementedException();
     }
 
@@ -213,22 +222,21 @@ public partial class HtmlTokenizer : IDisposable
     {
         if (WasConsumedAsPartOfAnAttribute())
         {
-            foreach (Rune r in _tempBuffer)
-                _currentAttribute!.AppendValue(r);
+            foreach (int c in _tempBuffer)
+                _currentAttribute!.AppendValue(c);
             return;
         }
 
-        foreach (Rune r in _tempBuffer)
-            EmitCharacterToken(r);
+        foreach (int c in _tempBuffer)
+            EmitCharacterToken(c);
     }
 
-    private void EmitCharacterToken(char c) => EmitCharacterToken(new Rune(c));
-    private void EmitCharacterToken(Rune r) => _tokensToEmit.Enqueue(Token.NewCharacterToken(r));
+    private void EmitCharacterToken(int c) => _tokensToEmit.Enqueue(Token.NewCharacterToken(c));
     private void EmitReplacementCharacterToken() => EmitCharacterToken(REPLACEMENT_CHARACTER);
     private void EmitCharacterTokensFromTemporaryBuffer()
     {
-        foreach (Rune r in _tempBuffer)
-            EmitCharacterToken(r);
+        foreach (int c in _tempBuffer)
+            EmitCharacterToken(c);
         _tempBuffer.Clear();
     }
     private void EmitCommentToken()
@@ -254,17 +262,16 @@ public partial class HtmlTokenizer : IDisposable
 
     private bool CompareTemporaryBuffer(string compareTo)
     {
-        if (_tempBuffer.Count != compareTo.Length)
-            return false;
-
-        return RuneHelpers.ConvertToString(_tempBuffer) == compareTo;
+        StringBuilder str = new(_tempBuffer.Count);
+        foreach (int c in _tempBuffer)
+            str.Append(new Rune(c).ToString());
+        return str.ToString() == compareTo;
     }
 
-    #region IDisposable
+    /// <inheritdoc />
     public void Dispose()
     {
         _input.Dispose();
         GC.SuppressFinalize(this);
     }
-    #endregion
 }

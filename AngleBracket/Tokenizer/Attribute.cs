@@ -25,30 +25,37 @@
  * =============================================================================
  */
 
+using System.Diagnostics;
 using System.Text;
-using AngleBracket.Text;
 
 namespace AngleBracket.Tokenizer;
 
 public class Attribute
 {
-    private readonly List<Rune> _name = new();
-    private readonly List<Rune> _value = new();
+    private readonly StringBuilder _name = new();
+    private string? _nameCache;
+    public string Name => _nameCache ??= _name.ToString();
 
-    // public Attribute()
-    // { }
+    private readonly StringBuilder _value = new();
+    private string? _valueCache;
+    public string Value => _valueCache ??= _value.ToString();
 
-    public string Name => RuneHelpers.ConvertToString(_name);
-    public string Value => RuneHelpers.ConvertToString(_value);
-
-    public void AppendName(Rune r) => _name.Add(r);
-    public void AppendValue(Rune r) => _value.Add(r);
-
-    public override string ToString()
+    public void AppendName(int c)
     {
-        // ReSharper disable once ConvertIfStatementToReturnStatement
-        if (Value == "")
-            return $"Attribute {{ '{Name}' }}";
-        return $"Attribute {{ '{Name}' = '{Value}' }}";
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        _name.Append(new Rune(c).ToString());
+        _nameCache = null;
     }
+
+    public void AppendValue(int c)
+    {
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        _value.Append(new Rune(c).ToString());
+        _valueCache = null;
+    }
+
+    public override string ToString() =>
+        Value == ""
+            ? $"{nameof(Attribute)} {{ '{Name}' }}"
+            : $"{nameof(Attribute)} {{ '{Name}' = '{Value}' }}";
 }

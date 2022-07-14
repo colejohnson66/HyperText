@@ -4,7 +4,7 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Contains the actual HTML tokenizer implementation.
  * =============================================================================
  * Copyright (c) 2021-2022 Cole Tobin
  *
@@ -27,7 +27,6 @@
 
 using AngleBracket.Parser;
 using System.Linq;
-using System.Text;
 using static AngleBracket.Infra.CodePoint;
 
 // ReSharper disable ConvertIfStatementToSwitchStatement
@@ -43,254 +42,256 @@ public partial class HtmlTokenizer
         InitStateMap();
         while (true)
         {
+            // use any tokens we need to emit first
             while (_tokensToEmit.Any())
             {
                 Token token = _tokensToEmit.Dequeue();
-                yield return _tokensToEmit.Dequeue();
+                yield return token;
                 if (token.Type is TokenType.EndOfFile)
                     yield break;
             }
 
-            Rune? r = Read();
-            _stateMap[(int)_state](r);
+            // ... before getting new ones
+            int c = Read();
+            _stateMap[(int)_state](c);
         }
     }
 
-    private void Reconsume(TokenizerState newState, Rune? r)
+    private void Reconsume(TokenizerState newState, int c)
     {
         _state = newState;
-        _stateMap[(int)newState](r);
+        _stateMap[(int)newState](c);
     }
 
-    private void Data(Rune? r)
+    private void Data(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#data-state>
 
-        if (r?.Value is '&')
+        if (c is '&')
         {
             _returnState = TokenizerState.Data;
             _state = TokenizerState.CharacterReference;
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.TagOpen;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitCharacterToken('\0');
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void RCData(Rune? r)
+    private void RCData(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rcdata-state>
 
-        if (r?.Value is '&')
+        if (c is '&')
         {
             _returnState = TokenizerState.RCData;
             _state = TokenizerState.CharacterReference;
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.RCDataLessThanSign;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void RawText(Rune? r)
+    private void RawText(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rawtext-state>
 
-        if (r?.Value is '<')
+        if (c is '<')
         {
             _state = TokenizerState.RawTextLessThanSign;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptData(Rune? r)
+    private void ScriptData(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-state>
 
-        if (r?.Value is '<')
+        if (c is '<')
         {
             _state = TokenizerState.ScriptDataLessThanSign;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void Plaintext(Rune? r)
+    private void Plaintext(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#plaintext-state>
 
-        if (r?.Value is '\0')
+        if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void TagOpen(Rune? r)
+    private void TagOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#tag-open-state>
 
-        if (r?.Value is '!')
+        if (c is '!')
         {
             _state = TokenizerState.MarkupDeclarationOpen;
         }
-        else if (r?.Value is '/')
+        else if (c is '/')
         {
             _state = TokenizerState.EndTagOpen;
         }
-        else if (IsAsciiAlpha(r))
+        else if (IsAsciiAlpha(c))
         {
             _currentTag = Tag.NewStartTag();
-            Reconsume(TokenizerState.TagName, r);
+            Reconsume(TokenizerState.TagName, c);
         }
-        else if (r?.Value is '?')
+        else if (c is '?')
         {
-            AddParseError(ParseError.UnexpectedQuestionMarkInsteadOfTagName);
+            ReportParseError(ParseError.UnexpectedQuestionMarkInsteadOfTagName);
             _currentComment = new();
-            Reconsume(TokenizerState.BogusComment, r);
+            Reconsume(TokenizerState.BogusComment, c);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofBeforeTagName);
+            ReportParseError(ParseError.EofBeforeTagName);
             EmitCharacterToken('<');
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.InvalidFirstCharacterOfTagName);
+            ReportParseError(ParseError.InvalidFirstCharacterOfTagName);
             EmitCharacterToken('<');
-            Reconsume(TokenizerState.Data, r);
+            Reconsume(TokenizerState.Data, c);
         }
     }
 
-    private void EndTagOpen(Rune? r)
+    private void EndTagOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#end-tag-open-state>
 
-        if (IsAsciiAlpha(r))
+        if (IsAsciiAlpha(c))
         {
             _currentTag = Tag.NewEndTag();
-            Reconsume(TokenizerState.TagName, r);
+            Reconsume(TokenizerState.TagName, c);
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingEndTagName);
+            ReportParseError(ParseError.MissingEndTagName);
             _state = TokenizerState.Data;
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofBeforeTagName);
+            ReportParseError(ParseError.EofBeforeTagName);
             EmitCharacterToken('<');
             EmitCharacterToken('/');
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.InvalidFirstCharacterOfTagName);
+            ReportParseError(ParseError.InvalidFirstCharacterOfTagName);
             _currentComment = new();
-            Reconsume(TokenizerState.BogusComment, r);
+            Reconsume(TokenizerState.BogusComment, c);
         }
     }
 
-    private void TagName(Rune? r)
+    private void TagName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#tag-name-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '/')
+        else if (c is '/')
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentTag!.AppendName(ToAsciiLowercase(r!.Value));
+            _currentTag!.AppendName(ToAsciiLowercase(c));
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentTag!.AppendName(REPLACEMENT_CHARACTER);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
-            _currentTag!.AppendName(r.Value);
+            _currentTag!.AppendName(c);
         }
     }
 
-    private void RCDataLessThanSign(Rune? r)
+    private void RCDataLessThanSign(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rcdata-less-than-sign-state>
 
-        if (r?.Value is '/')
+        if (c is '/')
         {
             _tempBuffer.Clear();
             _state = TokenizerState.RCDataEndTagOpen;
@@ -298,62 +299,62 @@ public partial class HtmlTokenizer
         else
         {
             EmitCharacterToken('<');
-            Reconsume(TokenizerState.RCData, r);
+            Reconsume(TokenizerState.RCData, c);
         }
     }
 
-    private void RCDataEndTagOpen(Rune? r)
+    private void RCDataEndTagOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rcdata-end-tag-open-state>
 
-        if (IsAsciiAlpha(r))
+        if (IsAsciiAlpha(c))
         {
             _currentTag = Tag.NewEndTag();
-            Reconsume(TokenizerState.RCDataEndTagName, r);
+            Reconsume(TokenizerState.RCDataEndTagName, c);
         }
     }
 
-    private void RCDataEndTagName(Rune? r)
+    private void RCDataEndTagName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rcdata-end-tag-name-state>
 
-        if (IsSpecialWhitespace(r) && IsCurrentEndTagAnAppropriateOne())
+        if (IsSpecialWhitespace(c) && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '/' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '/' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '>' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '>' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentTag!.AppendName(ToAsciiLowercase(r!.Value));
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(ToAsciiLowercase(c));
+            _tempBuffer.Add(c);
         }
-        else if (IsAsciiLowerAlpha(r))
+        else if (IsAsciiLowerAlpha(c))
         {
-            _currentTag!.AppendName(r!.Value);
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(c);
+            _tempBuffer.Add(c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
             EmitCharacterTokensFromTemporaryBuffer();
-            Reconsume(TokenizerState.RCData, r);
+            Reconsume(TokenizerState.RCData, c);
         }
     }
 
-    private void RawTextLessThanSign(Rune? r)
+    private void RawTextLessThanSign(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rawtext-less-than-sign-state>
 
-        if (r?.Value is '/')
+        if (c is '/')
         {
             _tempBuffer.Clear();
             _state = TokenizerState.RawTextEndTagOpen;
@@ -361,73 +362,73 @@ public partial class HtmlTokenizer
         else
         {
             EmitCharacterToken('<');
-            Reconsume(TokenizerState.RawText, r);
+            Reconsume(TokenizerState.RawText, c);
         }
     }
 
-    private void RawTextEndTagOpen(Rune? r)
+    private void RawTextEndTagOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rawtext-end-tag-open-state>
 
-        if (IsAsciiAlpha(r))
+        if (IsAsciiAlpha(c))
         {
             _currentTag = Tag.NewEndTag();
-            Reconsume(TokenizerState.RawTextEndTagName, r);
+            Reconsume(TokenizerState.RawTextEndTagName, c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
-            Reconsume(TokenizerState.RawText, r);
+            Reconsume(TokenizerState.RawText, c);
         }
     }
 
-    private void RawTextEndTagName(Rune? r)
+    private void RawTextEndTagName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#rawtext-end-tag-name-state>
 
-        if (IsSpecialWhitespace(r) && IsCurrentEndTagAnAppropriateOne())
+        if (IsSpecialWhitespace(c) && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '/' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '/' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '>' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '>' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentTag!.AppendName(ToAsciiLowercase(r!.Value));
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(ToAsciiLowercase(c));
+            _tempBuffer.Add(c);
         }
-        else if (IsAsciiLowerAlpha(r))
+        else if (IsAsciiLowerAlpha(c))
         {
-            _currentTag!.AppendName(r!.Value);
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(c);
+            _tempBuffer.Add(c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
             EmitCharacterTokensFromTemporaryBuffer();
-            Reconsume(TokenizerState.RawText, r);
+            Reconsume(TokenizerState.RawText, c);
         }
     }
 
-    private void ScriptDataLessThanSign(Rune? r)
+    private void ScriptDataLessThanSign(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-less-than-sign-state>
 
-        if (r?.Value is '/')
+        if (c is '/')
         {
             _tempBuffer.Clear();
             _state = TokenizerState.ScriptDataEndTagOpen;
         }
-        else if (r?.Value is '!')
+        else if (c is '!')
         {
             _state = TokenizerState.ScriptDataEscapeStart;
             EmitCharacterToken('<');
@@ -436,268 +437,268 @@ public partial class HtmlTokenizer
         else
         {
             EmitCharacterToken('<');
-            Reconsume(TokenizerState.ScriptData, r);
+            Reconsume(TokenizerState.ScriptData, c);
         }
     }
 
-    private void ScriptDataEndTagOpen(Rune? r)
+    private void ScriptDataEndTagOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-end-tag-open-state>
 
-        if (IsAsciiAlpha(r))
+        if (IsAsciiAlpha(c))
         {
             _currentTag = Tag.NewEndTag();
-            Reconsume(TokenizerState.ScriptDataEndTagName, r);
+            Reconsume(TokenizerState.ScriptDataEndTagName, c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
-            Reconsume(TokenizerState.ScriptData, r);
+            Reconsume(TokenizerState.ScriptData, c);
         }
     }
 
-    private void ScriptDataEndTagName(Rune? r)
+    private void ScriptDataEndTagName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-end-tag-name-state>
 
-        if (IsSpecialWhitespace(r) && IsCurrentEndTagAnAppropriateOne())
+        if (IsSpecialWhitespace(c) && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '/' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '/' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '>' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '>' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentTag!.AppendName(ToAsciiLowercase(r!.Value));
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(ToAsciiLowercase(c));
+            _tempBuffer.Add(c);
         }
-        else if (IsAsciiLowerAlpha(r))
+        else if (IsAsciiLowerAlpha(c))
         {
-            _currentTag!.AppendName(r!.Value);
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(c);
+            _tempBuffer.Add(c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
             EmitCharacterTokensFromTemporaryBuffer();
-            Reconsume(TokenizerState.ScriptData, r);
+            Reconsume(TokenizerState.ScriptData, c);
         }
     }
 
-    private void ScriptDataEscapeStart(Rune? r)
+    private void ScriptDataEscapeStart(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escape-start-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.ScriptDataEscapeStartDash;
             EmitCharacterToken('-');
         }
         else
         {
-            Reconsume(TokenizerState.ScriptData, r);
+            Reconsume(TokenizerState.ScriptData, c);
         }
     }
 
-    private void ScriptDataEscapeStartDash(Rune? r)
+    private void ScriptDataEscapeStartDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escape-start-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.ScriptDataEscapedDashDash;
             EmitCharacterToken('-');
         }
         else
         {
-            Reconsume(TokenizerState.ScriptData, r);
+            Reconsume(TokenizerState.ScriptData, c);
         }
     }
 
-    private void ScriptDataEscaped(Rune? r)
+    private void ScriptDataEscaped(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.ScriptDataEscapedDash;
             EmitCharacterToken('-');
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.ScriptDataEscapedLessThanSign;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            ReportParseError(ParseError.EofInScriptHtmlCommentLikeText);
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptDataEscapedDash(Rune? r)
+    private void ScriptDataEscapedDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.ScriptDataEscapedDashDash;
             EmitCharacterToken('-');
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.ScriptDataEscapedLessThanSign;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _state = TokenizerState.ScriptDataEscaped;
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            ReportParseError(ParseError.EofInScriptHtmlCommentLikeText);
             EmitEndOfFileToken();
         }
         else
         {
             _state = TokenizerState.ScriptDataEscaped;
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptDataEscapedDashDash(Rune? r)
+    private void ScriptDataEscapedDashDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-dash-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             EmitCharacterToken('-');
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.ScriptDataEscapedLessThanSign;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.ScriptData;
             EmitCharacterToken('>');
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _state = TokenizerState.ScriptDataEscaped;
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            ReportParseError(ParseError.EofInScriptHtmlCommentLikeText);
             EmitEndOfFileToken();
         }
         else
         {
             _state = TokenizerState.ScriptDataEscaped;
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptDataEscapedLessThanSign(Rune? r)
+    private void ScriptDataEscapedLessThanSign(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-less-than-sign-state>
 
-        if (r?.Value is '/')
+        if (c is '/')
         {
             _tempBuffer.Clear();
             _state = TokenizerState.ScriptDataEscapedEndTagOpen;
         }
-        else if (IsAsciiAlpha(r))
+        else if (IsAsciiAlpha(c))
         {
             _tempBuffer.Clear();
             EmitCharacterToken('<');
-            Reconsume(TokenizerState.ScriptDataDoubleEscapeStart, r);
+            Reconsume(TokenizerState.ScriptDataDoubleEscapeStart, c);
         }
         else
         {
             EmitCharacterToken('<');
-            Reconsume(TokenizerState.ScriptDataEscaped, r);
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
         }
     }
 
-    private void ScriptDataEscapedEndTagOpen(Rune? r)
+    private void ScriptDataEscapedEndTagOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-end-tag-open-state>
 
-        if (IsAsciiAlpha(r))
+        if (IsAsciiAlpha(c))
         {
             _currentTag = Tag.NewEndTag();
-            Reconsume(TokenizerState.ScriptDataEscapedEndTagName, r);
+            Reconsume(TokenizerState.ScriptDataEscapedEndTagName, c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
-            Reconsume(TokenizerState.ScriptDataEscaped, r);
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
         }
     }
 
-    private void ScriptDataEscapedEndTagName(Rune? r)
+    private void ScriptDataEscapedEndTagName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-escaped-end-tag-name-state>
 
-        if (IsSpecialWhitespace(r) && IsCurrentEndTagAnAppropriateOne())
+        if (IsSpecialWhitespace(c) && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '/' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '/' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '>' && IsCurrentEndTagAnAppropriateOne())
+        else if (c is '>' && IsCurrentEndTagAnAppropriateOne())
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentTag!.AppendName(ToAsciiLowercase(r!.Value));
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(ToAsciiLowercase(c));
+            _tempBuffer.Add(c);
         }
-        else if (IsAsciiLowerAlpha(r))
+        else if (IsAsciiLowerAlpha(c))
         {
-            _currentTag!.AppendName(r!.Value);
-            _tempBuffer.Add(r.Value);
+            _currentTag!.AppendName(c);
+            _tempBuffer.Add(c);
         }
         else
         {
             EmitCharacterToken('<');
             EmitCharacterToken('/');
             EmitCharacterTokensFromTemporaryBuffer();
-            Reconsume(TokenizerState.ScriptDataEscaped, r);
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
         }
     }
 
-    private void ScriptDataDoubleEscapeStart(Rune? r)
+    private void ScriptDataDoubleEscapeStart(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escape-start-state>
 
-        if (IsSpecialWhitespace(r) || r?.Value is '/' or '>')
+        if (IsSpecialWhitespace(c) || c is '/' or '>')
         {
             if (CompareTemporaryBuffer("script"))
             {
@@ -706,128 +707,128 @@ public partial class HtmlTokenizer
             else
             {
                 _state = TokenizerState.ScriptDataEscaped;
-                EmitCharacterToken(r!.Value);
+                EmitCharacterToken(c);
             }
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _tempBuffer.Add(ToAsciiLowercase(r!.Value));
-            EmitCharacterToken(r.Value);
+            _tempBuffer.Add(ToAsciiLowercase(c));
+            EmitCharacterToken(c);
         }
-        else if (IsAsciiLowerAlpha(r))
+        else if (IsAsciiLowerAlpha(c))
         {
-            _tempBuffer.Add(r!.Value);
-            EmitCharacterToken(r.Value);
+            _tempBuffer.Add(c);
+            EmitCharacterToken(c);
         }
         else
         {
-            Reconsume(TokenizerState.ScriptDataEscaped, r);
+            Reconsume(TokenizerState.ScriptDataEscaped, c);
         }
     }
 
-    private void ScriptDataDoubleEscaped(Rune? r)
+    private void ScriptDataDoubleEscaped(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.ScriptDataDoubleEscapedDash;
             EmitCharacterToken('-');
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.ScriptDataDoubleEscapedLessThanSign;
             EmitCharacterToken('<');
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            ReportParseError(ParseError.EofInScriptHtmlCommentLikeText);
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptDataDoubleEscapedDash(Rune? r)
+    private void ScriptDataDoubleEscapedDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.ScriptDataDoubleEscapedDashDash;
             EmitCharacterToken('-');
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.ScriptDataDoubleEscapedLessThanSign;
             EmitCharacterToken('<');
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _state = TokenizerState.ScriptDataDoubleEscaped;
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            ReportParseError(ParseError.EofInScriptHtmlCommentLikeText);
             EmitEndOfFileToken();
         }
         else
         {
             _state = TokenizerState.ScriptDataDoubleEscaped;
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptDataDoubleEscapedDashDash(Rune? r)
+    private void ScriptDataDoubleEscapedDashDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-dash-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             EmitCharacterToken('-');
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _state = TokenizerState.ScriptDataDoubleEscapedLessThanSign;
             EmitCharacterToken('<');
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.ScriptData;
             EmitCharacterToken('>');
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _state = TokenizerState.ScriptDataDoubleEscaped;
             EmitReplacementCharacterToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInScriptHtmlCommentLikeText);
+            ReportParseError(ParseError.EofInScriptHtmlCommentLikeText);
             EmitEndOfFileToken();
         }
         else
         {
             _state = TokenizerState.ScriptDataDoubleEscaped;
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
     }
 
-    private void ScriptDataDoubleEscapedLessThanSign(Rune? r)
+    private void ScriptDataDoubleEscapedLessThanSign(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escaped-less-than-sign-state>
 
-        if (r?.Value is '/')
+        if (c is '/')
         {
             _tempBuffer.Clear();
             _state = TokenizerState.ScriptDataDoubleEscapeEnd;
@@ -835,15 +836,15 @@ public partial class HtmlTokenizer
         }
         else
         {
-            Reconsume(TokenizerState.ScriptDataDoubleEscaped, r);
+            Reconsume(TokenizerState.ScriptDataDoubleEscaped, c);
         }
     }
 
-    private void ScriptDataDoubleEscapeEnd(Rune? r)
+    private void ScriptDataDoubleEscapeEnd(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#script-data-double-escape-end-state>
 
-        if (IsSpecialWhitespace(r) || r!.Value.Value is '/' or '>')
+        if (IsSpecialWhitespace(c) || c is '/' or '>')
         {
             if (CompareTemporaryBuffer("script"))
             {
@@ -852,52 +853,52 @@ public partial class HtmlTokenizer
             else
             {
                 _state = TokenizerState.ScriptDataDoubleEscaped;
-                EmitCharacterToken(r!.Value);
+                EmitCharacterToken(c);
             }
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _tempBuffer.Add(ToAsciiLowercase(r.Value));
-            EmitCharacterToken(r.Value);
+            _tempBuffer.Add(ToAsciiLowercase(c));
+            EmitCharacterToken(c);
         }
-        else if (IsAsciiLowerAlpha(r))
+        else if (IsAsciiLowerAlpha(c))
         {
-            _tempBuffer.Add(r.Value);
-            EmitCharacterToken(r.Value);
+            _tempBuffer.Add(c);
+            EmitCharacterToken(c);
         }
         else
         {
-            Reconsume(TokenizerState.ScriptDataDoubleEscaped, r);
+            Reconsume(TokenizerState.ScriptDataDoubleEscaped, c);
         }
     }
 
-    private void BeforeAttributeName(Rune? r)
+    private void BeforeAttributeName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#before-attribute-name-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '/' or '>' || r is null)
+        else if (c is '/' or '>' or -1)
         {
-            Reconsume(TokenizerState.AfterAttributeName, r);
+            Reconsume(TokenizerState.AfterAttributeName, c);
         }
-        else if (r.Value.Value is '=')
+        else if (c is '=')
         {
-            AddParseError(ParseError.UnexpectedEqualsSignBeforeAttributeName);
+            ReportParseError(ParseError.UnexpectedEqualsSignBeforeAttributeName);
             _currentAttribute = _currentTag!.NewAttribute();
-            _currentAttribute.AppendName(new('='));
+            _currentAttribute.AppendName('=');
             _state = TokenizerState.AttributeName;
         }
         else
         {
             _currentAttribute = _currentTag!.NewAttribute();
-            Reconsume(TokenizerState.AttributeName, r);
+            Reconsume(TokenizerState.AttributeName, c);
         }
     }
 
-    private void AttributeName(Rune? r)
+    private void AttributeName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-name-state>
 
@@ -915,267 +916,267 @@ public partial class HtmlTokenizer
          *   "current attribute" for the purposes of the tokenizer, however.
          */
 
-        if (IsSpecialWhitespace(r) || r?.Value is '/' or '>' || r is null)
+        if (IsSpecialWhitespace(c) || c is '/' or '>' or -1)
         {
             if (_currentTag!.CheckAndCorrectDuplicateAttributes())
-                AddParseError(ParseError.DuplicateAttribute); // see block comment above
-            Reconsume(TokenizerState.AfterAttributeName, r);
+                ReportParseError(ParseError.DuplicateAttribute); // see block comment above
+            Reconsume(TokenizerState.AfterAttributeName, c);
         }
-        else if (r.Value.Value is '=')
+        else if (c is '=')
         {
             if (_currentTag!.CheckAndCorrectDuplicateAttributes())
-                AddParseError(ParseError.DuplicateAttribute); // see block comment above
+                ReportParseError(ParseError.DuplicateAttribute); // see block comment above
             _state = TokenizerState.BeforeAttributeValue;
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentAttribute!.AppendName(ToAsciiLowercase(r.Value));
+            _currentAttribute!.AppendName(ToAsciiLowercase(c));
         }
-        else if (r.Value.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentAttribute!.AppendName(REPLACEMENT_CHARACTER);
         }
         else
         {
-            if (r.Value.Value is '"' or '\'' or '<')
+            if (c is '"' or '\'' or '<')
             {
-                AddParseError(ParseError.UnexpectedCharacterInAttributeName);
+                ReportParseError(ParseError.UnexpectedCharacterInAttributeName);
             }
-            _currentAttribute!.AppendName(r.Value);
+            _currentAttribute!.AppendName(c);
         }
     }
 
-    private void AfterAttributeName(Rune? r)
+    private void AfterAttributeName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-attribute-name-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '/')
+        else if (c is '/')
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '=')
+        else if (c is '=')
         {
             _state = TokenizerState.BeforeAttributeValue;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
             _currentAttribute = _currentTag!.NewAttribute();
-            Reconsume(TokenizerState.AttributeName, r);
+            Reconsume(TokenizerState.AttributeName, c);
         }
     }
 
-    private void BeforeAttributeValue(Rune? r)
+    private void BeforeAttributeValue(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#before-attribute-value-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
             _state = TokenizerState.AttributeValueDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
             _state = TokenizerState.AttributeValueSingleQuoted;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingAttributeValue);
+            ReportParseError(ParseError.MissingAttributeValue);
             _state = TokenizerState.Data;
             EmitTagToken();
         }
     }
 
-    private void AttributeValueDoubleQuoted(Rune? r)
+    private void AttributeValueDoubleQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(double-quoted)-state>
 
-        if (r?.Value is '"')
+        if (c is '"')
         {
             _state = TokenizerState.AfterAttributeValueQuoted;
         }
-        else if (r?.Value is '&')
+        else if (c is '&')
         {
             _returnState = TokenizerState.AttributeValueDoubleQuoted;
             _state = TokenizerState.CharacterReference;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentAttribute!.AppendValue(REPLACEMENT_CHARACTER);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
-            _currentAttribute!.AppendValue(r.Value);
+            _currentAttribute!.AppendValue(c);
         }
     }
 
-    private void AttributeValueSingleQuoted(Rune? r)
+    private void AttributeValueSingleQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(single-quoted)-state>
 
-        if (r?.Value is '\'')
+        if (c is '\'')
         {
             _state = TokenizerState.AfterAttributeValueQuoted;
         }
-        else if (r?.Value is '&')
+        else if (c is '&')
         {
             _returnState = TokenizerState.AttributeValueSingleQuoted;
             _state = TokenizerState.CharacterReference;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentAttribute!.AppendValue(REPLACEMENT_CHARACTER);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
-            _currentAttribute!.AppendValue(r.Value);
+            _currentAttribute!.AppendValue(c);
         }
     }
 
-    private void AttributeValueUnquoted(Rune? r)
+    private void AttributeValueUnquoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#attribute-value-(unquoted)-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '&')
+        else if (c is '&')
         {
             _returnState = TokenizerState.AttributeValueUnquoted;
             _state = TokenizerState.CharacterReference;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentAttribute!.AppendValue(REPLACEMENT_CHARACTER);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
-            if (r.Value.Value is '"' or '\'' or '<' or '=' or '`')
+            if (c is '"' or '\'' or '<' or '=' or '`')
             {
-                AddParseError(ParseError.UnexpectedCharacterInUnquotedAttributeValue);
+                ReportParseError(ParseError.UnexpectedCharacterInUnquotedAttributeValue);
             }
-            _currentAttribute!.AppendValue(r.Value);
+            _currentAttribute!.AppendValue(c);
         }
     }
 
-    private void AfterAttributeValueQuoted(Rune? r)
+    private void AfterAttributeValueQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-attribute-value-(quoted)-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BeforeAttributeName;
         }
-        else if (r?.Value is '/')
+        else if (c is '/')
         {
             _state = TokenizerState.SelfClosingStartTag;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingWhitespaceBetweenAttributes);
-            Reconsume(TokenizerState.BeforeAttributeName, r);
+            ReportParseError(ParseError.MissingWhitespaceBetweenAttributes);
+            Reconsume(TokenizerState.BeforeAttributeName, c);
         }
     }
 
-    private void SelfClosingStartTag(Rune? r)
+    private void SelfClosingStartTag(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#self-closing-start-tag-state>
 
-        if (r?.Value is '>')
+        if (c is '>')
         {
             _currentTag!.SetSelfClosingFlag();
             _state = TokenizerState.Data;
             EmitTagToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInTag);
+            ReportParseError(ParseError.EofInTag);
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.UnexpectedSolidusInTag);
-            Reconsume(TokenizerState.BeforeAttributeName, r);
+            ReportParseError(ParseError.UnexpectedSolidusInTag);
+            Reconsume(TokenizerState.BeforeAttributeName, c);
         }
     }
 
-    private void BogusComment(Rune? r)
+    private void BogusComment(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#bogus-comment-state>
 
-        if (r?.Value is '>')
+        if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitCommentToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitCommentToken();
             EmitEndOfFileToken();
         }
-        else if (r.Value.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentComment!.Append(REPLACEMENT_CHARACTER);
         }
         else
         {
-            _currentComment!.Append(r.Value);
+            _currentComment!.Append(c);
         }
     }
 
-    private void MarkupDeclarationOpen(Rune? r)
+    private void MarkupDeclarationOpen(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#markup-declaration-open-state>
 
@@ -1191,43 +1192,43 @@ public partial class HtmlTokenizer
         //     This is an incorrectly-opened-comment parse error. Create a comment token whose data is the empty string. Switch to the bogus comment state (don't consume anything in the current state).
     }
 
-    private void CommentStart(Rune? r)
+    private void CommentStart(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-start-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.CommentStartDash;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.AbruptClosingOfEmptyComment);
+            ReportParseError(ParseError.AbruptClosingOfEmptyComment);
             _state = TokenizerState.Data;
             EmitCommentToken();
         }
         else
         {
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void CommentStartDash(Rune? r)
+    private void CommentStartDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-start-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.CommentEnd;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.AbruptClosingOfEmptyComment);
+            ReportParseError(ParseError.AbruptClosingOfEmptyComment);
             _state = TokenizerState.Data;
             EmitCommentToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInComment);
+            ReportParseError(ParseError.EofInComment);
             EmitCommentToken();
             EmitEndOfFileToken();
         }
@@ -1235,143 +1236,143 @@ public partial class HtmlTokenizer
         {
             _currentComment!.Append('-');
             _currentComment.Append('-');
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void Comment(Rune? r)
+    private void Comment(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-state>
 
-        if (r?.Value is '<')
+        if (c is '<')
         {
             _currentComment!.Append('<');
             _state = TokenizerState.CommentLessThanSign;
         }
-        else if (r?.Value is '-')
+        else if (c is '-')
         {
             _state = TokenizerState.CommentEndDash;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentComment!.Append(REPLACEMENT_CHARACTER);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInComment);
+            ReportParseError(ParseError.EofInComment);
             EmitCommentToken();
             EmitEndOfFileToken();
         }
         else
         {
-            _currentComment!.Append(r.Value);
+            _currentComment!.Append(c);
         }
     }
 
-    private void CommentLessThanSign(Rune? r)
+    private void CommentLessThanSign(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-state>
 
-        if (r?.Value is '!')
+        if (c is '!')
         {
             _currentComment!.Append('!');
             _state = TokenizerState.CommentLessThanSignBang;
         }
-        else if (r?.Value is '<')
+        else if (c is '<')
         {
             _currentComment!.Append('<');
         }
         else
         {
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void CommentLessThanSignBang(Rune? r)
+    private void CommentLessThanSignBang(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-bang-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.CommentLessThanSignBangDash;
         }
         else
         {
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void CommentLessThanSignBangDash(Rune? r)
+    private void CommentLessThanSignBangDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-bang-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.CommentLessThanSignBangDashDash;
         }
         else
         {
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void CommentLessThanSignBangDashDash(Rune? r)
+    private void CommentLessThanSignBangDashDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-less-than-sign-bang-dash-dash-state>
 
-        if (r?.Value is '>' || r is null)
+        if (c is '>' or -1)
         {
-            Reconsume(TokenizerState.CommentEnd, r);
+            Reconsume(TokenizerState.CommentEnd, c);
         }
         else
         {
-            AddParseError(ParseError.NestedComment);
-            Reconsume(TokenizerState.CommentEnd, r);
+            ReportParseError(ParseError.NestedComment);
+            Reconsume(TokenizerState.CommentEnd, c);
         }
     }
 
-    private void CommentEndDash(Rune? r)
+    private void CommentEndDash(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-end-dash-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _state = TokenizerState.CommentEnd;
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInComment);
+            ReportParseError(ParseError.EofInComment);
             EmitCommentToken();
             EmitEndOfFileToken();
         }
         else
         {
             _currentComment!.Append('-');
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void CommentEnd(Rune? r)
+    private void CommentEnd(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-end-state>
 
-        if (r?.Value is '>')
+        if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitCommentToken();
         }
-        else if (r?.Value is '!')
+        else if (c is '!')
         {
             _state = TokenizerState.CommentEndBang;
         }
-        else if (r?.Value is '-')
+        else if (c is '-')
         {
             _currentComment!.Append('-');
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInComment);
+            ReportParseError(ParseError.EofInComment);
             EmitCommentToken();
             EmitEndOfFileToken();
         }
@@ -1379,30 +1380,30 @@ public partial class HtmlTokenizer
         {
             _currentComment!.Append('-');
             _currentComment.Append('-');
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void CommentEndBang(Rune? r)
+    private void CommentEndBang(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#comment-end-bang-state>
 
-        if (r?.Value is '-')
+        if (c is '-')
         {
             _currentComment!.Append('-');
             _currentComment.Append('-');
             _currentComment.Append('!');
             _state = TokenizerState.CommentEndDash;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.IncorrectlyClosedComment);
+            ReportParseError(ParseError.IncorrectlyClosedComment);
             _state = TokenizerState.Data;
             EmitCommentToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInComment);
+            ReportParseError(ParseError.EofInComment);
             EmitCommentToken();
             EmitEndOfFileToken();
         }
@@ -1411,25 +1412,25 @@ public partial class HtmlTokenizer
             _currentComment!.Append('-');
             _currentComment.Append('-');
             _currentComment.Append('!');
-            Reconsume(TokenizerState.Comment, r);
+            Reconsume(TokenizerState.Comment, c);
         }
     }
 
-    private void Doctype(Rune? r)
+    private void Doctype(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BeforeDoctypeName;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            Reconsume(TokenizerState.BeforeDoctypeName, r);
+            Reconsume(TokenizerState.BeforeDoctypeName, c);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype = new();
             _currentDoctype.SetQuirksFlag();
             EmitDoctypeToken();
@@ -1437,42 +1438,42 @@ public partial class HtmlTokenizer
         }
         else
         {
-            AddParseError(ParseError.MissingWhitespaceBeforeDoctypeName);
-            Reconsume(TokenizerState.BeforeDoctypeName, r);
+            ReportParseError(ParseError.MissingWhitespaceBeforeDoctypeName);
+            Reconsume(TokenizerState.BeforeDoctypeName, c);
         }
     }
 
-    private void BeforeDoctypeName(Rune? r)
+    private void BeforeDoctypeName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#before-doctype-name-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
             _currentDoctype = new();
-            _currentDoctype.AppendName(ToAsciiLowercase(r!.Value));
+            _currentDoctype.AppendName(ToAsciiLowercase(c));
             _state = TokenizerState.DoctypeName;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype = new();
             _currentDoctype.AppendName(REPLACEMENT_CHARACTER);
             _state = TokenizerState.DoctypeName;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingDoctypeName);
+            ReportParseError(ParseError.MissingDoctypeName);
             _currentDoctype = new();
             _currentDoctype.SetQuirksFlag();
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype = new();
             _currentDoctype.SetQuirksFlag();
             EmitDoctypeToken();
@@ -1481,36 +1482,36 @@ public partial class HtmlTokenizer
         else
         {
             _currentDoctype = new();
-            _currentDoctype.AppendName(r.Value);
+            _currentDoctype.AppendName(c);
             _state = TokenizerState.DoctypeName;
         }
     }
 
-    private void DoctypeName(Rune? r)
+    private void DoctypeName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-name-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.AfterDoctypeName;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (IsAsciiUpperAlpha(r))
+        else if (IsAsciiUpperAlpha(c))
         {
-            _currentDoctype!.AppendName(ToAsciiLowercase(r!.Value));
+            _currentDoctype!.AppendName(ToAsciiLowercase(c));
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype!.AppendName(REPLACEMENT_CHARACTER);
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype = new();
             _currentDoctype.SetQuirksFlag();
             EmitDoctypeToken();
@@ -1518,26 +1519,26 @@ public partial class HtmlTokenizer
         }
         else
         {
-            _currentDoctype!.AppendName(r.Value);
+            _currentDoctype!.AppendName(c);
         }
     }
 
-    private void AfterDoctypeName(Rune? r)
+    private void AfterDoctypeName(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-name-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
@@ -1551,444 +1552,444 @@ public partial class HtmlTokenizer
         }
     }
 
-    private void AfterDoctypePublicKeyword(Rune? r)
+    private void AfterDoctypePublicKeyword(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-public-keyword-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BeforeDoctypePublicIdentifier;
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
-            AddParseError(ParseError.MissingWhitespaceAfterDoctypePublicKeyword);
+            ReportParseError(ParseError.MissingWhitespaceAfterDoctypePublicKeyword);
             _currentDoctype!.SetPublicIdentifierToEmptyString();
             _state = TokenizerState.DoctypePublicIdentifierDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
-            AddParseError(ParseError.MissingWhitespaceAfterDoctypePublicKeyword);
+            ReportParseError(ParseError.MissingWhitespaceAfterDoctypePublicKeyword);
             _currentDoctype!.SetPublicIdentifierToEmptyString();
             _state = TokenizerState.DoctypePublicIdentifierSingleQuoted;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingDoctypePublicIdentifier);
+            ReportParseError(ParseError.MissingDoctypePublicIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingQuoteBeforeDoctypePublicIdentifier);
+            ReportParseError(ParseError.MissingQuoteBeforeDoctypePublicIdentifier);
             _currentDoctype!.SetQuirksFlag();
-            Reconsume(TokenizerState.BogusDoctype, r);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void BeforeDoctypePublicIdentifier(Rune? r)
+    private void BeforeDoctypePublicIdentifier(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#before-doctype-public-identifier-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
             _currentDoctype!.SetPublicIdentifierToEmptyString();
             _state = TokenizerState.DoctypePublicIdentifierDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
             _currentDoctype!.SetPublicIdentifierToEmptyString();
             _state = TokenizerState.DoctypePublicIdentifierSingleQuoted;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingDoctypePublicIdentifier);
+            ReportParseError(ParseError.MissingDoctypePublicIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingQuoteBeforeDoctypePublicIdentifier);
+            ReportParseError(ParseError.MissingQuoteBeforeDoctypePublicIdentifier);
             _currentDoctype!.SetQuirksFlag();
-            Reconsume(TokenizerState.BogusDoctype, r);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void DoctypePublicIdentifierDoubleQuoted(Rune? r)
+    private void DoctypePublicIdentifierDoubleQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-public-identifier-(double-quoted)-state>
 
-        if (r?.Value is '"')
+        if (c is '"')
         {
             _state = TokenizerState.AfterDoctypePublicIdentifier;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype!.AppendPublicIdentifier(REPLACEMENT_CHARACTER);
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.AbruptDoctypePublicIdentifier);
+            ReportParseError(ParseError.AbruptDoctypePublicIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            _currentDoctype!.AppendPublicIdentifier(r.Value);
+            _currentDoctype!.AppendPublicIdentifier(c);
         }
     }
 
-    private void DoctypePublicIdentifierSingleQuoted(Rune? r)
+    private void DoctypePublicIdentifierSingleQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-public-identifier-(single-quoted)-state>
 
-        if (r?.Value is '\'')
+        if (c is '\'')
         {
             _state = TokenizerState.AfterDoctypePublicIdentifier;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype!.AppendPublicIdentifier(REPLACEMENT_CHARACTER);
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.AbruptDoctypePublicIdentifier);
+            ReportParseError(ParseError.AbruptDoctypePublicIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            _currentDoctype!.AppendPublicIdentifier(r.Value);
+            _currentDoctype!.AppendPublicIdentifier(c);
         }
     }
 
-    private void AfterDoctypePublicIdentifier(Rune? r)
+    private void AfterDoctypePublicIdentifier(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-public-identifier-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BetweenDoctypePublicAndSystemIdentifiers;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
-            AddParseError(ParseError.MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
+            ReportParseError(ParseError.MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
-            AddParseError(ParseError.MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
+            ReportParseError(ParseError.MissingWhitespaceBetweenDoctypePublicAndSystemIdentifiers);
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            ReportParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
-            Reconsume(TokenizerState.BogusDoctype, r);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void BetweenDoctypePublicAndSystemIdentifiers(Rune? r)
+    private void BetweenDoctypePublicAndSystemIdentifiers(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#between-doctype-public-and-system-identifiers-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            ReportParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
-            Reconsume(TokenizerState.BogusDoctype, r);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void AfterDoctypeSystemKeyword(Rune? r)
+    private void AfterDoctypeSystemKeyword(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-system-keyword-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             _state = TokenizerState.BeforeDoctypeSystemIdentifier;
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
-            AddParseError(ParseError.MissingWhitespaceAfterDoctypeSystemKeyword);
+            ReportParseError(ParseError.MissingWhitespaceAfterDoctypeSystemKeyword);
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
-            AddParseError(ParseError.MissingWhitespaceAfterDoctypeSystemKeyword);
+            ReportParseError(ParseError.MissingWhitespaceAfterDoctypeSystemKeyword);
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingDoctypeSystemIdentifier);
+            ReportParseError(ParseError.MissingDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            ReportParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
-            Reconsume(TokenizerState.BogusDoctype, r);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void BeforeDoctypeSystemIdentifier(Rune? r)
+    private void BeforeDoctypeSystemIdentifier(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#before-doctype-system-identifier-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '"')
+        else if (c is '"')
         {
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierDoubleQuoted;
         }
-        else if (r?.Value is '\'')
+        else if (c is '\'')
         {
             _currentDoctype!.SetSystemIdentifierToEmptyString();
             _state = TokenizerState.DoctypeSystemIdentifierSingleQuoted;
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.MissingDoctypeSystemIdentifier);
+            ReportParseError(ParseError.MissingDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
+            ReportParseError(ParseError.MissingQuoteBeforeDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
-            Reconsume(TokenizerState.BogusDoctype, r);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void DoctypeSystemIdentifierDoubleQuoted(Rune? r)
+    private void DoctypeSystemIdentifierDoubleQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-system-identifier-(double-quoted)-state>
 
-        if (r?.Value is '"')
+        if (c is '"')
         {
             _state = TokenizerState.AfterDoctypeSystemIdentifier;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype!.AppendSystemIdentifier(REPLACEMENT_CHARACTER);
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.AbruptDoctypeSystemIdentifier);
+            ReportParseError(ParseError.AbruptDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            _currentDoctype!.AppendSystemIdentifier(r.Value);
+            _currentDoctype!.AppendSystemIdentifier(c);
         }
     }
 
-    private void DoctypeSystemIdentifierSingleQuoted(Rune? r)
+    private void DoctypeSystemIdentifierSingleQuoted(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#doctype-system-identifier-(single-quoted)-state>
 
-        if (r?.Value is '\'')
+        if (c is '\'')
         {
             _state = TokenizerState.AfterDoctypeSystemIdentifier;
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype!.AppendSystemIdentifier(REPLACEMENT_CHARACTER);
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
-            AddParseError(ParseError.AbruptDoctypeSystemIdentifier);
+            ReportParseError(ParseError.AbruptDoctypeSystemIdentifier);
             _currentDoctype!.SetQuirksFlag();
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            _currentDoctype!.AppendSystemIdentifier(r.Value);
+            _currentDoctype!.AppendSystemIdentifier(c);
         }
     }
 
-    private void AfterDoctypeSystemIdentifier(Rune? r)
+    private void AfterDoctypeSystemIdentifier(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#after-doctype-system-identifier-state>
 
-        if (IsSpecialWhitespace(r))
+        if (IsSpecialWhitespace(c))
         {
             // Ignore the character.
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInDoctype);
+            ReportParseError(ParseError.EofInDoctype);
             _currentDoctype!.SetQuirksFlag();
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
         else
         {
-            AddParseError(ParseError.UnexpectedCharacterAfterDoctypeSystemIdentifier);
-            Reconsume(TokenizerState.BogusDoctype, r);
+            ReportParseError(ParseError.UnexpectedCharacterAfterDoctypeSystemIdentifier);
+            Reconsume(TokenizerState.BogusDoctype, c);
         }
     }
 
-    private void BogusDoctype(Rune? r)
+    private void BogusDoctype(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#bogus-doctype-state>
 
-        if (r?.Value is '>')
+        if (c is '>')
         {
             _state = TokenizerState.Data;
             EmitDoctypeToken();
         }
-        else if (r?.Value is '\0')
+        else if (c is '\0')
         {
-            AddParseError(ParseError.UnexpectedNullCharacter);
+            ReportParseError(ParseError.UnexpectedNullCharacter);
             // Ignore the character.
         }
-        else if (r is null)
+        else if (c is EOF)
         {
             EmitDoctypeToken();
             EmitEndOfFileToken();
         }
     }
 
-    private void CDataSection(Rune? r)
+    private void CDataSection(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-state>
 
-        if (r?.Value is ']')
+        if (c is ']')
         {
             _state = TokenizerState.CDataSectionBracket;
         }
-        else if (r is null)
+        else if (c is EOF)
         {
-            AddParseError(ParseError.EofInCData);
+            ReportParseError(ParseError.EofInCData);
             EmitEndOfFileToken();
         }
         else
         {
-            EmitCharacterToken(r.Value);
+            EmitCharacterToken(c);
         }
 
         /* U+0000 NULL characters are handled in the tree construction stage,
@@ -1997,30 +1998,30 @@ public partial class HtmlTokenizer
          */
     }
 
-    private void CDataSectionBracket(Rune? r)
+    private void CDataSectionBracket(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-bracket-state>
 
-        if (r?.Value is ']')
+        if (c is ']')
         {
             _state = TokenizerState.CDataSectionEnd;
         }
         else
         {
             EmitCharacterToken(']');
-            Reconsume(TokenizerState.CDataSection, r);
+            Reconsume(TokenizerState.CDataSection, c);
         }
     }
 
-    private void CDataSectionEnd(Rune? r)
+    private void CDataSectionEnd(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#cdata-section-end-state>
 
-        if (r?.Value is ']')
+        if (c is ']')
         {
             EmitCharacterToken(']');
         }
-        else if (r?.Value is '>')
+        else if (c is '>')
         {
             _state = TokenizerState.Data;
         }
@@ -2028,33 +2029,34 @@ public partial class HtmlTokenizer
         {
             EmitCharacterToken(']');
             EmitCharacterToken(']');
-            Reconsume(TokenizerState.CDataSection, r);
+            Reconsume(TokenizerState.CDataSection, c);
         }
     }
 
-    private void CharacterReference(Rune? r)
+    private void CharacterReference(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#character-reference-state>
 
         _tempBuffer.Clear();
-        _tempBuffer.Add(new('&'));
-        if (IsAsciiAlphanumeric(r))
+        _tempBuffer.Add('&');
+        if (IsAsciiAlphanumeric(c))
         {
-            Reconsume(TokenizerState.NamedCharacterReference, r);
+            Reconsume(TokenizerState.NamedCharacterReference, c);
         }
-        else if (r?.Value is '#')
+        else if (c is '#')
         {
-            _tempBuffer.Add(new('#'));
+            _tempBuffer.Add('#');
             _state = TokenizerState.NumericCharacterReference;
         }
         else
         {
             FlushCodePointsConsumedAsCharacterReference();
-            Reconsume(_returnState!.Value, r);
+            Reconsume(_returnState!.Value, c);
         }
     }
 
-    private void NamedCharacterReference(Rune? r)
+    // ReSharper disable once MemberCanBeMadeStatic.Local
+    private void NamedCharacterReference(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#named-character-reference-state>
 
@@ -2065,154 +2067,154 @@ public partial class HtmlTokenizer
         throw new NotImplementedException();
     }
 
-    private void AmbiguousAmpersand(Rune? r)
+    private void AmbiguousAmpersand(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#ambiguous-ampersand-state>
 
-        if (IsAsciiAlphanumeric(r))
+        if (IsAsciiAlphanumeric(c))
         {
             if (WasConsumedAsPartOfAnAttribute())
-                _currentAttribute!.AppendValue(r!.Value);
+                _currentAttribute!.AppendValue(c);
             else
-                EmitCharacterToken(r!.Value);
+                EmitCharacterToken(c);
         }
-        else if (r?.Value is ';')
+        else if (c is ';')
         {
-            AddParseError(ParseError.UnknownNamedCharacterReference);
-            Reconsume(_returnState!.Value, r);
+            ReportParseError(ParseError.UnknownNamedCharacterReference);
+            Reconsume(_returnState!.Value, c);
         }
         else
         {
-            Reconsume(_returnState!.Value, r);
+            Reconsume(_returnState!.Value, c);
         }
     }
 
-    private void NumericCharacterReference(Rune? r)
+    private void NumericCharacterReference(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-state>
 
         _charRefCode = 0;
-        if (r?.Value is 'x' or 'X')
+        if (c is 'x' or 'X')
         {
-            _tempBuffer.Add(r.Value);
+            _tempBuffer.Add(c);
             _state = TokenizerState.HexadecimalCharacterReferenceStart;
         }
         else
         {
-            Reconsume(TokenizerState.DecimalCharacterReferenceStart, r);
+            Reconsume(TokenizerState.DecimalCharacterReferenceStart, c);
         }
     }
 
-    private void HexadecimalCharacterReferenceStart(Rune? r)
+    private void HexadecimalCharacterReferenceStart(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-start-state>
 
-        if (IsAsciiHexDigit(r))
+        if (IsAsciiHexDigit(c))
         {
-            Reconsume(TokenizerState.HexadecimalCharacterReference, r);
+            Reconsume(TokenizerState.HexadecimalCharacterReference, c);
         }
         else
         {
-            AddParseError(ParseError.AbsenseOfDigitsInNumericCharacterReference);
+            ReportParseError(ParseError.AbsenseOfDigitsInNumericCharacterReference);
             FlushCodePointsConsumedAsCharacterReference();
-            Reconsume(_returnState!.Value, r);
+            Reconsume(_returnState!.Value, c);
         }
     }
 
-    private void DecimalCharacterReferenceStart(Rune? r)
+    private void DecimalCharacterReferenceStart(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#decimal-character-reference-start-state>
 
-        if (IsAsciiDigit(r))
+        if (IsAsciiDigit(c))
         {
-            Reconsume(TokenizerState.DecimalCharacterReference, r);
+            Reconsume(TokenizerState.DecimalCharacterReference, c);
         }
         else
         {
-            AddParseError(ParseError.AbsenseOfDigitsInNumericCharacterReference);
+            ReportParseError(ParseError.AbsenseOfDigitsInNumericCharacterReference);
             FlushCodePointsConsumedAsCharacterReference();
-            Reconsume(_returnState!.Value, r);
+            Reconsume(_returnState!.Value, c);
         }
     }
 
-    private void HexadecimalCharacterReference(Rune? r)
+    private void HexadecimalCharacterReference(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#hexadecimal-character-reference-state>
 
-        if (IsAsciiDigit(r))
+        if (IsAsciiDigit(c))
         {
             _charRefCode *= 16;
-            _charRefCode += r!.Value.Value - '0';
+            _charRefCode += c - '0';
         }
-        else if (IsAsciiUpperHexDigit(r))
+        else if (IsAsciiUpperHexDigit(c))
         {
             _charRefCode *= 16;
-            _charRefCode += r!.Value.Value - 'A' + 10;
+            _charRefCode += c - 'A' + 10;
         }
-        else if (IsAsciiLowerHexDigit(r))
+        else if (IsAsciiLowerHexDigit(c))
         {
             _charRefCode *= 16;
-            _charRefCode += r!.Value.Value - 'a' + 10;
+            _charRefCode += c - 'a' + 10;
         }
-        else if (r?.Value is ';')
+        else if (c is ';')
         {
             _state = TokenizerState.NumericCharacterReferenceEnd;
         }
         else
         {
-            AddParseError(ParseError.MissingSemicolonAfterCharacterReference);
-            Reconsume(TokenizerState.NumericCharacterReferenceEnd, r);
+            ReportParseError(ParseError.MissingSemicolonAfterCharacterReference);
+            Reconsume(TokenizerState.NumericCharacterReferenceEnd, c);
         }
     }
 
-    private void DecimalCharacterReference(Rune? r)
+    private void DecimalCharacterReference(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#decimal-character-reference-state>
 
-        if (IsAsciiDigit(r))
+        if (IsAsciiDigit(c))
         {
             _charRefCode *= 10;
-            _charRefCode += r!.Value.Value - '0';
+            _charRefCode += c - '0';
         }
-        else if (r?.Value is ';')
+        else if (c is ';')
         {
             _state = TokenizerState.NumericCharacterReferenceEnd;
         }
         else
         {
-            AddParseError(ParseError.MissingSemicolonAfterCharacterReference);
-            Reconsume(TokenizerState.NumericCharacterReferenceEnd, r);
+            ReportParseError(ParseError.MissingSemicolonAfterCharacterReference);
+            Reconsume(TokenizerState.NumericCharacterReferenceEnd, c);
         }
     }
 
-    private void NumericCharacterReferenceEnd(Rune? r)
+    private void NumericCharacterReferenceEnd(int c)
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
 
-        PutBack(r); // we don't need it
+        PutBack(c); // we don't need it
 
         if (_charRefCode is 0)
         {
-            AddParseError(ParseError.NullCharacterReference);
-            _charRefCode = REPLACEMENT_CHARACTER.Value;
+            ReportParseError(ParseError.NullCharacterReference);
+            _charRefCode = REPLACEMENT_CHARACTER;
         }
         else if (_charRefCode > 0x10FFFF)
         {
-            AddParseError(ParseError.CharacterReferenceOutsideUnicodeRange);
-            _charRefCode = REPLACEMENT_CHARACTER.Value;
+            ReportParseError(ParseError.CharacterReferenceOutsideUnicodeRange);
+            _charRefCode = REPLACEMENT_CHARACTER;
         }
         else if (IsSurrogate(_charRefCode))
         {
-            AddParseError(ParseError.SurrogateCharacterReference);
-            _charRefCode = REPLACEMENT_CHARACTER.Value;
+            ReportParseError(ParseError.SurrogateCharacterReference);
+            _charRefCode = REPLACEMENT_CHARACTER;
         }
         else if (IsNoncharacter(_charRefCode))
         {
-            AddParseError(ParseError.NoncharacterCharacterReference);
+            ReportParseError(ParseError.NoncharacterCharacterReference);
         }
-        else if (_charRefCode is 0xD || (IsControl(_charRefCode) && !IsAsciiWhitespace(_charRefCode)))
+        else if (_charRefCode is '\r' || (IsControl(_charRefCode) && !IsAsciiWhitespace(_charRefCode)))
         {
-            AddParseError(ParseError.ControlCharacterReference);
+            ReportParseError(ParseError.ControlCharacterReference);
         }
         else if (CharReference.NumericList.TryGetValue(_charRefCode, out int converted))
         {
@@ -2220,7 +2222,7 @@ public partial class HtmlTokenizer
         }
 
         _tempBuffer.Clear();
-        _tempBuffer.Add(new(_charRefCode));
+        _tempBuffer.Add(_charRefCode);
         FlushCodePointsConsumedAsCharacterReference();
         _state = _returnState!.Value;
         _returnState = null;

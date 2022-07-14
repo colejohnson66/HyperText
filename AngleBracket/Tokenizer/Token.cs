@@ -25,7 +25,7 @@
  * =============================================================================
  */
 
-using System.Text;
+using System.Diagnostics;
 
 namespace AngleBracket.Tokenizer;
 
@@ -39,14 +39,18 @@ public class Token
         Type = type;
         _value = value;
     }
-    public static Token NewCharacterToken(Rune r) => new(TokenType.Character, r);
+    public static Token NewCharacterToken(int c)
+    {
+        Debug.Assert(c is >= 0 and <= 0x10FFFF);
+        return new(TokenType.Character, c);
+    }
     public static Token NewCommentToken(string str) => new(TokenType.Comment, str);
     public static Token NewDoctypeToken(Doctype dt) => new(TokenType.Doctype, dt);
     public static Token NewEndOfFileToken() => new(TokenType.EndOfFile);
     public static Token NewTagToken(Tag tag) => new(TokenType.Tag, tag);
 
     public TokenType Type { get; }
-    public Rune CharacterValue
+    public int CharacterValue
     {
         get
         {
@@ -90,11 +94,11 @@ public class Token
 
         return Type switch
         {
-            TokenType.Character => $"Token {{ Character {{ {CharacterValue} }} }}",
-            TokenType.Comment => $"Token {{ Comment {{ {CommentValue} }} }}",
-            TokenType.Doctype => $"Token {{ {DoctypeValue} }}", // `Doctype` writes its type
-            TokenType.EndOfFile => $"Token {{ EndOfFile }}",
-            TokenType.Tag => $"Token {{ {TagValue} }}", // `Tag` writes its type
+            TokenType.Character => $"{nameof(Token)} {{ U+{CharacterValue:X4} }}",
+            TokenType.Comment => $"{nameof(Token)} {{ <!-- {CommentValue} --> }}",
+            TokenType.Doctype => $"{nameof(Token)} {{ {DoctypeValue} }}", // `Doctype` writes its type
+            TokenType.EndOfFile => $"{nameof(Token)} {{ EOF }}",
+            TokenType.Tag => $"{nameof(Token)} {{ {TagValue} }}", // `Tag` writes its type
             _ => throw new(), // unreachable
         };
     }
