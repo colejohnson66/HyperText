@@ -27,11 +27,39 @@
 
 namespace AngleBracket.Tokenizer;
 
+/// <summary>
+/// The type of token that a <see cref="Token" /> object represents.
+/// </summary>
 public enum TokenType
 {
+    /// <summary>
+    /// This <see cref="Token" /> represents a Unicode code point.
+    /// The stored value is a 32 bit integer guaranteed to be in the range <c>0..0x10FFFF</c>, inclusive.
+    /// </summary>
     Character,
+
+    /// <summary>
+    /// This <see cref="Token" /> represents an HTML comment.
+    /// The stored value is a <see cref="string" />.
+    /// </summary>
     Comment,
+
+    /// <summary>
+    /// This <see cref="Token" /> represents an HTML doctype.
+    /// The stored value is a <see cref="Tokenizer.Doctype" /> object.
+    /// </summary>
     Doctype,
+
+    /// <summary>
+    /// This <see cref="Token" /> represents the end of the input stream.
+    /// No more <see cref="Token" />s will be emitted after one with this type.
+    /// There is no stored value associated with this type.
+    /// </summary>
     EndOfFile,
+
+    /// <summary>
+    /// This <see cref="Token" /> represents an HTML tag, both start and end (and self closing).
+    /// The stored value is a <see cref="Tokenizer.Tag" /> object.
+    /// </summary>
     Tag,
 }

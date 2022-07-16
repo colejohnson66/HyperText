@@ -25,7 +25,6 @@
  * =============================================================================
  */
 
-using AngleBracket.Text;
 using System.Diagnostics;
 using System.Text;
 
@@ -36,9 +35,6 @@ public class Doctype
     private readonly StringBuilder _name = new();
     private StringBuilder? _public = null;
     private StringBuilder? _system = null;
-
-    // public Doctype()
-    // { }
 
     public string Name => _name.ToString();
     public bool QuirksMode { get; private set; }
@@ -68,23 +64,27 @@ public class Doctype
 
     public override string ToString()
     {
-        StringBuilder ret = new($"{nameof(Doctype)} {{ ");
-
-        ret.Append(Name);
-
         if (QuirksMode)
+            return $"<!DOCTYPE {Name}>, Quirks=True";
+
+        StringBuilder ret = new($"<!DOCTYPE {Name}");
+
+        // only "PUBLIC" or "SYSTEM" is needed; both keywords cannot exist
+        if (PublicIdentifier is not null)
         {
-            ret.Append(", Quirks }");
+            ret.Append($" PUBLIC \"{PublicIdentifier}\"");
+            if (SystemIdentifier is not null)
+                ret.Append($" \"{SystemIdentifier}\">");
             return ret.ToString();
         }
 
-        if (PublicIdentifier is not null)
-            ret.Append($", Public {{ '{PublicIdentifier}' }}");
-
         if (SystemIdentifier is not null)
-            ret.Append($", System {{ '{SystemIdentifier}' }}");
+        {
+            ret.Append($" SYSTEM \"{SystemIdentifier}\">");
+            return ret.ToString();
+        }
 
-        ret.Append(" }");
+        ret.Append('>');
         return ret.ToString();
     }
 }

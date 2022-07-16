@@ -27,7 +27,7 @@
 
 namespace AngleBracket.Tokenizer;
 
-public enum TokenizerState
+internal enum TokenizerState
 {
     Data,
     RCData,

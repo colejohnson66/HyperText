@@ -94,14 +94,10 @@ public class Tag
     public Attribute? FindAttribute(string name) =>
         _attributes.FirstOrDefault(attr => attr.Name == name);
 
+    /// <inheritdoc />
     public override string ToString()
     {
-        StringBuilder ret = new("<");
-
-        if (IsEndTag)
-            ret.Append('/');
-
-        ret.Append(Name);
+        StringBuilder ret = new(IsEndTag ? $"</{Name}" : $"<{Name}");
 
         foreach (Attribute attr in _attributes)
         {
