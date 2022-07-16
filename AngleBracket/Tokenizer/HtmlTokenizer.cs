@@ -158,7 +158,6 @@ public partial class HtmlTokenizer : IDisposable
     [MemberNotNull(nameof(_stateMap))]
     private void InitStateMap()
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (_stateMap is not null)
             return;
 
