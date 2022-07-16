@@ -4,7 +4,7 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Contains the scaffolding for the HTML tokenizer.
  * =============================================================================
  * Copyright (c) 2021-2022 Cole Tobin
  *
@@ -44,7 +44,7 @@ public partial class HtmlTokenizer : IDisposable
 
     private Action<int>[]? _stateMap = null;
     private readonly Queue<Token> _tokensToEmit = new();
-    private readonly List<int> _peekBuffer = new();
+    private readonly List<int> _peekBuffer = new(); // TODO: use a circular buffer to avoid expensive `RemoveAt(0)` calls
 
     private TokenizerState _state = TokenizerState.Data;
     private TokenizerState? _returnState = null;
@@ -55,6 +55,8 @@ public partial class HtmlTokenizer : IDisposable
     private StringBuilder? _currentComment = null;
     private Doctype? _currentDoctype = null;
     private Tag? _currentTag = null;
+
+    private Tag? _lastEmittedStartTag = null;
 
     private readonly TextReader _input;
     private int _inputOffset = 0;
@@ -247,11 +249,10 @@ public partial class HtmlTokenizer : IDisposable
         c is '\t' or '\n' or '\f' or ' ';
     private static int ToAsciiLowercase(int c) => c + ('a' - 'A');
 
-    // ReSharper disable once MemberCanBeMadeStatic.Local
     private bool IsCurrentEndTagAnAppropriateOne()
     {
-        // ReSharper disable once ArrangeMethodOrOperatorBody
-        throw new NotImplementedException();
+        Debug.Assert(_currentTag is not null);
+        return _lastEmittedStartTag?.Name == _currentTag.Name;
     }
 
     private bool WasConsumedAsPartOfAnAttribute() =>

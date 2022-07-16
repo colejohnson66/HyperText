@@ -66,6 +66,7 @@ public enum ParseError
     NestedComment,
     NoncharacterCharacterReference,
     NoncharacterInInputStream,
+    // TODO: When a start tag token is emitted with its self-closing flag set, if the flag is not acknowledged when it is processed by the tree construction stage, that is...
     NonVoidHtmlElementStartTagWithTrailingSolidus,
     NullCharacterReference,
     SurrogateCharacterReference,

@@ -47,7 +47,26 @@ public partial class HtmlTokenizer
             while (_tokensToEmit.Any())
             {
                 Token token = _tokensToEmit.Dequeue();
+
+                if (token.Type is TokenType.Tag)
+                {
+                    // handle end tags that have attributes or are self closing
+                    Tag tag = token.TagValue;
+                    if (tag.IsEndTag)
+                    {
+                        if (tag.Attributes.Any())
+                            ReportParseError(ParseError.EndTagWithAttributes);
+                        if (tag.IsSelfClosing)
+                            ReportParseError(ParseError.EndTagWithTrailingSolidus);
+                    }
+                    else
+                    {
+                        _lastEmittedStartTag = tag;
+                    }
+                }
+
                 yield return token;
+
                 if (token.Type is TokenType.EndOfFile)
                     yield break;
             }
