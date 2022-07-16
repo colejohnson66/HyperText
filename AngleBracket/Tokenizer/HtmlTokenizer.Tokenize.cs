@@ -1182,16 +1182,38 @@ public partial class HtmlTokenizer
     {
         // <https://html.spec.whatwg.org/multipage/parsing.html#markup-declaration-open-state>
 
-        // If the next few characters are:
-        throw new NotImplementedException();
-        // Two U+002D HYPHEN-MINUS characters (-)
-        //     Consume those two characters, create a comment token whose data is the empty string, and switch to the comment start state.
-        // ASCII case-insensitive match for the word "DOCTYPE"
-        //     Consume those characters and switch to the DOCTYPE state.
-        // The string "[CDATA[" (the five uppercase letters "CDATA" with a U+005B LEFT SQUARE BRACKET character before and after)
-        //     Consume those characters. If there is an adjusted current node and it is not an element in the HTML namespace, then switch to the CDATA section state. Otherwise, this is a cdata-in-html-content parse error. Create a comment token whose data is the "[CDATA[" string. Switch to the bogus comment state.
-        // Anything else
-        //     This is an incorrectly-opened-comment parse error. Create a comment token whose data is the empty string. Switch to the bogus comment state (don't consume anything in the current state).
+        // peek the next two characters
+        // if less than 2 are available in the input, this will get only what's available and we'll go into the `else` block below
+        PutBack(c);
+        string peek = Read(2);
+
+        if (peek is "--")
+        {
+            _currentComment = new();
+            _state = TokenizerState.CommentStart;
+        }
+        else
+        {
+            // need 7 characters now
+            // same as above with EOF
+            peek += Read(5);
+            if (peek.Equals("DOCTYPE", StringComparison.OrdinalIgnoreCase))
+            {
+                _state = TokenizerState.Doctype;
+            }
+            else if (peek is "[CDATA[")
+            {
+                // Consume those characters. If there is an adjusted current node and it is not an element in the HTML namespace, then switch to the CDATA section state. Otherwise, this is a cdata-in-html-content parse error. Create a comment token whose data is the "[CDATA[" string. Switch to the bogus comment state.
+                throw new NotImplementedException();
+            }
+            else
+            {
+                // we didn't really peek them, so put them back
+                PutBack(peek);
+                _currentComment = new();
+                _state = TokenizerState.BogusComment;
+            }
+        }
     }
 
     private void CommentStart(int c)
@@ -1547,10 +1569,27 @@ public partial class HtmlTokenizer
         }
         else
         {
-            // If the six characters starting from the current input character are an ASCII case-insensitive match for the word "PUBLIC", then consume those characters and switch to the after DOCTYPE public keyword state.
-            // Otherwise, if the six characters starting from the current input character are an ASCII case-insensitive match for the word "SYSTEM", then consume those characters and switch to the after DOCTYPE system keyword state.
-            // Otherwise, this is an invalid-character-sequence-after-doctype-name parse error. Set the current DOCTYPE token's force-quirks flag to on. Reconsume in the bogus DOCTYPE state.
-            throw new NotImplementedException();
+            // peek the next 6 characters
+            // if less than 6 are available in the input, this will get only what's available and we'll go into the `else` block below
+            PutBack(c);
+            string peek = Read(6);
+
+            if (peek.Equals("PUBLIC", StringComparison.OrdinalIgnoreCase))
+            {
+                _state = TokenizerState.AfterDoctypePublicKeyword;
+            }
+            else if (peek.Equals("SYSTEM", StringComparison.OrdinalIgnoreCase))
+            {
+                _state = TokenizerState.AfterDoctypeSystemKeyword;
+            }
+            else
+            {
+                // we didn't really peek them, so put them back
+                PutBack(peek);
+                ReportParseError(ParseError.InvalidCharacterSequenceAfterDoctypeName);
+                _currentDoctype!.SetQuirksFlag();
+                Reconsume(TokenizerState.BogusDoctype, Read()); // and only take one
+            }
         }
     }
 

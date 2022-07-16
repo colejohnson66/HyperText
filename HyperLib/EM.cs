@@ -54,6 +54,8 @@ public static class EM
     {
         /// <summary>Argument must be non-negative.</summary>
         public static string ArgumentMustBeNonNegative = "Argument must be non-negative.";
+        /// <summary>Argument must be a valid Unicode code point.</summary>
+        public static string ArgumentMustBeValidUnicode = "Argument must be a valid Unicode code point.";
     }
 
     /// <summary>Exception messages for <see cref="EndOfStreamException" /> objects.</summary>
