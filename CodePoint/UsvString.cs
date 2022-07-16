@@ -32,25 +32,25 @@ using System.Text;
 
 namespace CodePoint;
 
-#pragma warning disable CA1710, CA1036
-// CA1710 "Identifiers should have correct suffix" (should be "UsvStringCollection")
-// CA1036 "Override methods on comparable types" (should implement >, >=, <, and <=)
-
 /// <summary>
 /// Represents text as a series of UTF-32 code points with no surrogates.
 /// This is in contrast to <see cref="string" /> which uses UTF-16 code points.
 /// </summary>
 /// <remarks>
 /// Note that this class does <i>not</i> enforce a Unicode normalization method.
-/// Whatever characters or Runes are used to create a <see cref="UsvString" />
-///   will be copied (almost) verbatim into the backing store.
-/// To create a normalized <see cref="UsvString" />, use <c>TODO</c>.
+/// Whatever code points are used to create a <see cref="UsvString" /> will be copied (almost) verbatim into the backing
+///   store.
 /// </remarks>
+#pragma warning disable CS1591
 public sealed class UsvString :
-    ICloneable, IComparable, IComparable<UsvString>, IComparable<string>, IEnumerable<Rune>
-#pragma warning restore CA1710, CA1036
+    ICloneable, IComparable, IComparable<UsvString>, IComparable<string>, IEnumerable<Rune>, IEnumerable<int>
 {
-    private readonly List<Rune> _runes;
+    private readonly List<int> _codePoints;
+
+    public UsvString()
+    {
+        _codePoints = new();
+    }
 
     public UsvString(char[] chars)
         : this(chars.AsSpan())
@@ -60,39 +60,45 @@ public sealed class UsvString :
     { }
     public UsvString(ReadOnlySpan<char> chars)
     {
-        _runes = new(chars.Length * 2);
+        _codePoints = new(chars.Length * 2);
 
         for (int i = 0; i < chars.Length; i++)
         {
+            // TODO: replace Rune.TryCreate with a custom UTF-16 -> UTF-32 converter
             char c = chars[i];
-            if (Rune.TryCreate(c, out Rune r))
+            if (Rune.IsValid(c))
             {
-                _runes.Add(r);
+                _codePoints.Add(c);
                 continue;
             }
 
-            char c2 = chars[i + 1];
-            if (Rune.TryCreate(c, c2, out r))
+            char c2 = chars[i++];
+            if (Rune.TryCreate(c, c2, out Rune r))
             {
-                _runes.Add(r);
+                _codePoints.Add(r.Value);
                 continue;
             }
 
+            // TODO: Use HyperLib.EM
             throw new ArgumentException($"Invalid Unicode codepoint in input at index {i}.");
         }
 
-        _runes.TrimExcess();
+        _codePoints.TrimExcess();
     }
-    public UsvString(ReadOnlySpan<Rune> runes)
+    public UsvString(ReadOnlySpan<int> utf32)
     {
-        _runes = new(runes.Length);
-        foreach (Rune r in runes)
-            _runes.Add(r);
+        _codePoints = new(utf32.Length);
+        foreach (int c in utf32)
+        {
+            if (!Rune.IsValid(c))
+                throw new ArgumentException("", nameof(utf32));
+            _codePoints.Add(c);
+        }
     }
 
-    public Rune this[int index] => _runes[index];
+    public int this[int index] => _codePoints[index];
 
-    public int Length => _runes.Count;
+    public int Length => _codePoints.Count;
 
     public static bool operator ==(UsvString? lhs, UsvString? rhs)
     {
@@ -114,28 +120,21 @@ public sealed class UsvString :
     public static bool operator !=(UsvString? lhs, UsvString? rhs) =>
         !(lhs == rhs);
 
-    public override bool Equals(object? obj)
-    {
-        if (obj is UsvString other)
-            return this == other;
-        return false;
-    }
+    public override bool Equals(object? obj) =>
+        obj is UsvString other && this == other;
 
-    public override int GetHashCode() => _runes.GetHashCode();
+    public override int GetHashCode() => _codePoints.GetHashCode();
 
     public override string ToString()
     {
         StringBuilder builder = new(Length * 2);
-        foreach (Rune r in this)
-            builder.Append(r.ToString());
+        foreach (int c in this)
+            builder.Append(new Rune(c).ToString()); // TODO: inefficient
         return builder.ToString();
     }
 
-    #region IClonable
     public object Clone() => this; // UsvString is immutable
-    #endregion
 
-    #region IComparable
     public int CompareTo(object? obj)
     {
         if (obj is null)
@@ -145,9 +144,7 @@ public sealed class UsvString :
 
         return CompareTo((UsvString)obj);
     }
-    #endregion
 
-    #region IComparable<UsvString>
     public int CompareTo(UsvString? other)
     {
         if (other is null)
@@ -165,18 +162,15 @@ public sealed class UsvString :
         // equal up to this point; compare lengths now
         return Length.CompareTo(other.Length);
     }
-    #endregion
 
-    #region IComparable<string>
     public int CompareTo(string? other)
     {
         throw new NotImplementedException();
     }
-    #endregion
 
-    #region IEnumerator<Rune>
-    public IEnumerator GetEnumerator() => _runes.GetEnumerator();
 
-    IEnumerator<Rune> IEnumerable<Rune>.GetEnumerator() => _runes.GetEnumerator();
-    #endregion
+    public IEnumerator GetEnumerator() => throw new NotImplementedException();
+
+    IEnumerator<Rune> IEnumerable<Rune>.GetEnumerator() => throw new NotImplementedException();
+    IEnumerator<int> IEnumerable<int>.GetEnumerator() => _codePoints.GetEnumerator();
 }
