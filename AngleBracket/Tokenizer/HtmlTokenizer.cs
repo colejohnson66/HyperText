@@ -26,9 +26,9 @@
  */
 
 using AngleBracket.Parser;
-using HyperLib.IO;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -56,14 +56,26 @@ public partial class HtmlTokenizer : IDisposable
     private Doctype? _currentDoctype = null;
     private Tag? _currentTag = null;
 
-    private readonly CodePointReader _input;
+    private readonly TextReader _input;
+    private int _inputOffset = 0;
+    private readonly Action<ParseErrorInfo>? _errorReporter;
 
 
-    /// <summary>Construct a new HTML tokenizer with a specified <see cref="CodePointReader" />.</summary>
-    /// <param name="input">The <see cref="CodePointReader" /> to read from.</param>
-    public HtmlTokenizer(CodePointReader input)
+    /// <summary>Construct a new HTML tokenizer with a specified <see cref="TextReader" />.</summary>
+    /// <param name="input">The <see cref="TextReader" /> to read from.</param>
+    public HtmlTokenizer(TextReader input)
+        : this(input, null!)
+    { }
+
+    /// <summary>Construct a new HTML tokenizer with a specified <see cref="TextReader" />.</summary>
+    /// <param name="input">The <see cref="TextReader" /> to read from.</param>
+    /// <param name="errorReporter">
+    /// The <see cref="Action{T}" /> to call when a <see cref="ParseError" /> is encountered.
+    /// </param>
+    public HtmlTokenizer(TextReader input, Action<ParseErrorInfo> errorReporter)
     {
         _input = input;
+        _errorReporter = errorReporter;
         InitStateMap();
     }
 
@@ -82,6 +94,7 @@ public partial class HtmlTokenizer : IDisposable
 
         if (c > 0)
             _peekBuffer.Add(c);
+        _inputOffset--; // counteract the increment in `Read`
         return c;
     }
 
@@ -92,6 +105,7 @@ public partial class HtmlTokenizer : IDisposable
         {
             c = _peekBuffer[0];
             _peekBuffer.RemoveAt(0);
+            _inputOffset++;
             return c;
         }
 
@@ -102,19 +116,42 @@ public partial class HtmlTokenizer : IDisposable
             c = _input.Read();
         } while (c is '\r');
 
+        _inputOffset++;
         return c;
+    }
+
+    private string Read(int count)
+    {
+        Span<char> buf = stackalloc char[count];
+        int index = 0;
+        while (index < count)
+        {
+            int c = Read();
+            if (c is -1)
+                break;
+            buf[index++] = (char)c;
+        }
+
+        return new(buf[..index]);
     }
 
     private void PutBack(int c)
     {
         Debug.Assert(c > 0); // no EOF
+        _inputOffset--;
         _peekBuffer.Add(c);
     }
 
-    private void ReportParseError(ParseError error)
+    private void PutBack(string s)
     {
-        // TODO
+        Debug.Assert(_inputOffset >= s.Length);
+        _inputOffset -= s.Length;
+        foreach (char c in s)
+            _peekBuffer.Add(c);
     }
+
+    private void ReportParseError(ParseError error) =>
+        _errorReporter?.Invoke(new(error, _inputOffset));
 
     [MemberNotNull(nameof(_stateMap))]
     private void InitStateMap()

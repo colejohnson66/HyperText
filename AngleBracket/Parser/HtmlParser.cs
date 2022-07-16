@@ -26,7 +26,7 @@
  */
 
 using AngleBracket.Tokenizer;
-using HyperLib.IO;
+using System.IO;
 using Attribute = AngleBracket.Tokenizer.Attribute;
 
 namespace AngleBracket.Parser;
@@ -49,10 +49,10 @@ public partial class HtmlParser : IDisposable
 
     private bool _framesetOk = true;
 
-    public HtmlParser(CodePointReader input, bool scripting)
+    public HtmlParser(TextReader input, bool scripting)
         : this(input, scripting, false)
     { }
-    public HtmlParser(CodePointReader input, bool scripting, bool fragment)
+    public HtmlParser(TextReader input, bool scripting, bool fragment)
     {
         _tokenizer = new(input);
         _scripting = scripting;
