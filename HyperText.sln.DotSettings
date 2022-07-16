@@ -9,6 +9,258 @@
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpPlaceEmbeddedOnSameLineMigration/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ECSharpUseContinuousIndentInsideBracesMigration/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/Environment/SettingsMigration/IsMigratorApplied/=JetBrains_002EReSharper_002EPsi_002ECSharp_002ECodeStyle_002ESettingsUpgrade_002EMigrateBlankLinesAroundFieldToBlankLinesAroundProperty/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Description/@EntryValue">CurlyBacket: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Shortcut/@EntryValue">license-cb</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=180A4E9BFE8308489246A4FEE808AC4D/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of CurlyBracket.
+ *
+ * CurlyBracket is free software: you can redistribute it and/or modify it under
+ *   the terms of the GNU General Public License as published by the Free
+ *   Software Foundation, either version 3 of the License, or (at your option)
+ *   any later version.
+ *
+ * CurlyBracket is distributed in the hope that it will be useful, but WITHOUT
+ *   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *   for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   CurlyBracket. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Description/@EntryValue">StyleSheet: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Shortcut/@EntryValue">license-ss</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=2B3865A5CF40ED4A959D17ADB94B688E/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of StyleSheet.
+ *
+ * StyleSheet is free software: you can redistribute it and/or modify it under
+ *   the terms of the GNU General Public License as published by the Free
+ *   Software Foundation, either version 3 of the License, or (at your option)
+ *   any later version.
+ *
+ * StyleSheet is distributed in the hope that it will be useful, but WITHOUT ANY
+ *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *   FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ *   details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   StyleSheet. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Description/@EntryValue">HyperLib: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Shortcut/@EntryValue">license-hl</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=46343EFFD041AB44B11BA9A17130DE2F/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of HyperLib.
+ *
+ * HyperLib is free software: you can redistribute it and/or modify it under the
+ *   terms of the GNU General Public License as published by the Free Software
+ *   Foundation, either version 3 of the License, or (at your option) any later
+ *   version.
+ *
+ * HyperLib is distributed in the hope that it will be useful, but WITHOUT ANY
+ *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *   FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ *   details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   HyperLib. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Description/@EntryValue">CodePoint: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Shortcut/@EntryValue">license-cp</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=639D7F21EAEE8C4F9C1A5E3932B8EF9A/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of CodePoint.
+ *
+ * CodePoint is free software: you can redistribute it and/or modify it under
+ *   the terms of the GNU General Public License as published by the Free
+ *   Software Foundation, either version 3 of the License, or (at your option)
+ *   any later version.
+ *
+ * CodePoint is distributed in the hope that it will be useful, but WITHOUT ANY
+ *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *   FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ *   details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   CodePoint. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Description/@EntryValue">FiberWire: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Shortcut/@EntryValue">license-fw</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=A85F4D3D97981E4F82CBEDFDEDF82C3E/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of FiberWire.
+ *
+ * FiberWire is free software: you can redistribute it and/or modify it under
+ *   the terms of the GNU General Public License as published by the Free
+ *   Software Foundation, either version 3 of the License, or (at your option)
+ *   any later version.
+ *
+ * FiberWire is distributed in the hope that it will be useful, but WITHOUT ANY
+ *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *   FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ *   details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   FiberWire. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Description/@EntryValue">HyperText: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Shortcut/@EntryValue">license-ht</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=AFBC60E61D8BD54CBA91ED921F4ADFA7/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of HyperText.
+ *
+ * HyperText is free software: you can redistribute it and/or modify it under
+ *   the terms of the GNU General Public License as published by the Free
+ *   Software Foundation, either version 3 of the License, or (at your option)
+ *   any later version.
+ *
+ * HyperText is distributed in the hope that it will be useful, but WITHOUT ANY
+ *   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *   FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ *   details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   HyperText. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Applicability/=Live/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Description/@EntryValue">AngleBracket: License Block Comment</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Field/=file/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Field/=file/Expression/@EntryValue">getFileName()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Field/=file/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Scope/=C3001E7C0DA78E4487072B7E050D86C5/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Scope/=C3001E7C0DA78E4487072B7E050D86C5/CustomProperties/=minimumLanguageVersion/@EntryIndexedValue">2.0</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Scope/=C3001E7C0DA78E4487072B7E050D86C5/Type/@EntryValue">InCSharpFile</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Shortcut/@EntryValue">license-ab</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=E277E1D35BA5A947A8D5FC3940D4733F/Text/@EntryValue">/* =============================================================================
+ * File:   $file$
+ * Author: Cole Tobin
+ * =============================================================================
+ * Purpose:
+ *
+ * TODO
+ * =============================================================================
+ * Copyright (c) 2022 Cole Tobin
+ *
+ * This file is part of AngleBracket.
+ *
+ * AngleBracket is free software: you can redistribute it and/or modify it under
+ *   the terms of the GNU General Public License as published by the Free
+ *   Software Foundation, either version 3 of the License, or (at your option)
+ *   any later version.
+ *
+ * AngleBracket is distributed in the hope that it will be useful, but WITHOUT
+ *   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ *   FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ *   for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ *   AngleBracket. If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ * =============================================================================
+ */</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Doctype/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=endianness/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=FFFF/@EntryIndexedValue">True</s:Boolean>
