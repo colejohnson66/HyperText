@@ -45,77 +45,98 @@ public class JSBigInt : JSValue
 
     public BigInteger Value { get; }
 
+    /// <inheritdoc />
     public override string ToString() =>
         $"{nameof(JSBigInt)} {{ {Value} }}";
 
     #region Abstract Type Conversions
 
+    /// <inheritdoc />
     public override JSValue ToPrimitive(JSType? preferredType = null) =>
         this;
 
+    /// <inheritdoc />
     public override bool ToBoolean() =>
         !Value.IsZero;
 
+    /// <inheritdoc />
     public override JSValue ToNumeric() =>
         this;
 
+    /// <inheritdoc />
     public override JSNumber ToNumber() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override JSNumber ToIntegerOrInfinity() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override int ToInt32() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override uint ToUInt32() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override short ToInt16() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override ushort ToUInt16() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override sbyte ToInt8() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override byte ToUInt8() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override byte ToUInt8Clamp() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override BigInteger ToBigInt() =>
         Value;
 
+    /// <inheritdoc />
     public override long ToBigInt64()
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override ulong ToBigUInt64()
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override string AbstractToString()
     {
         // return BigInt::ToString(Value);
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override JSObject ToObject()
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override JSValue ToPropertyKey() =>
         new JSString(AbstractToString());
 
+    /// <inheritdoc />
     public override JSValue ToLength() =>
         throw new TypeErrorException();
 
+    /// <inheritdoc />
     public override JSValue ToIndex() =>
         throw new TypeErrorException();
 
@@ -123,27 +144,35 @@ public class JSBigInt : JSValue
 
     #region Abstract Testing/Comparison Operations
 
+    /// <inheritdoc />
     public override JSValue RequireObjectCoercible() =>
         this;
 
+    /// <inheritdoc />
     public override bool IsArray() =>
         false;
 
+    /// <inheritdoc />
     public override bool IsCallable() =>
         false;
 
+    /// <inheritdoc />
     public override bool IsConstructor() =>
         false;
 
+    /// <inheritdoc />
     public override bool IsIntegralNumber() =>
         false;
 
+    /// <inheritdoc />
     public override bool IsPropertyKey() =>
         false;
 
+    /// <inheritdoc />
     public override bool IsRegExp() =>
         false;
 
+    /// <inheritdoc />
     public override bool SameValue(JSValue other)
     {
         if (other.Type is not JSType.BigInt)
@@ -152,6 +181,7 @@ public class JSBigInt : JSValue
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override bool SameValueZero(JSValue other)
     {
         if (other.Type is not JSType.BigInt)
@@ -161,19 +191,23 @@ public class JSBigInt : JSValue
     }
 
     // not implemented for JSNumber or JSBigInt
+    /// <inheritdoc />
     public override bool SameValueNonNumeric(JSValue other) =>
         throw new InvalidOperationException();
 
+    /// <inheritdoc />
     public override bool IsLessThan(JSValue other, bool leftFirst)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override bool IsLooselyEqual(JSValue other)
     {
         throw new NotImplementedException();
     }
 
+    /// <inheritdoc />
     public override bool IsStrictlyEqual(JSValue other)
     {
         if (other.Type is not JSType.BigInt)
