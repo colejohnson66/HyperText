@@ -1,17 +1,22 @@
-/* =============================================================================
- * File:   CharReference.NamedList.cs
+﻿/* =============================================================================
+ * File:   CharReference.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * Contains the list of "named character references" as defined in the HTML
- *   standard from WHATWG.
+ * Contains the empty base class for the named and numeric character reference
+ *   files.
  *
- * As of the 17 June 2022 version, this is located in section 13.5 "Named
- *   character references":
- *   <https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references>
+ * Contains both the list of numeric and named character references as defined
+ *   in the HTML standard from WHATWG.
+ *
+ * As of the 17 June 2022 version, these are located in:
+ *   - section 13.2.5.80 "Numeric character reference end state":
+ *     <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
+ *   - section 13.5 "Named character references":
+ *     <https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references>
  * =============================================================================
- * Copyright (c) 2021-2022 Cole Tobin
+ * Copyright (c) 2022 Cole Tobin
  *
  * This file is part of AngleBracket.
  *
@@ -34,8 +39,51 @@ using System.Collections.ObjectModel;
 
 namespace AngleBracket.Tokenizer;
 
-public static partial class CharReference
+/// <summary>
+/// Provides the mapping of named and numeric character references to their Unicode code points.
+/// </summary>
+public static class CharReference
 {
+    /// <summary>
+    /// The mapping of numeric character references to their Unicode code points.
+    /// </summary>
+    /// <remarks>
+    /// This is basically nothing more than a mapping of Windows-1252 encoded code points to their true code points.
+    /// </remarks>
+    public static readonly ReadOnlyDictionary<int, char> NumericList = new(new Dictionary<int, char>
+    {
+        { 0x80, '\x20AC' },
+        { 0x82, '\x201A' },
+        { 0x83, '\x0192' },
+        { 0x84, '\x201E' },
+        { 0x85, '\x2026' },
+        { 0x86, '\x2020' },
+        { 0x87, '\x2021' },
+        { 0x88, '\x02C6' },
+        { 0x89, '\x2030' },
+        { 0x8A, '\x0160' },
+        { 0x8B, '\x2039' },
+        { 0x8C, '\x0152' },
+        { 0x8E, '\x017D' },
+        { 0x91, '\x2018' },
+        { 0x92, '\x2019' },
+        { 0x93, '\x201C' },
+        { 0x94, '\x201D' },
+        { 0x95, '\x2022' },
+        { 0x96, '\x2013' },
+        { 0x97, '\x2014' },
+        { 0x98, '\x02DC' },
+        { 0x99, '\x2122' },
+        { 0x9A, '\x0161' },
+        { 0x9B, '\x203A' },
+        { 0x9C, '\x0153' },
+        { 0x9E, '\x017E' },
+        { 0x9F, '\x0178' },
+    });
+
+    /// <summary>
+    /// The mapping of named character references to their UTF-16 encoded values.
+    /// </summary>
     public static readonly ReadOnlyCollection<(string, string)> NamedList = new(new List<(string, string)>
     {
         // ReSharper disable StringLiteralTypo

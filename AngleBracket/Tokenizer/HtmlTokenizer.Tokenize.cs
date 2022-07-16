@@ -2216,7 +2216,7 @@ public partial class HtmlTokenizer
         {
             ReportParseError(ParseError.ControlCharacterReference);
         }
-        else if (CharReference.NumericList.TryGetValue(_charRefCode, out int converted))
+        else if (CharReference.NumericList.TryGetValue(_charRefCode, out char converted))
         {
             _charRefCode = converted;
         }
