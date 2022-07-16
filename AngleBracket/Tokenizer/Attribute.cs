@@ -4,7 +4,8 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Represents an HTML attribute used in HTML tag tokens that are emitted by the
+ *   tokenizer.
  * =============================================================================
  * Copyright (c) 2021-2022 Cole Tobin
  *
@@ -25,37 +26,72 @@
  * =============================================================================
  */
 
-using System.Diagnostics;
+using HyperLib;
 using System.Text;
 
 namespace AngleBracket.Tokenizer;
 
+/// <summary>
+/// Represents an HTML attribute.
+/// </summary>
 public class Attribute
 {
     private readonly StringBuilder _name = new();
-    private string? _nameCache;
-    public string Name => _nameCache ??= _name.ToString();
-
     private readonly StringBuilder _value = new();
+
+    private string? _nameCache;
     private string? _valueCache;
+
+
+    /// <summary>Get the attribute's name.</summary>
+    public string Name => _nameCache ??= _name.ToString();
+    /// <summary>Get the attribute's value.</summary>
+    /// <remarks>Attributes with no value will return an empty string.</remarks>
     public string Value => _valueCache ??= _value.ToString();
 
-    public void AppendName(int c)
+
+    /// <summary>
+    /// Append a code point to the attribute's name.
+    /// </summary>
+    /// <param name="c">The code point to add.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// If <paramref name="c" /> is not a valid Unicode code point.
+    /// </exception>
+    public void AppendToName(int c)
     {
-        Debug.Assert(c is >= 0 and <= 0x10FFFF);
-        _name.Append(new Rune(c).ToString());
+        if (c is < 0 or > 0x10FFFF)
+            throw new ArgumentOutOfRangeException(EM.ArgumentOutOfRange.ArgumentMustBeValidUnicode);
+
+        if (Rune.IsValid(c))
+            _name.Append((char)c);
+        else
+            _name.Append(new Rune(c).ToString());
         _nameCache = null;
     }
 
+    /// <summary>
+    /// Append a code point to the attribute's value.
+    /// </summary>
+    /// <param name="c">The code point to add.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// If <paramref name="c" /> is not a valid Unicode code point.
+    /// </exception>
     public void AppendValue(int c)
     {
-        Debug.Assert(c is >= 0 and <= 0x10FFFF);
-        _value.Append(new Rune(c).ToString());
+        if (c is < 0 or > 0x10FFFF)
+            throw new ArgumentOutOfRangeException(EM.ArgumentOutOfRange.ArgumentMustBeValidUnicode);
+
+        if (Rune.IsValid(c))
+            _value.Append((char)c);
+        else
+            _value.Append(new Rune(c).ToString());
         _valueCache = null;
     }
 
+
+    /// <inheritdoc />
     public override string ToString() =>
-        Value == ""
+        Value is ""
             ? $"{nameof(Attribute)} {{ '{Name}' }}"
             : $"{nameof(Attribute)} {{ '{Name}' = '{Value}' }}";
 }

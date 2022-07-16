@@ -4,7 +4,7 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Represents an HTML token (of any type) emitted by the tokenizer.
  * =============================================================================
  * Copyright (c) 2021-2022 Cole Tobin
  *
@@ -38,6 +38,7 @@ public class Token
     private readonly string? _comment = null;
     private readonly Doctype? _doctype = null;
     private readonly Tag? _tag = null;
+
 
     private Token(bool _)
     {
@@ -83,7 +84,14 @@ public class Token
 
     internal static Token NewTagToken(Tag tag) => new(tag);
 
+
+    /// <summary>Get this token's type.</summary>
     public TokenType Type { get; }
+
+    /// <summary>Get the value of this character token.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// If <see cref="TokenType" /> is not <see cref="TokenType.Character" />.
+    /// </exception>
     public int CharacterValue
     {
         get
@@ -93,6 +101,11 @@ public class Token
             return _character;
         }
     }
+
+    /// <summary>Get the value of this comment token.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// If <see cref="TokenType" /> is not <see cref="TokenType.Comment" />.
+    /// </exception>
     public string CommentValue
     {
         get
@@ -104,6 +117,11 @@ public class Token
             return _comment;
         }
     }
+
+    /// <summary>Get the value of this DOCTYPE token.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// If <see cref="TokenType" /> is not <see cref="TokenType.Doctype" />.
+    /// </exception>
     public Doctype DoctypeValue
     {
         get
@@ -115,6 +133,11 @@ public class Token
             return _doctype!;
         }
     }
+
+    /// <summary>Get the value of this tag token.</summary>
+    /// <exception cref="InvalidOperationException">
+    /// If <see cref="TokenType" /> is not <see cref="TokenType.Tag" />.
+    /// </exception>
     public Tag TagValue
     {
         get
@@ -127,12 +150,10 @@ public class Token
         }
     }
 
+
     /// <inheritdoc />
     public override string ToString()
     {
-        if (!Enum.IsDefined(Type))
-            throw new InvalidOperationException($"{nameof(Token)} is in an invalid state; The type is unknown.");
-
         return Type switch
         {
             TokenType.Character => $"{nameof(Token)} {{ U+{CharacterValue:X4} }}",

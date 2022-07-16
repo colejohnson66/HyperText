@@ -4,7 +4,7 @@
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * Defines the various types of HTML tokens emitted by the tokenizer.
  * =============================================================================
  * Copyright (c) 2021-2022 Cole Tobin
  *

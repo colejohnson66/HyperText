@@ -26,6 +26,7 @@
  */
 
 using AngleBracket.Parser;
+using System.Diagnostics;
 using System.Linq;
 using static AngleBracket.Infra.CodePoint;
 
@@ -59,8 +60,9 @@ public partial class HtmlTokenizer
 
     private void Reconsume(TokenizerState newState, int c)
     {
+        Debug.Assert(_stateMap is not null);
         _state = newState;
-        _stateMap[(int)newState](c);
+        _stateMap![(int)newState](c);
     }
 
     private void Data(int c)
@@ -888,7 +890,7 @@ public partial class HtmlTokenizer
         {
             ReportParseError(ParseError.UnexpectedEqualsSignBeforeAttributeName);
             _currentAttribute = _currentTag!.NewAttribute();
-            _currentAttribute.AppendName('=');
+            _currentAttribute.AppendToName('=');
             _state = TokenizerState.AttributeName;
         }
         else
@@ -930,12 +932,12 @@ public partial class HtmlTokenizer
         }
         else if (IsAsciiUpperAlpha(c))
         {
-            _currentAttribute!.AppendName(ToAsciiLowercase(c));
+            _currentAttribute!.AppendToName(ToAsciiLowercase(c));
         }
         else if (c is '\0')
         {
             ReportParseError(ParseError.UnexpectedNullCharacter);
-            _currentAttribute!.AppendName(REPLACEMENT_CHARACTER);
+            _currentAttribute!.AppendToName(REPLACEMENT_CHARACTER);
         }
         else
         {
@@ -943,7 +945,7 @@ public partial class HtmlTokenizer
             {
                 ReportParseError(ParseError.UnexpectedCharacterInAttributeName);
             }
-            _currentAttribute!.AppendName(c);
+            _currentAttribute!.AppendToName(c);
         }
     }
 
@@ -1454,14 +1456,14 @@ public partial class HtmlTokenizer
         else if (IsAsciiUpperAlpha(c))
         {
             _currentDoctype = new();
-            _currentDoctype.AppendName(ToAsciiLowercase(c));
+            _currentDoctype.AppendToName(ToAsciiLowercase(c));
             _state = TokenizerState.DoctypeName;
         }
         else if (c is '\0')
         {
             ReportParseError(ParseError.UnexpectedNullCharacter);
             _currentDoctype = new();
-            _currentDoctype.AppendName(REPLACEMENT_CHARACTER);
+            _currentDoctype.AppendToName(REPLACEMENT_CHARACTER);
             _state = TokenizerState.DoctypeName;
         }
         else if (c is '>')
@@ -1482,7 +1484,7 @@ public partial class HtmlTokenizer
         else
         {
             _currentDoctype = new();
-            _currentDoctype.AppendName(c);
+            _currentDoctype.AppendToName(c);
             _state = TokenizerState.DoctypeName;
         }
     }
@@ -1502,12 +1504,12 @@ public partial class HtmlTokenizer
         }
         else if (IsAsciiUpperAlpha(c))
         {
-            _currentDoctype!.AppendName(ToAsciiLowercase(c));
+            _currentDoctype!.AppendToName(ToAsciiLowercase(c));
         }
         else if (c is '\0')
         {
             ReportParseError(ParseError.UnexpectedNullCharacter);
-            _currentDoctype!.AppendName(REPLACEMENT_CHARACTER);
+            _currentDoctype!.AppendToName(REPLACEMENT_CHARACTER);
         }
         else if (c is EOF)
         {
@@ -1519,7 +1521,7 @@ public partial class HtmlTokenizer
         }
         else
         {
-            _currentDoctype!.AppendName(c);
+            _currentDoctype!.AppendToName(c);
         }
     }
 

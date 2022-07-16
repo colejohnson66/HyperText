@@ -28,6 +28,7 @@
 using AngleBracket.Parser;
 using HyperLib.IO;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -41,9 +42,9 @@ public partial class HtmlTokenizer : IDisposable
     private const int REPLACEMENT_CHARACTER = 0xFFFD;
     private const int EOF = -1;
 
-    private Action<int>[] _stateMap = null!; // SAFETY: initialized in `InitStateMap()` by `Tokenize()`
+    private Action<int>[]? _stateMap = null;
     private readonly Queue<Token> _tokensToEmit = new();
-    private readonly List<int> _peekBuffer;
+    private readonly List<int> _peekBuffer = new();
 
     private TokenizerState _state = TokenizerState.Data;
     private TokenizerState? _returnState = null;
@@ -57,10 +58,12 @@ public partial class HtmlTokenizer : IDisposable
 
     private readonly CodePointReader _input;
 
+
+    /// <summary>Construct a new HTML tokenizer with a specified <see cref="CodePointReader" />.</summary>
+    /// <param name="input">The <see cref="CodePointReader" /> to read from.</param>
     public HtmlTokenizer(CodePointReader input)
     {
         _input = input;
-        _peekBuffer = new();
         InitStateMap();
     }
 
@@ -113,6 +116,7 @@ public partial class HtmlTokenizer : IDisposable
         // TODO
     }
 
+    [MemberNotNull(nameof(_stateMap))]
     private void InitStateMap()
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
