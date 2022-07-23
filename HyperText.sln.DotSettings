@@ -269,4 +269,5 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=noncharacter/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=rcdata/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Reconsume/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=tokenizer_0027s/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=WHATWG_0027s/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
