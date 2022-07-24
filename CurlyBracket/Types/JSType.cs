@@ -28,7 +28,7 @@
 
 using System.Numerics;
 
-namespace CurlyBracket.Native;
+namespace CurlyBracket.Types;
 
 #pragma warning disable CA1720 // Identifier contains type name
 

@@ -1,10 +1,10 @@
-/* =============================================================================
- * File:   JSValue.cs
+﻿/* =============================================================================
+ * File:   JSNumeric.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * <TODO>
+ * TODO
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -25,17 +25,25 @@
  * =============================================================================
  */
 
-namespace CurlyBracket.Native;
+namespace CurlyBracket.Types;
 
-public abstract partial class JSValue
+/// <summary>
+/// Represents a numeric ECMAScript value.
+/// Valid subtypes are <see cref="JSBigInt" /> and <see cref="JSNumber" />.
+/// </summary>
+public abstract class JSNumeric : JSValue
 {
-    public static JSUndefined Undefined { get; } = new();
-    public static JSNull Null { get; } = new();
-
-    protected JSValue(JSType type)
+    /// <summary>
+    /// Constructs a new <see cref="JSNumeric" /> with a specified type.
+    /// </summary>
+    /// <param name="type">The type of value this <see cref="JSNumeric" /> represents.</param>
+    /// <exception cref="ArgumentException">
+    /// If <paramref name="type" /> is not <see cref="JSType.BigInt" /> or <see cref="JSType.Number" />.
+    /// </exception>
+    protected JSNumeric(JSType type)
+        : base(type)
     {
-        Type = type;
+        if (type is not (JSType.BigInt or JSType.Number))
+            throw new ArgumentException($"{nameof(JSNumeric)} values must only be big integers or numbers.", nameof(type));
     }
-
-    public JSType Type { get; }
 }

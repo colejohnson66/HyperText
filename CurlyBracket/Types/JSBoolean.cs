@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
  * File:   JSBoolean.cs
  * Author: Cole Tobin
  * =============================================================================
@@ -29,24 +29,48 @@
 using System.Diagnostics;
 using System.Numerics;
 
-namespace CurlyBracket.Native;
+namespace CurlyBracket.Types;
 
+/// <summary>
+/// Represents the boolean type in ECMAScript.
+/// </summary>
 public class JSBoolean : JSValue
 {
+    /// <summary>A static instance of a <see cref="JSBoolean" /> type representing <c>true</c>.</summary>
     public static JSBoolean True { get; } = new(true);
+    /// <summary>A static instance of a <see cref="JSBoolean" /> type representing <c>false</c>.</summary>
     public static JSBoolean False { get; } = new(false);
 
+    /// <summary>
+    /// Construct a new <see cref="JSBoolean" /> object with a specified value.
+    /// </summary>
+    /// <param name="value">The value to set this object to.</param>
     public JSBoolean(bool value)
         : base(JSType.Boolean)
     {
         Value = value;
     }
 
+    /// <summary>
+    /// The value of this object.
+    /// </summary>
     public bool Value { get; }
 
-    /// <inheritdoc />
-    public override string ToString() =>
-        $"{nameof(JSBoolean)} {{ {(Value ? "true" : "false")} }}";
+    /// <summary>
+    /// Implicitly extract the value of a <see cref="JSBoolean" /> object.
+    /// </summary>
+    /// <param name="o">The <see cref="JSBoolean" /> object to get the value of.</param>
+    /// <returns>The value of the object.</returns>
+    public static implicit operator bool(JSBoolean o) =>
+        o.Value;
+
+    /// <summary>
+    /// Implicitly get a <see cref="JSBoolean" /> object for a specified value.
+    /// </summary>
+    /// <param name="value">The value to convert to a <see cref="JSBoolean" /> object.</param>
+    /// <returns>Either the <see cref="True" /> object or the <see cref="False" /> object.</returns>
+    public static implicit operator JSBoolean(bool value) =>
+        value ? True : False;
 
     #region Abstract Type Conversions
 
@@ -59,16 +83,16 @@ public class JSBoolean : JSValue
         Value;
 
     /// <inheritdoc />
-    public override JSValue ToNumeric() =>
+    public override JSNumeric ToNumeric() =>
         Value ? JSNumber.One : JSNumber.Zero;
 
     /// <inheritdoc />
-    public override JSNumber ToNumber() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override double ToNumber() =>
+        Value ? 1 : 0;
 
     /// <inheritdoc />
-    public override JSNumber ToIntegerOrInfinity() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override double ToIntegerOrInfinity() =>
+        Value ? 1 : 0;
 
     /// <inheritdoc />
     public override int ToInt32() =>
@@ -80,23 +104,23 @@ public class JSBoolean : JSValue
 
     /// <inheritdoc />
     public override short ToInt16() =>
-        Value ? (short)1 : (short)0;
+        (short)(Value ? 1 : 0);
 
     /// <inheritdoc />
     public override ushort ToUInt16() =>
-        Value ? (ushort)1 : (ushort)0;
+        (ushort)(Value ? 1 : 0);
 
     /// <inheritdoc />
     public override sbyte ToInt8() =>
-        Value ? (sbyte)1 : (sbyte)0;
+        (sbyte)(Value ? 1 : 0);
 
     /// <inheritdoc />
     public override byte ToUInt8() =>
-        Value ? (byte)1 : (byte)0;
+        (byte)(Value ? 1 : 0);
 
     /// <inheritdoc />
     public override byte ToUInt8Clamp() =>
-        Value ? (byte)1 : (byte)0;
+        (byte)(Value ? 1 : 0);
 
     /// <inheritdoc />
     public override BigInteger ToBigInt() =>
@@ -104,37 +128,34 @@ public class JSBoolean : JSValue
 
     /// <inheritdoc />
     public override long ToBigInt64() =>
-        Value ? 1L : 0L;
+        Value ? 1 : 0;
 
     /// <inheritdoc />
     public override ulong ToBigUInt64() =>
-        Value ? 1ul : 0ul;
+        Value ? 1u : 0u;
 
     /// <inheritdoc />
     public override string AbstractToString() =>
         Value ? "true" : "false";
 
     /// <inheritdoc />
-    public override JSObject ToObject()
-    {
-        throw new NotImplementedException();
-    }
+    public override JSObject ToObject() => throw new NotImplementedException();
 
     /// <inheritdoc />
     public override JSValue ToPropertyKey() =>
-        new JSString(Value ? "true" : "false");
+        new JSString(Value ? "true" : "false"); // from `AbstractToString`
 
     /// <inheritdoc />
-    public override JSValue ToLength() =>
-        Value ? JSNumber.One : JSNumber.Zero;
+    public override ulong ToLength() =>
+        Value ? 1u : 0u;
 
     /// <inheritdoc />
-    public override JSValue ToIndex() =>
-        ToIntegerOrInfinity();
+    public override ulong ToIndex() =>
+        Value ? 1u : 0u;
 
     #endregion
 
-    #region Abstract Testing/Comparison Operations
+    #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
     public override JSValue RequireObjectCoercible() =>
@@ -176,27 +197,63 @@ public class JSBoolean : JSValue
     public override bool SameValueNonNumeric(JSValue other)
     {
         Debug.Assert(other.Type is JSType.Boolean);
-        return Value == ((JSBoolean)other).Value;
+        return Value == (JSBoolean)other;
     }
 
     /// <inheritdoc />
-    public override bool IsLessThan(JSValue other, bool leftFirst)
+    public override bool? IsLessThan(JSValue other, bool leftFirst)
     {
-        throw new NotImplementedException();
+        (JSValue px, JSValue py) = leftFirst
+            ? (this, other.ToPrimitive(JSType.Number))
+            : (other.ToPrimitive(JSType.Number), (JSValue)this); // cast needed to satisfy the compiler
+
+        JSNumeric nx = px.ToNumeric();
+        JSNumeric ny = py.ToNumeric();
+        if (nx.Type == ny.Type)
+        {
+            if (nx.Type is JSType.Number)
+                throw new NotImplementedException(); // TODO: `Number::lessThan(nx, ny)`
+            Debug.Assert(nx.Type is JSType.BigInt);
+            throw new NotImplementedException(); // TODO: `BigInt::lessThan(nx, ny)`
+        }
+
+        // ReSharper disable once RedundantIfElseBlock
+        if (nx.Type is JSType.BigInt)
+        {
+            Debug.Assert(ny.Type is JSType.Number);
+            JSNumber ny2 = (JSNumber)ny;
+            return ny2.Value switch
+            {
+                double.NaN => null,
+                double.PositiveInfinity => true,
+                double.NegativeInfinity => false,
+                _ => throw new NotImplementedException(), // R(nx) < R(ny)
+            };
+        }
+        else
+        {
+            Debug.Assert(nx.Type is JSType.Number);
+            Debug.Assert(ny.Type is JSType.BigInt);
+            JSNumber nx2 = (JSNumber)nx;
+            return nx2.Value switch
+            {
+                double.NaN => null,
+                double.NegativeInfinity => true,
+                double.PositiveInfinity => false,
+                _ => throw new NotImplementedException(), // R(nx) < R(ny)
+            };
+        }
     }
 
     /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        if (other.Type is JSType.Boolean)
-            return IsStrictlyEqual(other);
-        // If Type(x) is Boolean, return IsLooselyEqual(! ToNumber(x), y).
-        throw new NotImplementedException();
-    }
+    public override bool IsLooselyEqual(JSValue other) =>
+        other.Type is JSType.Boolean
+            ? IsStrictlyEqual(other)
+            : new JSNumber(ToNumber()).IsLooselyEqual(other);
 
     /// <inheritdoc />
     public override bool IsStrictlyEqual(JSValue other) =>
-        other.Type is JSType.Boolean && SameValueNonNumeric(other);
+        other.Type is JSType.Boolean && Value == (JSBoolean)other;
 
     #endregion
 }

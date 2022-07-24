@@ -1,11 +1,11 @@
-/* =============================================================================
- * File:   JSBigInt.cs
+﻿/* =============================================================================
+ * File:   JSSymbol.cs
  * Author: Cole Tobin
  * =============================================================================
  * Purpose:
  *
- * Implements the ECMAScript BigInt type.
- * <https://tc39.es/ecma262/#sec-ecmascript-language-types-bigint-type>
+ * Implements the ECMAScript symbol type.
+ * <https://tc39.es/ecma262/#sec-ecmascript-language-types-symbol-type>
  * =============================================================================
  * Copyright (c) 2022 Cole Tobin
  *
@@ -29,25 +29,27 @@
 using CurlyBracket.Runtime;
 using System.Numerics;
 
-namespace CurlyBracket.Native;
+namespace CurlyBracket.Types;
 
-public class JSBigInt : JSValue
+/// <summary>
+/// Represents the symbol type in ECMAScript.
+/// </summary>
+public class JSSymbol : JSValue
 {
-    public static JSBigInt Zero { get; } = new(BigInteger.Zero);
-    public static JSBigInt One { get; } = new(BigInteger.One);
-    public static JSBigInt NegativeOne { get; } = new(BigInteger.MinusOne);
-
-    public JSBigInt(BigInteger value)
-        : base(JSType.BigInt)
+    /// <summary>
+    /// Construct a new <see cref="JSSymbol" /> with a specified value.
+    /// </summary>
+    /// <param name="value"></param>
+    public JSSymbol(string value)
+        : base(JSType.Symbol)
     {
         Value = value;
     }
 
-    public BigInteger Value { get; }
-
-    /// <inheritdoc />
-    public override string ToString() =>
-        $"{nameof(JSBigInt)} {{ {Value} }}";
+    /// <summary>
+    /// The value of this object.
+    /// </summary>
+    public string Value { get; }
 
     #region Abstract Type Conversions
 
@@ -57,92 +59,83 @@ public class JSBigInt : JSValue
 
     /// <inheritdoc />
     public override bool ToBoolean() =>
-        !Value.IsZero;
+        true;
 
     /// <inheritdoc />
-    public override JSValue ToNumeric() =>
-        this;
+    public override JSNumeric ToNumeric() =>
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override JSNumber ToNumber() =>
+    public override double ToNumber() =>
         throw new TypeErrorException();
 
     /// <inheritdoc />
-    public override JSNumber ToIntegerOrInfinity() =>
-        throw new TypeErrorException();
+    public override double ToIntegerOrInfinity() =>
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override int ToInt32() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override uint ToUInt32() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override short ToInt16() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override ushort ToUInt16() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override sbyte ToInt8() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override byte ToUInt8() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override byte ToUInt8Clamp() =>
-        throw new TypeErrorException();
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
     public override BigInteger ToBigInt() =>
-        Value;
+        throw new TypeErrorException();
 
     /// <inheritdoc />
-    public override long ToBigInt64()
-    {
-        throw new NotImplementedException();
-    }
+    public override long ToBigInt64() =>
+        throw new TypeErrorException(); // from `ToBigInt()`
 
     /// <inheritdoc />
-    public override ulong ToBigUInt64()
-    {
-        throw new NotImplementedException();
-    }
+    public override ulong ToBigUInt64() =>
+        throw new TypeErrorException(); // from `ToBigInt()`
 
     /// <inheritdoc />
-    public override string AbstractToString()
-    {
-        // return BigInt::ToString(Value);
-        throw new NotImplementedException();
-    }
+    public override string AbstractToString() =>
+        throw new TypeErrorException();
 
     /// <inheritdoc />
-    public override JSObject ToObject()
-    {
+    public override JSObject ToObject() =>
         throw new NotImplementedException();
-    }
 
     /// <inheritdoc />
     public override JSValue ToPropertyKey() =>
-        new JSString(AbstractToString());
+        this;
 
     /// <inheritdoc />
-    public override JSValue ToLength() =>
-        throw new TypeErrorException();
+    public override ulong ToLength() =>
+        throw new TypeErrorException(); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override JSValue ToIndex() =>
-        throw new TypeErrorException();
+    public override ulong ToIndex() =>
+        throw new TypeErrorException(); // from `ToNumber()`
 
     #endregion
 
-    #region Abstract Testing/Comparison Operations
+    #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
     public override JSValue RequireObjectCoercible() =>
@@ -166,55 +159,40 @@ public class JSBigInt : JSValue
 
     /// <inheritdoc />
     public override bool IsPropertyKey() =>
-        false;
+        true;
 
     /// <inheritdoc />
     public override bool IsRegExp() =>
         false;
 
     /// <inheritdoc />
-    public override bool SameValue(JSValue other)
+    public override bool SameValue(JSValue other) =>
+        other.Type is JSType.Symbol && SameValueNonNumeric(other);
+
+    /// <inheritdoc />
+    public override bool SameValueZero(JSValue other) =>
+        other.Type is JSType.Symbol && SameValueNonNumeric(other);
+
+    /// <inheritdoc />
+    public override bool SameValueNonNumeric(JSValue other)
     {
-        if (other.Type is not JSType.BigInt)
+        if (other.Type is not JSType.Symbol)
             return false;
-        // return BigInt::SaveValue(this, other);
-        throw new NotImplementedException();
+        throw new NotImplementedException(); // return true if this and other are same symbol value
     }
 
     /// <inheritdoc />
-    public override bool SameValueZero(JSValue other)
-    {
-        if (other.Type is not JSType.BigInt)
-            return false;
-        // return BigInt::SaveValueZero(this, other);
-        throw new NotImplementedException();
-    }
-
-    // not implemented for JSNumber or JSBigInt
-    /// <inheritdoc />
-    public override bool SameValueNonNumeric(JSValue other) =>
-        throw new InvalidOperationException();
+    public override bool? IsLessThan(JSValue other, bool leftFirst) =>
+        // due to either `px` or `py` being this Symbol object, skipping to step 4d/4e would throw
+        throw new TypeErrorException();
 
     /// <inheritdoc />
-    public override bool IsLessThan(JSValue other, bool leftFirst)
-    {
-        throw new NotImplementedException();
-    }
+    public override bool IsLooselyEqual(JSValue other) =>
+        other.Type is JSType.Symbol && SameValueNonNumeric(other);
 
     /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public override bool IsStrictlyEqual(JSValue other)
-    {
-        if (other.Type is not JSType.BigInt)
-            return false;
-        // return BigInt::Equal(this, other) == 0;
-        throw new NotImplementedException();
-    }
+    public override bool IsStrictlyEqual(JSValue other) =>
+        other.Type is JSType.Symbol && SameValueNonNumeric(other);
 
     #endregion
 }

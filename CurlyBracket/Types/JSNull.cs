@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
  * File:   JSNull.cs
  * Author: Cole Tobin
  * =============================================================================
@@ -30,17 +30,21 @@ using CurlyBracket.Runtime;
 using System.Diagnostics;
 using System.Numerics;
 
-namespace CurlyBracket.Native;
+namespace CurlyBracket.Types;
 
+/// <summary>
+/// Represents the "null" type in ECMAScript.
+/// </summary>
 public class JSNull : JSValue
 {
-    public JSNull()
+    /// <summary>
+    /// A static instance of the <see cref="JSNull" /> type.
+    /// </summary>
+    public static JSNull Instance { get; } = new();
+
+    private JSNull()
         : base(JSType.Null)
     { }
-
-    /// <inheritdoc />
-    public override string ToString() =>
-        nameof(JSNull);
 
     #region Abstract Type Conversions
 
@@ -53,16 +57,16 @@ public class JSNull : JSValue
         false;
 
     /// <inheritdoc />
-    public override JSValue ToNumeric() =>
+    public override JSNumeric ToNumeric() =>
         JSNumber.Zero;
 
     /// <inheritdoc />
-    public override JSNumber ToNumber() =>
-        JSNumber.Zero;
+    public override double ToNumber() =>
+        0;
 
     /// <inheritdoc />
-    public override JSNumber ToIntegerOrInfinity() =>
-        JSNumber.Zero;
+    public override double ToIntegerOrInfinity() =>
+        0;
 
     /// <inheritdoc />
     public override int ToInt32() =>
@@ -114,19 +118,19 @@ public class JSNull : JSValue
 
     /// <inheritdoc />
     public override JSValue ToPropertyKey() =>
-        new JSString("null");
+        new JSString("null"); // from `AbstractToString`
 
     /// <inheritdoc />
-    public override JSValue ToLength() =>
-        JSNumber.Zero;
+    public override ulong ToLength() =>
+        0;
 
     /// <inheritdoc />
-    public override JSValue ToIndex() =>
-        JSNumber.Zero;
+    public override ulong ToIndex() =>
+        0;
 
     #endregion
 
-    #region Abstract Testing/Comparison Operations
+    #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
     public override JSValue RequireObjectCoercible() =>
@@ -158,11 +162,11 @@ public class JSNull : JSValue
 
     /// <inheritdoc />
     public override bool SameValue(JSValue other) =>
-        other.Type is JSType.Null && SameValueNonNumeric(other);
+        other.Type is JSType.Null;
 
     /// <inheritdoc />
     public override bool SameValueZero(JSValue other) =>
-        other.Type is JSType.Null && SameValueNonNumeric(other);
+        other.Type is JSType.Null;
 
     /// <inheritdoc />
     public override bool SameValueNonNumeric(JSValue other)
@@ -172,31 +176,62 @@ public class JSNull : JSValue
     }
 
     /// <inheritdoc />
-    public override bool IsLessThan(JSValue other, bool leftFirst)
+    public override bool? IsLessThan(JSValue other, bool leftFirst)
     {
-        JSValue px = leftFirst ? this : other;
-        JSValue py = leftFirst ? other : this;
+        (JSValue px, JSValue py) = leftFirst
+            ? (this, other.ToPrimitive(JSType.Number))
+            : (other.ToPrimitive(JSType.Number), (JSValue)this); // cast needed to satisfy the compiler
 
-        JSValue nx = px.ToNumeric();
-        JSValue ny = py.ToNumeric();
-        // if (nx.Type == ny.Type)
-        //     return nx.Type is JSType.Number ? Number::LessThan(nx, ny) : BigInt::LessThan(nx, ny);
+        JSNumeric nx = px.ToNumeric();
+        JSNumeric ny = py.ToNumeric();
+        if (nx.Type == ny.Type)
+        {
+            if (nx.Type is JSType.Number)
+                throw new NotImplementedException(); // TODO: `Number::lessThan(nx, ny)`
+            Debug.Assert(nx.Type is JSType.BigInt);
+            throw new NotImplementedException(); // TODO: `BigInt::lessThan(nx, ny)`
+        }
 
-        throw new NotImplementedException();
+        // ReSharper disable once RedundantIfElseBlock
+        if (nx.Type is JSType.BigInt)
+        {
+            Debug.Assert(ny.Type is JSType.Number);
+            JSNumber ny2 = (JSNumber)ny;
+            return ny2.Value switch
+            {
+                double.NaN => null,
+                double.PositiveInfinity => true,
+                double.NegativeInfinity => false,
+                _ => throw new NotImplementedException(), // R(nx) < R(ny)
+            };
+        }
+        else
+        {
+            Debug.Assert(nx.Type is JSType.Number);
+            Debug.Assert(ny.Type is JSType.BigInt);
+            JSNumber nx2 = (JSNumber)nx;
+            return nx2.Value switch
+            {
+                double.NaN => null,
+                double.NegativeInfinity => true,
+                double.PositiveInfinity => false,
+                _ => throw new NotImplementedException(), // R(nx) < R(ny)
+            };
+        }
     }
 
     /// <inheritdoc />
     public override bool IsLooselyEqual(JSValue other) =>
         other.Type switch
         {
-            JSType.Null => IsStrictlyEqual(other),
-            JSType.Undefined => true,
+            JSType.Undefined => true, // only undefined is loosely equal to null
+            JSType.Null => true,
             _ => false,
         };
 
     /// <inheritdoc />
     public override bool IsStrictlyEqual(JSValue other) =>
-        other.Type is JSType.Null && SameValueNonNumeric(other);
+        other.Type is JSType.Null;
 
     #endregion
 }
