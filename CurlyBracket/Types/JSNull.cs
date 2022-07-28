@@ -27,6 +27,7 @@
  */
 
 using CurlyBracket.Runtime;
+using DotNext;
 using System.Diagnostics;
 using System.Numerics;
 
@@ -35,6 +36,7 @@ namespace CurlyBracket.Types;
 /// <summary>
 /// Represents the "null" type in ECMAScript.
 /// </summary>
+[PublicAPI]
 public class JSNull : JSValue
 {
     /// <summary>
@@ -49,7 +51,7 @@ public class JSNull : JSValue
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
         this;
 
     /// <inheritdoc />
@@ -57,75 +59,75 @@ public class JSNull : JSValue
         false;
 
     /// <inheritdoc />
-    public override JSNumeric ToNumeric() =>
+    public override Result<JSNumeric> ToNumeric() =>
         JSNumber.Zero;
 
     /// <inheritdoc />
-    public override double ToNumber() =>
+    public override Result<double> ToNumber() =>
         0;
 
     /// <inheritdoc />
-    public override double ToIntegerOrInfinity() =>
+    public override Result<double> ToIntegerOrInfinity() =>
         0;
 
     /// <inheritdoc />
-    public override int ToInt32() =>
+    public override Result<int> ToInt32() =>
         0;
 
     /// <inheritdoc />
-    public override uint ToUInt32() =>
+    public override Result<uint> ToUInt32() =>
         0;
 
     /// <inheritdoc />
-    public override short ToInt16() =>
+    public override Result<short> ToInt16() =>
         0;
 
     /// <inheritdoc />
-    public override ushort ToUInt16() =>
+    public override Result<ushort> ToUInt16() =>
         0;
 
     /// <inheritdoc />
-    public override sbyte ToInt8() =>
+    public override Result<sbyte> ToInt8() =>
         0;
 
     /// <inheritdoc />
-    public override byte ToUInt8() =>
+    public override Result<byte> ToUInt8() =>
         0;
 
     /// <inheritdoc />
-    public override byte ToUInt8Clamp() =>
+    public override Result<byte> ToUInt8Clamp() =>
         0;
 
     /// <inheritdoc />
-    public override BigInteger ToBigInt() =>
-        throw new TypeErrorException();
+    public override Result<BigInteger> ToBigInt() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override long ToBigInt64() =>
-        throw new TypeErrorException();
+    public override Result<long> ToBigInt64() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override ulong ToBigUInt64() =>
-        throw new TypeErrorException();
+    public override Result<ulong> ToBigUInt64() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override string AbstractToString() =>
+    public override Result<string> AbstractToString() =>
         "null";
 
     /// <inheritdoc />
-    public override JSObject ToObject() =>
-        throw new TypeErrorException();
+    public override Result<JSObject> ToObject() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override JSValue ToPropertyKey() =>
+    public override Result<JSValue> ToPropertyKey() =>
         new JSString("null"); // from `AbstractToString`
 
     /// <inheritdoc />
-    public override ulong ToLength() =>
+    public override Result<ulong> ToLength() =>
         0;
 
     /// <inheritdoc />
-    public override ulong ToIndex() =>
+    public override Result<ulong> ToIndex() =>
         0;
 
     #endregion
@@ -133,11 +135,11 @@ public class JSNull : JSValue
     #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
-    public override JSValue RequireObjectCoercible() =>
-        throw new TypeErrorException();
+    public override Result<JSValue> RequireObjectCoercible() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override bool IsArray() =>
+    public override Result<bool> IsArray() =>
         false;
 
     /// <inheritdoc />
@@ -174,64 +176,6 @@ public class JSNull : JSValue
         Debug.Assert(other.Type is JSType.Null);
         return true;
     }
-
-    /// <inheritdoc />
-    public override bool? IsLessThan(JSValue other, bool leftFirst)
-    {
-        (JSValue px, JSValue py) = leftFirst
-            ? (this, other.ToPrimitive(JSType.Number))
-            : (other.ToPrimitive(JSType.Number), (JSValue)this); // cast needed to satisfy the compiler
-
-        JSNumeric nx = px.ToNumeric();
-        JSNumeric ny = py.ToNumeric();
-        if (nx.Type == ny.Type)
-        {
-            if (nx.Type is JSType.Number)
-                throw new NotImplementedException(); // TODO: `Number::lessThan(nx, ny)`
-            Debug.Assert(nx.Type is JSType.BigInt);
-            throw new NotImplementedException(); // TODO: `BigInt::lessThan(nx, ny)`
-        }
-
-        // ReSharper disable once RedundantIfElseBlock
-        if (nx.Type is JSType.BigInt)
-        {
-            Debug.Assert(ny.Type is JSType.Number);
-            JSNumber ny2 = (JSNumber)ny;
-            return ny2.Value switch
-            {
-                double.NaN => null,
-                double.PositiveInfinity => true,
-                double.NegativeInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-        else
-        {
-            Debug.Assert(nx.Type is JSType.Number);
-            Debug.Assert(ny.Type is JSType.BigInt);
-            JSNumber nx2 = (JSNumber)nx;
-            return nx2.Value switch
-            {
-                double.NaN => null,
-                double.NegativeInfinity => true,
-                double.PositiveInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-    }
-
-    /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other) =>
-        other.Type switch
-        {
-            JSType.Undefined => true, // only undefined is loosely equal to null
-            JSType.Null => true,
-            _ => false,
-        };
-
-    /// <inheritdoc />
-    public override bool IsStrictlyEqual(JSValue other) =>
-        other.Type is JSType.Null;
 
     #endregion
 }

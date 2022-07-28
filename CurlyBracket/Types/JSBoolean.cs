@@ -26,6 +26,7 @@
  * =============================================================================
  */
 
+using DotNext;
 using System.Diagnostics;
 using System.Numerics;
 
@@ -34,6 +35,7 @@ namespace CurlyBracket.Types;
 /// <summary>
 /// Represents the boolean type in ECMAScript.
 /// </summary>
+[PublicAPI]
 public class JSBoolean : JSValue
 {
     /// <summary>A static instance of a <see cref="JSBoolean" /> type representing <c>true</c>.</summary>
@@ -75,7 +77,7 @@ public class JSBoolean : JSValue
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
         this;
 
     /// <inheritdoc />
@@ -83,74 +85,74 @@ public class JSBoolean : JSValue
         Value;
 
     /// <inheritdoc />
-    public override JSNumeric ToNumeric() =>
+    public override Result<JSNumeric> ToNumeric() =>
         Value ? JSNumber.One : JSNumber.Zero;
 
     /// <inheritdoc />
-    public override double ToNumber() =>
+    public override Result<double> ToNumber() =>
         Value ? 1 : 0;
 
     /// <inheritdoc />
-    public override double ToIntegerOrInfinity() =>
+    public override Result<double> ToIntegerOrInfinity() =>
         Value ? 1 : 0;
 
     /// <inheritdoc />
-    public override int ToInt32() =>
+    public override Result<int> ToInt32() =>
         Value ? 1 : 0;
 
     /// <inheritdoc />
-    public override uint ToUInt32() =>
+    public override Result<uint> ToUInt32() =>
         Value ? 1u : 0u;
 
     /// <inheritdoc />
-    public override short ToInt16() =>
+    public override Result<short> ToInt16() =>
         (short)(Value ? 1 : 0);
 
     /// <inheritdoc />
-    public override ushort ToUInt16() =>
+    public override Result<ushort> ToUInt16() =>
         (ushort)(Value ? 1 : 0);
 
     /// <inheritdoc />
-    public override sbyte ToInt8() =>
+    public override Result<sbyte> ToInt8() =>
         (sbyte)(Value ? 1 : 0);
 
     /// <inheritdoc />
-    public override byte ToUInt8() =>
+    public override Result<byte> ToUInt8() =>
         (byte)(Value ? 1 : 0);
 
     /// <inheritdoc />
-    public override byte ToUInt8Clamp() =>
+    public override Result<byte> ToUInt8Clamp() =>
         (byte)(Value ? 1 : 0);
 
     /// <inheritdoc />
-    public override BigInteger ToBigInt() =>
+    public override Result<BigInteger> ToBigInt() =>
         Value ? BigInteger.One : BigInteger.Zero;
 
     /// <inheritdoc />
-    public override long ToBigInt64() =>
+    public override Result<long> ToBigInt64() =>
         Value ? 1 : 0;
 
     /// <inheritdoc />
-    public override ulong ToBigUInt64() =>
+    public override Result<ulong> ToBigUInt64() =>
         Value ? 1u : 0u;
 
     /// <inheritdoc />
-    public override string AbstractToString() =>
+    public override Result<string> AbstractToString() =>
         Value ? "true" : "false";
 
     /// <inheritdoc />
-    public override JSObject ToObject() => throw new NotImplementedException();
+    public override Result<JSObject> ToObject() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override JSValue ToPropertyKey() =>
+    public override Result<JSValue> ToPropertyKey() =>
         new JSString(Value ? "true" : "false"); // from `AbstractToString`
 
     /// <inheritdoc />
-    public override ulong ToLength() =>
+    public override Result<ulong> ToLength() =>
         Value ? 1u : 0u;
 
     /// <inheritdoc />
-    public override ulong ToIndex() =>
+    public override Result<ulong> ToIndex() =>
         Value ? 1u : 0u;
 
     #endregion
@@ -158,11 +160,11 @@ public class JSBoolean : JSValue
     #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
-    public override JSValue RequireObjectCoercible() =>
+    public override Result<JSValue> RequireObjectCoercible() =>
         this;
 
     /// <inheritdoc />
-    public override bool IsArray() =>
+    public override Result<bool> IsArray() =>
         false;
 
     /// <inheritdoc />
@@ -199,61 +201,6 @@ public class JSBoolean : JSValue
         Debug.Assert(other.Type is JSType.Boolean);
         return Value == (JSBoolean)other;
     }
-
-    /// <inheritdoc />
-    public override bool? IsLessThan(JSValue other, bool leftFirst)
-    {
-        (JSValue px, JSValue py) = leftFirst
-            ? (this, other.ToPrimitive(JSType.Number))
-            : (other.ToPrimitive(JSType.Number), (JSValue)this); // cast needed to satisfy the compiler
-
-        JSNumeric nx = px.ToNumeric();
-        JSNumeric ny = py.ToNumeric();
-        if (nx.Type == ny.Type)
-        {
-            if (nx.Type is JSType.Number)
-                throw new NotImplementedException(); // TODO: `Number::lessThan(nx, ny)`
-            Debug.Assert(nx.Type is JSType.BigInt);
-            throw new NotImplementedException(); // TODO: `BigInt::lessThan(nx, ny)`
-        }
-
-        // ReSharper disable once RedundantIfElseBlock
-        if (nx.Type is JSType.BigInt)
-        {
-            Debug.Assert(ny.Type is JSType.Number);
-            JSNumber ny2 = (JSNumber)ny;
-            return ny2.Value switch
-            {
-                double.NaN => null,
-                double.PositiveInfinity => true,
-                double.NegativeInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-        else
-        {
-            Debug.Assert(nx.Type is JSType.Number);
-            Debug.Assert(ny.Type is JSType.BigInt);
-            JSNumber nx2 = (JSNumber)nx;
-            return nx2.Value switch
-            {
-                double.NaN => null,
-                double.NegativeInfinity => true,
-                double.PositiveInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-    }
-
-    /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other) =>
-        other.Type is JSType.Boolean
-            ? IsStrictlyEqual(other)
-            : new JSNumber(ToNumber()).IsLooselyEqual(other);
-
-    /// <inheritdoc />
-    public override bool IsStrictlyEqual(JSValue other) =>
-        other.Type is JSType.Boolean && Value == (JSBoolean)other;
 
     #endregion
 }

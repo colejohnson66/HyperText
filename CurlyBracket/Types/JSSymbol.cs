@@ -27,6 +27,7 @@
  */
 
 using CurlyBracket.Runtime;
+using DotNext;
 using System.Numerics;
 
 namespace CurlyBracket.Types;
@@ -34,6 +35,7 @@ namespace CurlyBracket.Types;
 /// <summary>
 /// Represents the symbol type in ECMAScript.
 /// </summary>
+[PublicAPI]
 public class JSSymbol : JSValue
 {
     /// <summary>
@@ -54,7 +56,7 @@ public class JSSymbol : JSValue
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
         this;
 
     /// <inheritdoc />
@@ -62,87 +64,87 @@ public class JSSymbol : JSValue
         true;
 
     /// <inheritdoc />
-    public override JSNumeric ToNumeric() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<JSNumeric> ToNumeric() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override double ToNumber() =>
-        throw new TypeErrorException();
+    public override Result<double> ToNumber() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override double ToIntegerOrInfinity() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<double> ToIntegerOrInfinity() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override int ToInt32() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<int> ToInt32() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override uint ToUInt32() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<uint> ToUInt32() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override short ToInt16() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<short> ToInt16() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override ushort ToUInt16() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<ushort> ToUInt16() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override sbyte ToInt8() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<sbyte> ToInt8() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override byte ToUInt8() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<byte> ToUInt8() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override byte ToUInt8Clamp() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<byte> ToUInt8Clamp() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override BigInteger ToBigInt() =>
-        throw new TypeErrorException();
+    public override Result<BigInteger> ToBigInt() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override long ToBigInt64() =>
-        throw new TypeErrorException(); // from `ToBigInt()`
+    public override Result<long> ToBigInt64() =>
+        new(new TypeErrorException()); // from `ToBigInt()`
 
     /// <inheritdoc />
-    public override ulong ToBigUInt64() =>
-        throw new TypeErrorException(); // from `ToBigInt()`
+    public override Result<ulong> ToBigUInt64() =>
+        new(new TypeErrorException()); // from `ToBigInt()`
 
     /// <inheritdoc />
-    public override string AbstractToString() =>
-        throw new TypeErrorException();
+    public override Result<string> AbstractToString() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override JSObject ToObject() =>
+    public override Result<JSObject> ToObject() =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override JSValue ToPropertyKey() =>
+    public override Result<JSValue> ToPropertyKey() =>
         this;
 
     /// <inheritdoc />
-    public override ulong ToLength() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<ulong> ToLength() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     /// <inheritdoc />
-    public override ulong ToIndex() =>
-        throw new TypeErrorException(); // from `ToNumber()`
+    public override Result<ulong> ToIndex() =>
+        new(new TypeErrorException()); // from `ToNumber()`
 
     #endregion
 
     #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
-    public override JSValue RequireObjectCoercible() =>
+    public override Result<JSValue> RequireObjectCoercible() =>
         this;
 
     /// <inheritdoc />
-    public override bool IsArray() =>
+    public override Result<bool> IsArray() =>
         false;
 
     /// <inheritdoc />
@@ -180,19 +182,6 @@ public class JSSymbol : JSValue
             return false;
         throw new NotImplementedException(); // return true if this and other are same symbol value
     }
-
-    /// <inheritdoc />
-    public override bool? IsLessThan(JSValue other, bool leftFirst) =>
-        // due to either `px` or `py` being this Symbol object, skipping to step 4d/4e would throw
-        throw new TypeErrorException();
-
-    /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other) =>
-        other.Type is JSType.Symbol && SameValueNonNumeric(other);
-
-    /// <inheritdoc />
-    public override bool IsStrictlyEqual(JSValue other) =>
-        other.Type is JSType.Symbol && SameValueNonNumeric(other);
 
     #endregion
 }

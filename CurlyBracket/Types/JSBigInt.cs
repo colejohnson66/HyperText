@@ -27,6 +27,7 @@
  */
 
 using CurlyBracket.Runtime;
+using DotNext;
 using HyperLib;
 using System.Diagnostics;
 using System.Numerics;
@@ -34,8 +35,9 @@ using System.Numerics;
 namespace CurlyBracket.Types;
 
 /// <summary>
-/// Represents the big integer type in ECMAScript.
+/// Represents the big integer (bigint) type in ECMAScript.
 /// </summary>
+[PublicAPI]
 public class JSBigInt : JSNumeric
 {
     /// <summary>A static instance of a <see cref="JSBigInt" /> type representing negative one.</summary>
@@ -79,7 +81,7 @@ public class JSBigInt : JSNumeric
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
         this;
 
     /// <inheritdoc />
@@ -87,83 +89,83 @@ public class JSBigInt : JSNumeric
         !Value.IsZero;
 
     /// <inheritdoc />
-    public override JSNumeric ToNumeric() =>
-        throw new TypeErrorException();
+    public override Result<JSNumeric> ToNumeric() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override double ToNumber() =>
-        throw new TypeErrorException();
+    public override Result<double> ToNumber() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override double ToIntegerOrInfinity() =>
-        throw new TypeErrorException();
+    public override Result<double> ToIntegerOrInfinity() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override int ToInt32() =>
-        throw new TypeErrorException();
+    public override Result<int> ToInt32() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override uint ToUInt32() =>
-        throw new TypeErrorException();
+    public override Result<uint> ToUInt32() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override short ToInt16() =>
-        throw new TypeErrorException();
+    public override Result<short> ToInt16() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override ushort ToUInt16() =>
-        throw new TypeErrorException();
+    public override Result<ushort> ToUInt16() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override sbyte ToInt8() =>
-        throw new TypeErrorException();
+    public override Result<sbyte> ToInt8() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override byte ToUInt8() =>
-        throw new TypeErrorException();
+    public override Result<byte> ToUInt8() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override byte ToUInt8Clamp() =>
-        throw new TypeErrorException();
+    public override Result<byte> ToUInt8Clamp() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override BigInteger ToBigInt() =>
+    public override Result<BigInteger> ToBigInt() =>
         Value;
 
     /// <inheritdoc />
-    public override long ToBigInt64() => throw new NotImplementedException();
+    public override Result<long> ToBigInt64() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override ulong ToBigUInt64() => throw new NotImplementedException();
+    public override Result<ulong> ToBigUInt64() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override string AbstractToString() => throw new NotImplementedException();
+    public override Result<string> AbstractToString() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override JSObject ToObject() => throw new NotImplementedException();
+    public override Result<JSObject> ToObject() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override JSValue ToPropertyKey() =>
-        new JSString(AbstractToString());
+    public override Result<JSValue> ToPropertyKey() =>
+        new JSString(AbstractToString().Value); // will never throw for bigint
 
     /// <inheritdoc />
-    public override ulong ToLength() =>
-        throw new TypeErrorException();
+    public override Result<ulong> ToLength() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override ulong ToIndex() =>
-        throw new TypeErrorException();
+    public override Result<ulong> ToIndex() =>
+        new(new TypeErrorException());
 
     #endregion
 
     #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
-    public override JSValue RequireObjectCoercible() =>
+    public override Result<JSValue> RequireObjectCoercible() =>
         this;
 
     /// <inheritdoc />
-    public override bool IsArray() =>
+    public override Result<bool> IsArray() =>
         false;
 
     /// <inheritdoc />
@@ -207,103 +209,6 @@ public class JSBigInt : JSNumeric
     {
         Debug.Assert(other.Type is JSType.BigInt);
         throw new UnreachableException(); // should never be called for numeric values
-    }
-
-    /// <inheritdoc />
-    public override bool? IsLessThan(JSValue other, bool leftFirst)
-    {
-        (JSValue px, JSValue py) = leftFirst
-            ? (this, other.ToPrimitive(JSType.Number))
-            : (other.ToPrimitive(JSType.Number), (JSValue)this); // cast needed to satisfy the compiler
-
-        if (px.Type is JSType.BigInt && py.Type is JSType.String)
-        {
-            // ny = StringToBigInt(py)
-            // if ny is undef, return undef
-            // return BigInt::lessThan(px, ny)
-            throw new NotImplementedException();
-        }
-        if (px.Type is JSType.String && py.Type is JSType.BigInt)
-        {
-            // nx = StringToBigInt(px)
-            // if nx is undef, return undef
-            // return BigInt::lessThan(nx, py)
-            throw new NotImplementedException();
-        }
-
-        JSNumeric nx = px.ToNumeric();
-        JSNumeric ny = py.ToNumeric();
-        if (nx.Type == ny.Type)
-        {
-            if (nx.Type is JSType.Number)
-                throw new NotImplementedException(); // TODO: `Number::lessThan(nx, ny)`
-            Debug.Assert(nx.Type is JSType.BigInt);
-            throw new NotImplementedException(); // TODO: `BigInt::lessThan(nx, ny)`
-        }
-
-        // ReSharper disable once RedundantIfElseBlock
-        if (nx.Type is JSType.BigInt)
-        {
-            Debug.Assert(ny.Type is JSType.Number);
-            JSNumber ny2 = (JSNumber)ny;
-            return ny2.Value switch
-            {
-                double.NaN => null,
-                double.PositiveInfinity => true,
-                double.NegativeInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-        else
-        {
-            Debug.Assert(nx.Type is JSType.Number);
-            Debug.Assert(ny.Type is JSType.BigInt);
-            JSNumber nx2 = (JSNumber)nx;
-            return nx2.Value switch
-            {
-                double.NaN => null,
-                double.NegativeInfinity => true,
-                double.PositiveInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-    }
-
-    /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other)
-    {
-        if (other.Type == JSType.BigInt)
-            return IsStrictlyEqual(other);
-
-        if (other.Type == JSType.String)
-        {
-            // n = StringToBigInt(other)
-            // if n is undefined, return false
-            // return IsLooselyEqual(n)
-            throw new NotImplementedException();
-        }
-
-        // ReSharper disable once TailRecursiveCall
-        if (other.Type is JSType.Object)
-            return IsLooselyEqual(other.ToPrimitive());
-
-        if (other.Type is JSType.Number)
-        {
-            JSNumber y = (JSNumber)other;
-            if (y.Value is double.NaN || double.IsInfinity(y.Value))
-                return false;
-            throw new NotImplementedException(); // return R(x) == R(y)
-        }
-
-        return false;
-    }
-
-    /// <inheritdoc />
-    public override bool IsStrictlyEqual(JSValue other)
-    {
-        if (other.Type is not JSType.BigInt)
-            return false;
-        throw new NotImplementedException(); // return `BigInt::equal(x, y)`
     }
 
     #endregion

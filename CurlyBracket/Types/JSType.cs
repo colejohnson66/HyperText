@@ -38,6 +38,7 @@ namespace CurlyBracket.Types;
 /// <remarks>
 /// https://tc39.es/ecma262/#sec-ecmascript-language-types
 /// </remarks>
+[PublicAPI]
 public enum JSType
 {
     /// <summary>

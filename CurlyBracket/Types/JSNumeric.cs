@@ -31,6 +31,7 @@ namespace CurlyBracket.Types;
 /// Represents a numeric ECMAScript value.
 /// Valid subtypes are <see cref="JSBigInt" /> and <see cref="JSNumber" />.
 /// </summary>
+[PublicAPI]
 public abstract class JSNumeric : JSValue
 {
     /// <summary>

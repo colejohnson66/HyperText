@@ -27,6 +27,7 @@
  */
 
 using CurlyBracket.Runtime;
+using DotNext;
 using HyperLib;
 using System.Diagnostics;
 using System.Numerics;
@@ -36,6 +37,7 @@ namespace CurlyBracket.Types;
 /// <summary>
 /// Represents the number type in ECMAScript.
 /// </summary>
+[PublicAPI]
 public class JSNumber : JSNumeric
 {
     internal const double MAX_SAFE_INTEGER = 9007199254740991;
@@ -101,7 +103,7 @@ public class JSNumber : JSNumeric
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override JSValue ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
         this;
 
     /// <inheritdoc />
@@ -109,15 +111,15 @@ public class JSNumber : JSNumeric
         Value is not (0 or double.NaN);
 
     /// <inheritdoc />
-    public override JSNumeric ToNumeric() =>
+    public override Result<JSNumeric> ToNumeric() =>
         this;
 
     /// <inheritdoc />
-    public override double ToNumber() =>
+    public override Result<double> ToNumber() =>
         Value;
 
     /// <inheritdoc />
-    public override double ToIntegerOrInfinity()
+    public override Result<double> ToIntegerOrInfinity()
     {
         double number = Value;
         if (number is double.NaN or 0)
@@ -128,7 +130,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override int ToInt32()
+    public override Result<int> ToInt32()
     {
         double number = Value;
         if (number is double.NaN or 0 or double.PositiveInfinity or double.NegativeInfinity)
@@ -138,7 +140,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override uint ToUInt32()
+    public override Result<uint> ToUInt32()
     {
         double number = Value;
         if (number is double.NaN or 0 or double.PositiveInfinity or double.NegativeInfinity)
@@ -148,7 +150,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override short ToInt16()
+    public override Result<short> ToInt16()
     {
         double number = Value;
         if (number is double.NaN or 0 or double.PositiveInfinity or double.NegativeInfinity)
@@ -158,7 +160,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override ushort ToUInt16()
+    public override Result<ushort> ToUInt16()
     {
         double number = Value;
         if (number is double.NaN or 0 or double.PositiveInfinity or double.NegativeInfinity)
@@ -168,7 +170,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override sbyte ToInt8()
+    public override Result<sbyte> ToInt8()
     {
         double number = Value;
         if (number is double.NaN or 0 or double.PositiveInfinity or double.NegativeInfinity)
@@ -178,7 +180,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override byte ToUInt8()
+    public override Result<byte> ToUInt8()
     {
         double number = Value;
         if (number is double.NaN or 0 or double.PositiveInfinity or double.NegativeInfinity)
@@ -188,7 +190,7 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override byte ToUInt8Clamp()
+    public override Result<byte> ToUInt8Clamp()
     {
         double number = Value;
         if (number is double.NaN or <= 0)
@@ -200,43 +202,47 @@ public class JSNumber : JSNumeric
     }
 
     /// <inheritdoc />
-    public override BigInteger ToBigInt() =>
-        throw new TypeErrorException();
+    public override Result<BigInteger> ToBigInt() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override long ToBigInt64() =>
-        throw new TypeErrorException();
+    public override Result<long> ToBigInt64() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override ulong ToBigUInt64() =>
-        throw new TypeErrorException();
+    public override Result<ulong> ToBigUInt64() =>
+        new(new TypeErrorException());
 
     /// <inheritdoc />
-    public override string AbstractToString() => throw new NotImplementedException(); // `Number::toString`
+    public override Result<string> AbstractToString() => throw new NotImplementedException(); // `Number::toString`
 
     /// <inheritdoc />
-    public override JSObject ToObject() => throw new NotImplementedException();
+    public override Result<JSObject> ToObject() => throw new NotImplementedException();
 
     /// <inheritdoc />
-    public override JSValue ToPropertyKey() =>
-        new JSString(AbstractToString());
+    public override Result<JSValue> ToPropertyKey() =>
+        new JSString(AbstractToString().Value); // will never throw for numbers
 
     /// <inheritdoc />
-    public override ulong ToLength()
+    public override Result<ulong> ToLength()
     {
-        double len = ToIntegerOrInfinity();
-        if (len <= 0)
+        Result<double> len = ToIntegerOrInfinity();
+        if (!len.IsSuccessful)
+            return new(len.Error);
+        if (len.Value <= 0)
             return 0;
-        return (ulong)Math.Min(len, MAX_SAFE_INTEGER);
+        return (ulong)Math.Min(len.Value, MAX_SAFE_INTEGER);
     }
 
     /// <inheritdoc />
-    public override ulong ToIndex()
+    public override Result<ulong> ToIndex()
     {
-        double integerIndex = ToIntegerOrInfinity();
-        if (double.IsNegative(integerIndex))
+        Result<double> integerIndex = ToIntegerOrInfinity();
+        if (!integerIndex.IsSuccessful)
+            return new(integerIndex.Error);
+        if (double.IsNegative(integerIndex.Value))
             throw new RangeErrorException();
-        ulong index = new JSNumber(integerIndex).ToLength();
+        ulong index = new JSNumber(integerIndex.Value).ToLength().Value; // will never throw for numbers
 
         // if SameValue(integerIndex, index) is false, throw a RangeError exception
         // else return index
@@ -248,11 +254,11 @@ public class JSNumber : JSNumeric
     #region Abstract Testing/Comparisons
 
     /// <inheritdoc />
-    public override JSValue RequireObjectCoercible() =>
+    public override Result<JSValue> RequireObjectCoercible() =>
         this;
 
     /// <inheritdoc />
-    public override bool IsArray() =>
+    public override Result<bool> IsArray() =>
         false;
 
     /// <inheritdoc />
@@ -303,69 +309,6 @@ public class JSNumber : JSNumeric
     {
         Debug.Assert(other.Type is JSType.Number);
         throw new UnreachableException(); // should never be called for numeric values
-    }
-
-    /// <inheritdoc />
-    public override bool? IsLessThan(JSValue other, bool leftFirst)
-    {
-        (JSValue px, JSValue py) = leftFirst
-            ? (this, other.ToPrimitive(JSType.Number))
-            : (other.ToPrimitive(JSType.Number), (JSValue)this); // cast needed to satisfy the compiler
-
-        JSNumeric nx = px.ToNumeric();
-        JSNumeric ny = py.ToNumeric();
-        if (nx.Type == ny.Type)
-        {
-            if (nx.Type is JSType.Number)
-                throw new NotImplementedException(); // TODO: `Number::lessThan(nx, ny)`
-            Debug.Assert(nx.Type is JSType.BigInt);
-            throw new NotImplementedException(); // TODO: `BigInt::lessThan(nx, ny)`
-        }
-
-        // ReSharper disable once RedundantIfElseBlock
-        if (nx.Type is JSType.BigInt)
-        {
-            Debug.Assert(ny.Type is JSType.Number);
-            JSNumber ny2 = (JSNumber)ny;
-            return ny2.Value switch
-            {
-                double.NaN => null,
-                double.PositiveInfinity => true,
-                double.NegativeInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-        else
-        {
-            Debug.Assert(nx.Type is JSType.Number);
-            Debug.Assert(ny.Type is JSType.BigInt);
-            JSNumber nx2 = (JSNumber)nx;
-            return nx2.Value switch
-            {
-                double.NaN => null,
-                double.NegativeInfinity => true,
-                double.PositiveInfinity => false,
-                _ => throw new NotImplementedException(), // R(nx) < R(ny)
-            };
-        }
-    }
-
-    /// <inheritdoc />
-    public override bool IsLooselyEqual(JSValue other) =>
-        other.Type switch
-        {
-            JSType.Number => IsStrictlyEqual(other),
-            JSType.String => IsStrictlyEqual(new JSNumber(other.ToNumber())),
-            JSType.Object => IsLooselyEqual(other.ToPrimitive()),
-            _ => false,
-        };
-
-    /// <inheritdoc />
-    public override bool IsStrictlyEqual(JSValue other)
-    {
-        if (other.Type is not JSType.Number)
-            return false;
-        throw new NotImplementedException(); // return `Number::equal(x, y)`
     }
 
     #endregion

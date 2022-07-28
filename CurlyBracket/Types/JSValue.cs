@@ -36,6 +36,7 @@ namespace CurlyBracket.Types;
 /// <remarks>
 /// This is akin to how all C# objects inherit from <see cref="object" />.
 /// </remarks>
+[PublicAPI]
 public abstract partial class JSValue
 {
     /// <summary>A static instance of the <see cref="JSUndefined" /> type.</summary>
