@@ -81,7 +81,7 @@ public class JSBigInt : JSNumeric
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(ToPrimitiveType preferredType = ToPrimitiveType.Default) =>
         this;
 
     /// <inheritdoc />

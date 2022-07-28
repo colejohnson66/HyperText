@@ -43,7 +43,7 @@ public abstract partial class JSValue
     /// <remarks>
     /// https://tc39.es/ecma262/#sec-toprimitive
     /// </remarks>
-    public abstract Result<JSValue> ToPrimitive(JSType? preferredType = null);
+    public abstract Result<JSValue> ToPrimitive(ToPrimitiveType preferredType = ToPrimitiveType.Default);
 
     /// <summary>
     /// Implements the <c>ToBoolean</c> abstract operation.

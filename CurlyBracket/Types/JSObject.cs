@@ -48,7 +48,7 @@ public class JSObject : JSValue
     #region Abstract Type Conversions
 
     /// <inheritdoc />
-    public override Result<JSValue> ToPrimitive(JSType? preferredType = null) =>
+    public override Result<JSValue> ToPrimitive(ToPrimitiveType preferredType = ToPrimitiveType.Default) =>
         throw new NotImplementedException();
 
     /// <inheritdoc />
@@ -58,7 +58,7 @@ public class JSObject : JSValue
     /// <inheritdoc />
     public override Result<JSNumeric> ToNumeric()
     {
-        Result<JSValue> primValueTemp = ToPrimitive(JSType.Number);
+        Result<JSValue> primValueTemp = ToPrimitive(ToPrimitiveType.Number);
         if (!primValueTemp.IsSuccessful)
             return new(primValueTemp.Error);
 
@@ -72,7 +72,7 @@ public class JSObject : JSValue
     /// <inheritdoc />
     public override Result<double> ToNumber()
     {
-        Result<JSValue> primValue = ToPrimitive(JSType.Number);
+        Result<JSValue> primValue = ToPrimitive(ToPrimitiveType.Number);
         return !primValue.IsSuccessful
             ? new(primValue.Error)
             : primValue.Value.ToNumber();
@@ -209,7 +209,7 @@ public class JSObject : JSValue
     /// <inheritdoc />
     public override Result<string> AbstractToString()
     {
-        Result<JSValue> primValue = ToPrimitive(JSType.String);
+        Result<JSValue> primValue = ToPrimitive(ToPrimitiveType.String);
         return !primValue.IsSuccessful
             ? new(primValue.Error)
             : primValue.Value.AbstractToString();
@@ -222,7 +222,7 @@ public class JSObject : JSValue
     /// <inheritdoc />
     public override Result<JSValue> ToPropertyKey()
     {
-        Result<JSValue> keyTemp = ToPrimitive(JSType.String);
+        Result<JSValue> keyTemp = ToPrimitive(ToPrimitiveType.String);
         JSValue key = keyTemp.Value;
         return key.Type is JSType.Symbol
             ? key
