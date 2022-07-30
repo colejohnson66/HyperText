@@ -26,7 +26,10 @@
  * =============================================================================
  */
 
+using CurlyBracket.Runtime.Properties;
 using DotNext;
+using HyperLib;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 
@@ -38,12 +41,162 @@ namespace CurlyBracket.Types;
 [PublicAPI]
 public class JSObject : JSValue
 {
+    private bool _initialized;
+    private Dictionary<string, Property>? _properties;
+    private Dictionary<JSSymbol, Property>? _symbols;
+    private JSValue _prototype = JSValue.Null;
+
     /// <summary>
     /// Construct a new <see cref="JSObject" /> object.
     /// </summary>
     public JSObject()
         : base(JSType.Object)
     { }
+
+    // TODO: engine reference
+
+    /// <summary>
+    /// Get this object's prototype object, or <see cref="JSNull">null</see>.
+    /// </summary>
+    public JSValue Prototype => GetPrototypeOf();
+
+    /// <summary>
+    /// Get or set a boolean indicating if this object is "extensible"; i.e. if properties can be added to it.
+    /// </summary>
+    public virtual bool Extensible { get; protected set; }
+
+    #region Ordinary Object Internal Methods and Slots
+
+    /// <summary>
+    /// Gets this object's prototype.
+    /// </summary>
+    /// <returns>The prototype of this object, or <see cref="JSNull">null</see>.</returns>
+    /// <remarks>
+    /// This implements the <c>GetPrototypeOf</c> abstract operation:
+    /// https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots-getprototypeof
+    /// </remarks>
+    public JSValue GetPrototypeOf() =>
+        _prototype;
+
+    /// <summary>
+    /// Set this object's prototype.
+    /// </summary>
+    /// <param name="value">The new prototype for this object, or <see cref="JSNull">null</see>.</param>
+    /// <returns></returns>
+    /// <remarks>
+    /// This implements the <c>SetPrototypeOf</c> abstract operation:
+    /// https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots-setprototypeof-v
+    /// </remarks>
+    public bool SetPrototypeOf(JSValue value)
+    {
+        if (value.Type is not (JSType.Object or JSType.Null))
+            throw new ArgumentException(null, nameof(value));
+
+        if (value.SameValue(_prototype))
+            return true;
+
+        if (!Extensible)
+            return false;
+
+        // validate prototype chain
+        JSValue p = value;
+        while (true)
+        {
+            if (p.Type is JSType.Null)
+                break;
+            if (p.SameValue(this))
+                return false;
+            p = ((JSObject)p)._prototype;
+        }
+
+        _prototype = value;
+        return true;
+    }
+
+    /// <summary>
+    /// Get a boolean indicating if this object is "extensible"; i.e. if properties can be added to it.
+    /// </summary>
+    /// <returns>The value of <see cref="Extensible" />.</returns>
+    /// <remarks>
+    /// This implements the <c>IsExtensible</c> abstract operation:
+    /// https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots-isextensible
+    /// </remarks>
+    public bool IsExtensible() =>
+        Extensible;
+
+    /// <summary>
+    /// Prevent this object from being "extensible".
+    /// </summary>
+    /// <returns><c>true</c>.</returns>
+    /// <remarks>
+    /// This implements the <c>PreventExtensions</c> abstract operation:
+    /// https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots-preventextensions
+    /// </remarks>
+    public bool PreventExtensions()
+    {
+        Extensible = false;
+        return true;
+    }
+
+    /// <summary>
+    /// Get a property from this object.
+    /// </summary>
+    /// <param name="property">The key of the property to get the value of.</param>
+    /// <returns>
+    /// The property with the key, <paramref name="property" />, or <c>null</c> if one does not exist.
+    /// </returns>
+    /// <remarks>
+    /// This implements the <c>GetOwnProperty</c> abstract operation:
+    /// https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots-getownproperty-p
+    /// </remarks>
+    public Property? GetOwnProperty(JSValue property)
+    {
+        if (_properties is null)
+            return null;
+
+        Result<JSValue> propertyAsKey = property.ToPropertyKey();
+        if (!propertyAsKey.IsSuccessful)
+            return null;
+        Result<string> propertyAsKeyStr = propertyAsKey.Value.AbstractToString();
+        if (!propertyAsKeyStr.IsSuccessful)
+            return null;
+        string key = propertyAsKeyStr.Value;
+
+        if (!_properties.TryGetValue(key, out Property? x))
+            return null;
+
+        // TODO: steps 4 and up
+        throw new NotImplementedException();
+    }
+
+    public Result<bool> DefineOwnProperty(JSValue property, Property descriptor) =>
+        throw new NotImplementedException();
+
+    public Result<bool> HasProperty(JSValue property) =>
+        throw new NotImplementedException();
+
+    public Result<JSValue> Get(JSValue property, JSValue receiver) =>
+        throw new NotImplementedException();
+
+    public Result<bool> Set(JSValue property, JSValue value, JSValue receiver) =>
+        throw new NotImplementedException();
+
+    public Result<bool> Delete(JSValue property) =>
+        throw new NotImplementedException();
+
+    public List<JSValue> OwnPropertyKeys() =>
+        throw new NotImplementedException();
+
+    public static JSValue OrdinaryObjectCreate(JSValue proto) => // TODO: additionalInternalSlotsList
+        throw new NotImplementedException();
+
+    public static Result<JSValue> GetPrototypeFromConstructor(JSValue constructor) => // TODO: intrinsicDefaultProto
+        throw new NotImplementedException();
+
+    public Result<Unit> RequireInternalSlot(JSValue internalSlot) =>
+        throw new NotImplementedException();
+
+    #endregion
 
     #region Abstract Type Conversions
 
