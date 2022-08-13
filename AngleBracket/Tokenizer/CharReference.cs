@@ -48,44 +48,68 @@ public static class CharReference
     /// The mapping of numeric character references to their Unicode code points.
     /// </summary>
     /// <remarks>
-    /// This is basically nothing more than a mapping of Windows-1252 encoded code points to their true code points.
+    /// This is the "C1" region of codepoints (U+0080..U+009F) that was used by Windows-1252 for other characters.
     /// </remarks>
-    public static readonly ReadOnlyDictionary<int, char> NumericList = new(new Dictionary<int, char>
+    private static readonly char[] NumericList =
     {
-        { 0x80, '\x20AC' },
-        { 0x82, '\x201A' },
-        { 0x83, '\x0192' },
-        { 0x84, '\x201E' },
-        { 0x85, '\x2026' },
-        { 0x86, '\x2020' },
-        { 0x87, '\x2021' },
-        { 0x88, '\x02C6' },
-        { 0x89, '\x2030' },
-        { 0x8A, '\x0160' },
-        { 0x8B, '\x2039' },
-        { 0x8C, '\x0152' },
-        { 0x8E, '\x017D' },
-        { 0x91, '\x2018' },
-        { 0x92, '\x2019' },
-        { 0x93, '\x201C' },
-        { 0x94, '\x201D' },
-        { 0x95, '\x2022' },
-        { 0x96, '\x2013' },
-        { 0x97, '\x2014' },
-        { 0x98, '\x02DC' },
-        { 0x99, '\x2122' },
-        { 0x9A, '\x0161' },
-        { 0x9B, '\x203A' },
-        { 0x9C, '\x0153' },
-        { 0x9E, '\x017E' },
-        { 0x9F, '\x0178' },
-    });
+        '\x20AC', // Windows-1252 0x80
+        '\x201A',
+        '\x0192',
+        '\x201E',
+        '\x2026',
+        '\x2020',
+        '\x2021',
+        '\x02C6',
+        '\x2030',
+        '\x0160',
+        '\x2039',
+        '\x0152',
+        '\x017D',
+        '\x8F', // 0x8F encodes nothing in Windows-1252
+        '\x2018',
+        '\x2019',
+        '\x201C',
+        '\x201D',
+        '\x2022',
+        '\x2013',
+        '\x2014',
+        '\x02DC',
+        '\x2122',
+        '\x0161',
+        '\x203A',
+        '\x0153',
+        '\x9D', // 0x9D encodes nothing in Windows-1252
+        '\x017E',
+        '\x0178', // Windows-1252 0x9F
+    };
+
+    /// <summary>
+    /// Apply the numeric character reference fixup.
+    /// </summary>
+    /// <param name="c">The numeric character reference to fixup.</param>
+    /// <returns>
+    /// If <paramref name="c" /> was in the range <c>0x80..0x9F</c> (inclusive), the returned value is the Unicode code
+    ///   point of a Windows-1252 encoded character with value, <paramref name="c" />.
+    /// If <paramref name="c" /> is <em>not</em> in that range, it is returned unchanged.
+    /// </returns>
+    /// <remarks>
+    /// For example, a byte, <c>0x80</c>, in Windows-1252 encodes the Unicode code point <c>U+20AC EURO SIGN</c>.
+    /// So, if <paramref name="c" /> is <c>0x80</c>, <c>0x20AC</c> will be returned.
+    /// However, if <paramref name="c" /> is <c>0xA0</c>, it is returned unchanged because <c>0xA0</c> in Windows-1252
+    ///   encodes <c>U+00A0 NO-BREAK SPACE</c>.
+    /// </remarks>
+    [Pure]
+    public static int ApplyNumericListFixup(int c) =>
+        c is >= 0x80 and <= 0x9F
+            ? NumericList[c - 0x80]
+            : c;
 
     /// <summary>
     /// The mapping of named character references to their UTF-16 encoded values.
     /// </summary>
     public static readonly ReadOnlyCollection<(string, string)> NamedList = new(new List<(string, string)>
     {
+        // NOTE: this must remain in alphabetical order
         // ReSharper disable StringLiteralTypo
         ("AElig", "\u00C6"),
         ("AElig;", "\u00C6"),

@@ -34,7 +34,7 @@ using static AngleBracket.Infra.CodePoint;
 
 namespace AngleBracket.Tokenizer;
 
-public partial class HtmlTokenizer
+public sealed partial class HtmlTokenizer
 {
     /// <summary>Tokenize the input stream.</summary>
     /// <returns>An enumeration of <see cref="Token" />s from the input stream.</returns>
@@ -81,7 +81,7 @@ public partial class HtmlTokenizer
     {
         Debug.Assert(_stateMap is not null);
         _state = newState;
-        _stateMap![(int)newState](c);
+        _stateMap[(int)newState](c);
     }
 
     private void Data(int c)
@@ -2276,9 +2276,9 @@ public partial class HtmlTokenizer
         {
             ReportParseError(ParseError.ControlCharacterReference);
         }
-        else if (CharReference.NumericList.TryGetValue(_charRefCode, out char converted))
+        else
         {
-            _charRefCode = converted;
+            _charRefCode = CharReference.ApplyNumericListFixup(_charRefCode);
         }
 
         _tempBuffer.Clear();

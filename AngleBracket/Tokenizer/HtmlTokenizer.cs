@@ -37,7 +37,7 @@ namespace AngleBracket.Tokenizer;
 /// <summary>
 /// An HTML tokenizer complying with the WHATWG HTML standard.
 /// </summary>
-public partial class HtmlTokenizer : IDisposable
+public sealed partial class HtmlTokenizer : IDisposable
 {
     private const int REPLACEMENT_CHARACTER = 0xFFFD;
     private const int EOF = -1;
